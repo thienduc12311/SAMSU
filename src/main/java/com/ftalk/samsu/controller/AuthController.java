@@ -5,10 +5,7 @@ import com.ftalk.samsu.exception.SamsuApiException;
 import com.ftalk.samsu.model.role.Role;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.User;
-import com.ftalk.samsu.payload.ApiResponse;
-import com.ftalk.samsu.payload.JwtAuthenticationResponse;
-import com.ftalk.samsu.payload.LoginRequest;
-import com.ftalk.samsu.payload.SignUpRequest;
+import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.repository.RoleRepository;
 import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.security.JwtTokenProvider;
@@ -63,7 +60,7 @@ public class AuthController {
     private CustomUserDetailsServiceImpl customUserDetailsService;
 
     @RequestMapping("/login-google")
-    public ResponseEntity<JwtAuthenticationResponse> loginGoogle(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
+    public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
         if (code == null || code.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }
@@ -73,19 +70,18 @@ public class AuthController {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }
         UserDetails userDetail = customUserDetailsService.loadUserByUsername(googlePojo.getEmail());
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetail, null,
-                userDetail.getAuthorities());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetail, null, userDetail.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        return ResponseEntity.ok(new LoginGoogleResponse(new JwtAuthenticationResponse(jwt)
+                            , googlePojo.getEmail(), userDetail.getUsername() == null));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         System.out.println(loginRequest);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
@@ -102,24 +98,20 @@ public class AuthController {
         String username = signUpRequest.getUsername().toLowerCase();
         String email = signUpRequest.getEmail().toLowerCase();
         String password = passwordEncoder.encode(signUpRequest.getPassword());
-        User user = new User( username, email, password);
+        User user = new User(username, email, password);
 
         List<Role> roles = new ArrayList<>();
 
         if (userRepository.count() == 0) {
-            roles.add(roleRepository.findByName(RoleName.ROLE_USER)
-                    .orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
-            roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
-                    .orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
+            roles.add(roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
+            roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN).orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
         } else {
-            roles.add(roleRepository.findByName(RoleName.ROLE_USER)
-                    .orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
+            roles.add(roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException(USER_ROLE_NOT_SET)));
         }
 
         User result = userRepository.save(user);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/{userId}")
-                .buildAndExpand(result.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/{userId}").buildAndExpand(result.getId()).toUri();
 
         return ResponseEntity.created(location).body(new ApiResponse(Boolean.TRUE, "User registered successfully"));
     }
