@@ -6,18 +6,18 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class LoginGoogleResponse  {
-    private JwtAuthenticationResponse jwtAuthenticationResponse;
+    private JwtAuthenticationResponse jwtToken;
     private String email;
     private boolean firstTime;
 
     public LoginGoogleResponse(JwtAuthenticationResponse jwtAuthenticationResponse, String email) {
-        this.jwtAuthenticationResponse = jwtAuthenticationResponse;
+        this.jwtToken = jwtAuthenticationResponse;
         this.email = email;
         this.firstTime = false;
     }
 
     public LoginGoogleResponse(String email) {
-        this.jwtAuthenticationResponse = null;
+        this.jwtToken = null;
         this.email = email;
         this.firstTime = true;
     }

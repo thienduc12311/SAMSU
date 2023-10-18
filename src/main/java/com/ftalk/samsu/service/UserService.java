@@ -1,12 +1,8 @@
 package com.ftalk.samsu.service;
 
+import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.user.User;
-import com.ftalk.samsu.payload.ApiResponse;
-import com.ftalk.samsu.payload.InfoRequest;
-import com.ftalk.samsu.payload.UserIdentityAvailability;
-import com.ftalk.samsu.payload.UserProfile;
-import com.ftalk.samsu.payload.UserSummary;
 
 public interface UserService {
 
@@ -21,6 +17,10 @@ public interface UserService {
 	User addUser(User user);
 
 	User updateUser(User newUser, String username, UserPrincipal currentUser);
+
+	User updateUser(User newUser, UserPrincipal currentUser);
+
+	User initAccount(UserInitFirstTime newUser, UserPrincipal currentUser);
 
 	ApiResponse deleteUser(String username, UserPrincipal currentUser);
 

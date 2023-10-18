@@ -30,8 +30,8 @@ spring:
             token-uri: https://oauth2.googleapis.com/token
 
 app:
-  jwtSecret: secret
-  jwtExpirationInMs: 3600000
+  jwtSecret: samsu-capstone
+  jwtExpirationInMs: 604800000
 
 cors:
   allowedOrigins: '*'

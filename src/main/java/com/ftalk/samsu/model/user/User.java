@@ -50,7 +50,6 @@ public class User extends DateAudit {
 	@Column(name = "id")
 	private Integer id;
 
-	@NotBlank
 	@Column(name = "name")
 	@Size(max = 1000)
 	private String name;
@@ -94,8 +93,13 @@ public class User extends DateAudit {
 
 
 	public User(String username, String email, String password) {
-		this.username = username;
 		this.email = email;
+		this.username = username;
+		this.password = password;
+	}
+
+	public User(String username, String password) {
+		this.username = username;
 		this.password = password;
 	}
 

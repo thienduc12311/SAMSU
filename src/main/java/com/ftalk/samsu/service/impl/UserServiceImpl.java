@@ -1,22 +1,14 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.exception.*;
+import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.security.UserPrincipal;
-import com.ftalk.samsu.exception.AccessDeniedException;
-import com.ftalk.samsu.exception.AppException;
-import com.ftalk.samsu.exception.BadRequestException;
-import com.ftalk.samsu.exception.ResourceNotFoundException;
-import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.role.Role;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.Address;
 import com.ftalk.samsu.model.user.Company;
 import com.ftalk.samsu.model.user.Geo;
 import com.ftalk.samsu.model.user.User;
-import com.ftalk.samsu.payload.ApiResponse;
-import com.ftalk.samsu.payload.InfoRequest;
-import com.ftalk.samsu.payload.UserIdentityAvailability;
-import com.ftalk.samsu.payload.UserProfile;
-import com.ftalk.samsu.payload.UserSummary;
 import com.ftalk.samsu.repository.PostRepository;
 import com.ftalk.samsu.repository.RoleRepository;
 import com.ftalk.samsu.repository.UserRepository;
@@ -24,11 +16,14 @@ import com.ftalk.samsu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -95,23 +90,54 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User updateUser(User newUser, String username, UserPrincipal currentUser) {
 		User user = userRepository.getUserByName(username);
+		if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()){
+			throw new BadRequestException("Username not available");
+		}
 		if (user.getId().equals(currentUser.getId())
 				|| currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
-//			user.setFirstName(newUser.getFirstName());
-//			user.setLastName(newUser.getLastName());
 			user.setPassword(passwordEncoder.encode(newUser.getPassword()));
-//			user.setAddress(newUser.getAddress());
-//			user.setPhone(newUser.getPhone());
-//			user.setWebsite(newUser.getWebsite());
-//			user.setCompany(newUser.getCompany());
-
 			return userRepository.save(user);
-
 		}
-
 		ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + username);
 		throw new UnauthorizedException(apiResponse);
 
+	}
+
+	@Override
+	public User updateUser(User newUser, UserPrincipal currentUser) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
+		if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()){
+			throw new BadRequestException("Username not available");
+		}
+		if (user.getId().equals(currentUser.getId())
+				|| currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+			user.setUsername(newUser.getUsername());
+			user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+			return userRepository.save(user);
+		}
+		ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + currentUser.getEmail());
+		throw new UnauthorizedException(apiResponse);
+	}
+
+	@Override
+	public User initAccount(UserInitFirstTime newUser, UserPrincipal currentUser) {
+		User user = userRepository.findById(currentUser.getId())
+				.orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
+		if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()){
+			throw new BadRequestException("Username not available");
+		}
+		if (!StringUtils.isEmpty(user.getUsername())){
+			throw new BadRequestException("This account already init! If you want change information please update ");
+		}
+		if (user.getId().equals(currentUser.getId())
+				|| currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+			user.setUsername(newUser.getUsername());
+			user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+			return userRepository.save(user);
+		}
+		ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + currentUser.getEmail());
+		throw new UnauthorizedException(apiResponse);
 	}
 
 	@Override
@@ -123,7 +149,6 @@ public class UserServiceImpl implements UserService {
 			ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to delete profile of: " + username);
 			throw new AccessDeniedException(apiResponse);
 		}
-
 //		userRepository.deleteById(user.getId());
 
 		return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);

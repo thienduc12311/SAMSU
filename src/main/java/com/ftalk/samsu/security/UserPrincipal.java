@@ -18,8 +18,6 @@ public class UserPrincipal implements UserDetails {
 
 	@Getter
 	private Integer id;
-
-
 	private String username;
 
 	@Getter

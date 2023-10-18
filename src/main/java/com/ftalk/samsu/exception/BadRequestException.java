@@ -17,6 +17,7 @@ public class BadRequestException extends RuntimeException {
 
 	public BadRequestException(String message) {
 		super(message);
+		this.apiResponse = new ApiResponse(Boolean.FALSE, message);
 	}
 
 	public BadRequestException(String message, Throwable cause) {

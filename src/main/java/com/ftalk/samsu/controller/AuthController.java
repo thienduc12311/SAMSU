@@ -12,6 +12,7 @@ import com.ftalk.samsu.security.JwtTokenProvider;
 import com.ftalk.samsu.service.impl.CustomUserDetailsServiceImpl;
 import com.ftalk.samsu.utils.google.GooglePojo;
 import com.ftalk.samsu.utils.google.GoogleUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,13 +76,14 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new LoginGoogleResponse(new JwtAuthenticationResponse(jwt)
-                            , googlePojo.getEmail(), userDetail.getUsername() == null));
+                            , googlePojo.getEmail(), StringUtils.isEmpty(userDetail.getUsername())));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         System.out.println(loginRequest);
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
