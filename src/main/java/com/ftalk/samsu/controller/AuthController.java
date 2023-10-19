@@ -69,7 +69,7 @@ public class AuthController {
         return signInByGoogleWithAccessToken(request, accessToken);
     }
 
-    @RequestMapping("mobile/login-google")
+    @RequestMapping("/mobile/login-google")
     public ResponseEntity<LoginGoogleResponse> loginGoogleInMobile(HttpServletRequest request, @RequestParam("accessToken") String accessToken) throws ClientProtocolException, IOException {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
