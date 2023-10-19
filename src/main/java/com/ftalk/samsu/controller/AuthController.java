@@ -61,11 +61,23 @@ public class AuthController {
     private CustomUserDetailsServiceImpl customUserDetailsService;
 
     @RequestMapping("/login-google")
-    public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
+    public ResponseEntity<LoginGoogleResponse> loginGoogleInWeb(HttpServletRequest request, @RequestParam("code") String code, @RequestParam("accesstoken") String tmp) throws ClientProtocolException, IOException {
         if (code == null || code.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }
         String accessToken = googleUtils.getToken(code);
+        return signInByGoogleWithAccessToken(request, accessToken);
+    }
+
+    @RequestMapping("mobile/login-google")
+    public ResponseEntity<LoginGoogleResponse> loginGoogleInMobile(HttpServletRequest request, @RequestParam("accessToken") String accessToken) throws ClientProtocolException, IOException {
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
+        }
+        return signInByGoogleWithAccessToken(request, accessToken);
+    }
+
+    private ResponseEntity<LoginGoogleResponse> signInByGoogleWithAccessToken(HttpServletRequest request, String accessToken) throws ClientProtocolException, IOException {
         GooglePojo googlePojo = googleUtils.getUserInfo(accessToken);
         if (Boolean.FALSE.equals(userRepository.existsByEmail(googlePojo.getEmail()))) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
@@ -76,7 +88,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new LoginGoogleResponse(new JwtAuthenticationResponse(jwt)
-                            , googlePojo.getEmail(), StringUtils.isEmpty(userDetail.getUsername())));
+                , googlePojo.getEmail(), StringUtils.isEmpty(userDetail.getUsername())));
     }
 
     @PostMapping("/signin")
