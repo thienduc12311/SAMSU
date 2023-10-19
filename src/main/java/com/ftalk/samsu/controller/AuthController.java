@@ -60,11 +60,11 @@ public class AuthController {
     private CustomUserDetailsServiceImpl customUserDetailsService;
 
     @RequestMapping("/login-google")
-    public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
+    public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("code") String code, @RequestParam("access_token") String accessTokenParam) throws ClientProtocolException, IOException {
         if (code == null || code.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }
-        String accessToken = googleUtils.getToken(code);
+        String accessToken = !accessTokenParam.isEmpty() ? accessTokenParam : googleUtils.getToken(code);
         GooglePojo googlePojo = googleUtils.getUserInfo(accessToken);
         if (Boolean.FALSE.equals(userRepository.existsByEmail(googlePojo.getEmail()))) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
