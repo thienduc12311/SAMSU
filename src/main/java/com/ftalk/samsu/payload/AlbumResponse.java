@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.user.UserDateAuditPayload;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

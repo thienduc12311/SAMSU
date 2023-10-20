@@ -1,5 +1,6 @@
-package com.ftalk.samsu.payload;
+package com.ftalk.samsu.payload.user;
 
+import com.ftalk.samsu.payload.DateAuditPayload;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

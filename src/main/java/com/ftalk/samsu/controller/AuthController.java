@@ -60,8 +60,8 @@ public class AuthController {
     @Autowired
     private CustomUserDetailsServiceImpl customUserDetailsService;
 
-    @RequestMapping("/login-google")
-    public ResponseEntity<LoginGoogleResponse> loginGoogleInWeb(HttpServletRequest request, @RequestParam("code") String code, @RequestParam("accesstoken") String tmp) throws ClientProtocolException, IOException {
+    @RequestMapping("/callback/login-google")
+    public ResponseEntity<LoginGoogleResponse> loginGoogleCallback(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
         if (code == null || code.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }
@@ -69,8 +69,8 @@ public class AuthController {
         return signInByGoogleWithAccessToken(request, accessToken);
     }
 
-    @RequestMapping("/mobile/login-google")
-    public ResponseEntity<LoginGoogleResponse> loginGoogleInMobile(HttpServletRequest request, @RequestParam("accessToken") String accessToken) throws ClientProtocolException, IOException {
+    @RequestMapping("/login-google")
+    public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("accessToken") String accessToken) throws ClientProtocolException, IOException {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
         }

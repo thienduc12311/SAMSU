@@ -2,7 +2,7 @@ package com.ftalk.samsu.payload.request;
 
 import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.user.User;
-import com.ftalk.samsu.payload.UserDateAuditPayload;
+import com.ftalk.samsu.payload.user.UserDateAuditPayload;
 import lombok.Data;
 
 import java.util.ArrayList;

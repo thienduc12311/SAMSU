@@ -1,6 +1,9 @@
 package com.ftalk.samsu.service;
 
 import com.ftalk.samsu.payload.*;
+import com.ftalk.samsu.payload.user.UserIdentityAvailability;
+import com.ftalk.samsu.payload.user.UserProfile;
+import com.ftalk.samsu.payload.user.UserSummary;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.user.User;
 

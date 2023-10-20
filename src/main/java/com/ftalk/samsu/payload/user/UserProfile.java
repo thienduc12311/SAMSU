@@ -1,4 +1,4 @@
-package com.ftalk.samsu.payload;
+package com.ftalk.samsu.payload.user;
 
 import com.ftalk.samsu.model.user.Address;
 import com.ftalk.samsu.model.user.Company;

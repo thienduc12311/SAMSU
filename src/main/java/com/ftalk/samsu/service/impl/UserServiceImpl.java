@@ -2,6 +2,9 @@ package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.*;
 import com.ftalk.samsu.payload.*;
+import com.ftalk.samsu.payload.user.UserIdentityAvailability;
+import com.ftalk.samsu.payload.user.UserProfile;
+import com.ftalk.samsu.payload.user.UserSummary;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.role.Role;
 import com.ftalk.samsu.model.role.RoleName;
@@ -23,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
