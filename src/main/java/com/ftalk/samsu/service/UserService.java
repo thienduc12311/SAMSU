@@ -1,15 +1,15 @@
 package com.ftalk.samsu.service;
 
 import com.ftalk.samsu.payload.*;
-import com.ftalk.samsu.payload.user.UserIdentityAvailability;
-import com.ftalk.samsu.payload.user.UserProfile;
-import com.ftalk.samsu.payload.user.UserSummary;
+import com.ftalk.samsu.payload.user.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.user.User;
 
+import java.util.List;
+
 public interface UserService {
 
-	UserSummary getCurrentUser(UserPrincipal currentUser);
+	UserProfile getCurrentUser(UserPrincipal currentUser);
 
 	UserIdentityAvailability checkUsernameAvailability(String username);
 
@@ -19,7 +19,9 @@ public interface UserService {
 
 	User addUser(User user);
 
-	User updateUser(User newUser, String username, UserPrincipal currentUser);
+	UserImportResponse addListUser(List<UserImport> user);
+
+	User updateUser(User newUser, String rollnumber, UserPrincipal currentUser);
 
 	User updateUser(User newUser, UserPrincipal currentUser);
 
@@ -31,6 +33,6 @@ public interface UserService {
 
 	ApiResponse removeAdmin(String username);
 
-	UserProfile setOrUpdateInfo(UserPrincipal currentUser, InfoRequest infoRequest);
+//	UserProfile setOrUpdateInfo(UserPrincipal currentUser, InfoRequest infoRequest);
 
 }

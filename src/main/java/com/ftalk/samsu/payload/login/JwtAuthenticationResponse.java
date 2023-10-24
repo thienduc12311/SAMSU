@@ -1,4 +1,4 @@
-package com.ftalk.samsu.payload;
+package com.ftalk.samsu.payload.login;
 
 import lombok.Data;
 

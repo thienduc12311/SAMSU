@@ -1,20 +1,18 @@
 package com.ftalk.samsu.payload.user;
 
-import com.ftalk.samsu.model.user.Address;
-import com.ftalk.samsu.model.user.Company;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfile {
-	private Integer id;
-	private String username;
-	private Instant joinedAt;
-	private String email;
-	private Long postCount;
+	private String name;
+	private String role;
+	private String status;
+	private Date dob;
+	private String department;
 }

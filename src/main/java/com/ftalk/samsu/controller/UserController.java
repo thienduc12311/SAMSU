@@ -1,12 +1,9 @@
 package com.ftalk.samsu.controller;
 
-import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.*;
-import com.ftalk.samsu.payload.user.UserIdentityAvailability;
-import com.ftalk.samsu.payload.user.UserProfile;
-import com.ftalk.samsu.payload.user.UserSummary;
+import com.ftalk.samsu.payload.user.*;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.AlbumService;
@@ -28,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,10 +40,9 @@ public class UserController {
     private AlbumService albumService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserSummary> getCurrentUser(@CurrentUser UserPrincipal currentUser) {
-        UserSummary userSummary = userService.getCurrentUser(currentUser);
-
-        return new ResponseEntity<>(userSummary, HttpStatus.OK);
+    public ResponseEntity<UserProfile> getCurrentUser(@CurrentUser UserPrincipal currentUser) {
+        UserProfile userProfile = userService.getCurrentUser(currentUser);
+        return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 
     @GetMapping("/checkUsernameAvailability")
@@ -64,7 +61,6 @@ public class UserController {
     @GetMapping("/{username}/profile")
     public ResponseEntity<UserProfile> getUSerProfile(@PathVariable(value = "username") String username) {
         UserProfile userProfile = userService.getUserProfile(username);
-
         return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 
@@ -77,74 +73,36 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{username}/albums")
-    public ResponseEntity<PagedResponse<Album>> getUserAlbums(@PathVariable(name = "username") String username,
-                                                              @RequestParam(name = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-                                                              @RequestParam(name = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-
-        PagedResponse<Album> response = albumService.getUserAlbums(username, page, size);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
         User newUser = userService.addUser(user);
-
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{username}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PostMapping("/list")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('Manager')")
+    public ResponseEntity<UserImportResponse> addListUser(@Valid @RequestBody List<UserImport> userImports) {
+        UserImportResponse userImportResponse = userService.addListUser(userImports);
+        return new ResponseEntity<>(userImportResponse, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{rollnumber}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> updateUser(@Valid @RequestBody User newUser,
-                                           @PathVariable(value = "username") String username, @CurrentUser UserPrincipal currentUser) {
-        User updatedUSer = userService.updateUser(newUser, username, currentUser);
+                                           @PathVariable(value = "rollnumber") String rollnumber, @CurrentUser UserPrincipal currentUser) {
+        User updatedUSer = userService.updateUser(newUser, rollnumber, currentUser);
 
         return new ResponseEntity<>(updatedUSer, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{username}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> deleteUser(@PathVariable(value = "username") String username,
+    @DeleteMapping("/{rollnumber}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('Manager')")
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable(value = "rollnumber") String username,
                                                   @CurrentUser UserPrincipal currentUser) {
         ApiResponse apiResponse = userService.deleteUser(username, currentUser);
 
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @PutMapping("/{username}/giveAdmin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> giveAdmin(@PathVariable(name = "username") String username) {
-        ApiResponse apiResponse = userService.giveAdmin(username);
-
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @PutMapping("/{username}/takeAdmin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> takeAdmin(@PathVariable(name = "username") String username) {
-        ApiResponse apiResponse = userService.removeAdmin(username);
-
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @PutMapping("/setOrUpdateInfo")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<UserProfile> setAddress(@CurrentUser UserPrincipal currentUser,
-                                                  @Valid @RequestBody InfoRequest infoRequest) {
-        UserProfile userProfile = userService.setOrUpdateInfo(currentUser, infoRequest);
-
-        return new ResponseEntity<>(userProfile, HttpStatus.OK);
-    }
-
-
-    @PutMapping("/me")
-//    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> updateProfile(@Valid @RequestBody User newUser
-            , @CurrentUser UserPrincipal currentUser) {
-        User updatedUSer = userService.updateUser(newUser, currentUser);
-        return new ResponseEntity<>(updatedUSer, HttpStatus.CREATED);
     }
 
     @PutMapping("/init")

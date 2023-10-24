@@ -83,6 +83,9 @@ public class User extends DateAudit {
 	@Column(name = "dob")
 	private Date dob;
 
+	@Column(name = "created_at")
+	private Date created_at;
+
 	@NotNull
 	@Column(name = "role")
 	private Short role;
@@ -91,16 +94,19 @@ public class User extends DateAudit {
 	@Column(name = "status")
 	private Short status;
 
+	@NotNull
+	@Column(name = "rollnumber")
+	private String rollnumber;
 
-	public User(String username, String email, String password) {
+	public User(String username, String password, String email, String name, String rollnumber, Short role, Date created_at, Short status) {
+		this.username = username;
+		this.password = password;
 		this.email = email;
-		this.username = username;
-		this.password = password;
-	}
-
-	public User(String username, String password) {
-		this.username = username;
-		this.password = password;
+		this.role = role;
+		this.created_at = created_at;
+		this.status = status;
+		this.name = name;
+		this.rollnumber = rollnumber;
 	}
 
 }

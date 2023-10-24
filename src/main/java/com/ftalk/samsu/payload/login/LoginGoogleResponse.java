@@ -1,5 +1,6 @@
-package com.ftalk.samsu.payload;
+package com.ftalk.samsu.payload.login;
 
+import com.ftalk.samsu.payload.login.JwtAuthenticationResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

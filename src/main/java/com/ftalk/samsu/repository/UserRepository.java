@@ -23,6 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findById(Integer id);
 
+	Optional<User> findByRollnumber(String rollnumber);
+
 	default User getUser(UserPrincipal currentUser) {
 		return getUserByName(currentUser.getUsername());
 	}
@@ -30,5 +32,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	default User getUserByName(String username) {
 		return findByUsername(username)
 				.orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+	}
+	default User getUserByRollnumber(String rollnumber) {
+		return findByRollnumber(rollnumber)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "rollnumber", rollnumber));
 	}
 }

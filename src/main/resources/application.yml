@@ -22,7 +22,7 @@ spring:
           google:
             client-id: 233487864072-ldpmp56m9cr11utl8ev17l94a5jf63h9.apps.googleusercontent.com
             client-secret: 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
-            redirect-uri: http://localhost:8081/api/auth/login-google
+            redirect-uri: http://localhost:8081/api/auth/callback/login-google
         provider:
           google:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo?access_token=

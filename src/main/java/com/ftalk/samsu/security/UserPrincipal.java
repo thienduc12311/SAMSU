@@ -2,6 +2,7 @@ package com.ftalk.samsu.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.model.user.UserRole;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +19,7 @@ public class UserPrincipal implements UserDetails {
 
 	@Getter
 	private Integer id;
-	private String username;
+	private final String username;
 
 	@Getter
 	@JsonIgnore
@@ -27,7 +28,7 @@ public class UserPrincipal implements UserDetails {
 	@JsonIgnore
 	private String password;
 
-	private Collection<? extends GrantedAuthority> authorities;
+	private final Collection<? extends GrantedAuthority> authorities;
 
 	public UserPrincipal(Integer id, String username, String email, String password,
 			Collection<? extends GrantedAuthority> authorities) {
@@ -35,7 +36,6 @@ public class UserPrincipal implements UserDetails {
 		this.username = username;
 		this.email = email;
 		this.password = password;
-
 		if (authorities == null) {
 			this.authorities = null;
 		} else {
@@ -44,8 +44,10 @@ public class UserPrincipal implements UserDetails {
 	}
 
 	public static UserPrincipal create(User user) {
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(new SimpleGrantedAuthority(UserRole.getRole(user.getRole())));
 		return new UserPrincipal(user.getId(), user.getUsername(),
-				user.getEmail(), user.getPassword(),null);
+				user.getEmail(), user.getPassword(),authorities);
 	}
 
 	@Override
