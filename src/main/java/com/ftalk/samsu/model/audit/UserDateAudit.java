@@ -21,6 +21,6 @@ public abstract class UserDateAudit extends DateAudit {
 
 	@CreatedBy
 	@Column(updatable = false)
-	private Long createdBy;
+	private Integer created_by;
 
 }

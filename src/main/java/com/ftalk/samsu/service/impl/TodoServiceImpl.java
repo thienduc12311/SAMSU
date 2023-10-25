@@ -71,7 +71,7 @@ public class TodoServiceImpl implements TodoService {
 		validatePageNumberAndSize(page, size);
 		Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
 
-		Page<Todo> todos = todoRepository.findByCreatedBy(Long.valueOf(currentUser.getId()), pageable);
+		Page<Todo> todos = todoRepository.findById(Long.valueOf(currentUser.getId()), pageable);
 
 		List<Todo> content = todos.getNumberOfElements() == 0 ? Collections.emptyList() : todos.getContent();
 

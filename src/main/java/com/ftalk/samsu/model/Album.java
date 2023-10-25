@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @Entity
 @Data
-@Table(name = "albums", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
-public class Album extends UserDateAudit {
+@Table(name = "events", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
+public class Album  {
 	private static final long serialVersionUID = 1L;
 
 	@Id

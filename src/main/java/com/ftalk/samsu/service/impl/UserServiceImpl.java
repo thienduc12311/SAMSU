@@ -103,6 +103,7 @@ public class UserServiceImpl implements UserService {
                 importList.add(userImport.createUser((short) 1));
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
+                importListFailed.add(new UserImportFailed(userImport, ex.getMessage()));
             }
         }
         try {

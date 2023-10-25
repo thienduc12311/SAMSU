@@ -81,8 +81,8 @@ public class UserController {
     }
 
     @PostMapping("/list")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('Manager')")
-    public ResponseEntity<UserImportResponse> addListUser(@Valid @RequestBody List<UserImport> userImports) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<UserImportResponse> addListUser(@Valid @RequestBody List<@Valid UserImport> userImports) {
         UserImportResponse userImportResponse = userService.addListUser(userImports);
         return new ResponseEntity<>(userImportResponse, HttpStatus.CREATED);
     }

@@ -11,11 +11,11 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-	Page<Post> findByCreatedBy(Integer userId, Pageable pageable);
+	Page<Post> findById(Integer userId, Pageable pageable);
 
 	Page<Post> findByCategory(Long categoryId, Pageable pageable);
 
 	Page<Post> findByTags(List<Tag> tags, Pageable pageable);
 
-	Long countByCreatedBy(Integer userId);
+	Long countById(Integer userId);
 }

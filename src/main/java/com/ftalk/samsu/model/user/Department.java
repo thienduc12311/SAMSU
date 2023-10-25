@@ -33,29 +33,6 @@ public class Department extends UserDateAudit {
 		return id;
 	}
 
-	@JsonIgnore
-	@Override
-	public Long getCreatedBy() {
-		return super.getCreatedBy();
-	}
-
-	@JsonIgnore
-	@Override
-	public void setCreatedBy(Long createdBy) {
-		super.setCreatedBy(createdBy);
-	}
-
-	@JsonIgnore
-	@Override
-	public Instant getCreatedAt() {
-		return super.getCreatedAt();
-	}
-
-	@JsonIgnore
-	@Override
-	public void setCreatedAt(Instant createdAt) {
-		super.setCreatedAt(createdAt);
-	}
 
 
 }
