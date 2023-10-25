@@ -1,13 +1,7 @@
 package com.ftalk.samsu.model.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ftalk.samsu.model.audit.DateAudit;
-import com.ftalk.samsu.model.Album;
-import com.ftalk.samsu.model.Comment;
-import com.ftalk.samsu.model.Post;
-import com.ftalk.samsu.model.role.Role;
-import com.ftalk.samsu.model.Todo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,14 +10,10 @@ import org.hibernate.annotations.NaturalId;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -59,7 +49,6 @@ public class User extends DateAudit {
 	@Size(max = 45)
 	private String username;
 
-	@NotBlank
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@Size(max = 255)
 	@Column(name = "password")
