@@ -67,6 +67,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User addUser(User user) {
+        if ( userRepository.existsByRollnumber(user.getRollnumber())) {
+            ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "Rollnumber is already taken");
+            throw new BadRequestException(apiResponse);
+        }
         if (userRepository.existsByUsername(user.getUsername())) {
             ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "Username is already taken");
             throw new BadRequestException(apiResponse);
@@ -92,12 +96,9 @@ public class UserServiceImpl implements UserService {
         List<UserImportFailed> importListFailed = new ArrayList<>();
         for (UserImport userImport : userImportList) {
             try {
-                if (userImport.getUsername() != null && userRepository.existsByUsername(userImport.getUsername())) {
-                    importListFailed.add(new UserImportFailed(userImport, "Username is already taken"));
-                    continue;
-                }
-                if (userImport.getEmail() != null && userRepository.existsByEmail(userImport.getEmail())) {
-                    importListFailed.add(new UserImportFailed(userImport, "Email is already taken"));
+                UserImportFailed userImportFailed = checkValid(userImport);
+                if (userImportFailed != null){
+                    importListFailed.add(userImportFailed);
                     continue;
                 }
                 importList.add(userImport.createUser((short) 1));
@@ -113,6 +114,19 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Import list user failed with DataIntegrityViolationException"));
         }
         return new UserImportResponse(userImportList.size(),importList.size(),importListFailed.size(),importListFailed);
+    }
+
+    private UserImportFailed checkValid(UserImport userImport){
+        if (userImport.isValid()){
+            return new UserImportFailed(userImport, "Have required field null");
+        }
+        if (userRepository.existsByUsername(userImport.getUsername())) {
+            return new UserImportFailed(userImport, "Username is already taken");
+        }
+        if ( userRepository.existsByRollnumber(userImport.getRollnumber())) {
+            return new UserImportFailed(userImport, "Rollnumber is already taken");
+        }
+        return null;
     }
 
     @Override
