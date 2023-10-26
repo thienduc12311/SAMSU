@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.Instant;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @Entity
 @Data
 @NoArgsConstructor
 @Table(name = "departments")
-public class Department extends UserDateAudit {
+public class Department {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -32,7 +32,4 @@ public class Department extends UserDateAudit {
 	public Integer getId() {
 		return id;
 	}
-
-
-
 }

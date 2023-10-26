@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User newUser, String rollnumber, UserPrincipal currentUser) {
-        User user = userRepository.getUserByName(rollnumber);
+        User user = userRepository.getUserByRollnumber(rollnumber);
         if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()) {
             throw new BadRequestException("Username not available");
         }

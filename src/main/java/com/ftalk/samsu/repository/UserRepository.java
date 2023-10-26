@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.validation.constraints.NotBlank;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -24,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsernameOrEmail(String username, String email);
 
 	Optional<User> findById(Integer id);
+
+	Set<User> findAllByIdIn(Set<Integer> userID);
 
 	Optional<User> findByRollnumber(String rollnumber);
 
