@@ -10,6 +10,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfile {
+	private String username;
+	private String rollnumber;
 	private String name;
 	private String role;
 	private String status;

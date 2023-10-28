@@ -144,7 +144,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostResponse addPost(PostRequest postRequest, UserPrincipal currentUser) {
-        User user = userRepository.findById(Long.valueOf(currentUser.getId()))
+        User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(USER, ID, 1L));
         Category category = categoryRepository.findById(postRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(CATEGORY, ID, postRequest.getCategoryId()));

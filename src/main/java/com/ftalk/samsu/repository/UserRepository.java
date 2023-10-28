@@ -3,7 +3,10 @@ package com.ftalk.samsu.repository;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.security.UserPrincipal;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.validation.constraints.NotBlank;
@@ -11,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Integer> {
 	Optional<User> findByUsername(@NotBlank String username);
 
 	Optional<User> findByEmail(@NotBlank String email);
@@ -24,9 +27,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByUsernameOrEmail(String username, String email);
 
-	Optional<User> findById(Integer id);
+	@NotNull Optional<User> findById(@NotNull Integer id);
 
 	Set<User> findAllByIdIn(Set<Integer> userID);
+
+	@Modifying
+	@Query("UPDATE User u SET u.password = :newPassword WHERE u.id = :userId AND u.password = :oldPassword")
+	int updatePasswordById(String oldPassword, String newPassword, Integer userId);
 
 	Optional<User> findByRollnumber(String rollnumber);
 

@@ -19,6 +19,8 @@ public interface UserService {
 
 	User addUser(User user);
 
+	void updatePassword(UserPasswordRequest userPasswordRequest, UserPrincipal currentUser);
+
 	UserImportResponse addListUser(List<UserImport> user);
 
 	User updateUser(User newUser, String rollnumber, UserPrincipal currentUser);

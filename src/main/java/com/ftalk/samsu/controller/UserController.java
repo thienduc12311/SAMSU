@@ -108,9 +108,16 @@ public class UserController {
     }
 
     @PutMapping("/init")
-    public ResponseEntity<User> updateProfile(@Valid @RequestBody UserInitFirstTime newUser
-            , @CurrentUser UserPrincipal currentUser) {
+    public ResponseEntity<User> updateProfile(@Valid @RequestBody UserInitFirstTime newUser,
+                                              @CurrentUser UserPrincipal currentUser) {
         User updatedUSer = userService.initAccount(newUser, currentUser);
         return new ResponseEntity<>(updatedUSer, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/passwords")
+    public ResponseEntity<User> updatePassword(@Valid @RequestBody UserPasswordRequest userPasswordRequest,
+                                               @CurrentUser UserPrincipal currentUser) {
+        userService.updatePassword(userPasswordRequest, currentUser);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

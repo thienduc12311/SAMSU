@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class UserInitFirstTime {
-    private String username;
     private String password;
 }

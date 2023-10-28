@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
-        return new UserProfile(user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null);
+        return new UserProfile(user.getUsername(), user.getRollnumber(),user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null);
     }
 
     @Override
@@ -88,6 +88,17 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    @Override
+    public void updatePassword(UserPasswordRequest userPasswordRequest, UserPrincipal currentUser) {
+        if (!userPasswordRequest.isValid()){
+            throw new BadRequestException("Password must be at least 8 characters long, 1 special characters and 1 uppercase letter");
+        }
+        int rs = userRepository.updatePasswordById(userPasswordRequest.getOldPassword(), userPasswordRequest.getNewPassword(), currentUser.getId());
+        if (rs < 1){
+            throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR,"Can't update password with jwt token, please contact with admin!");
+        }
     }
 
     @Override
@@ -166,15 +177,10 @@ public class UserServiceImpl implements UserService {
     public User initAccount(UserInitFirstTime newUser, UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
-        if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()) {
-            throw new BadRequestException("Username not available");
-        }
-        if (!StringUtils.isEmpty(user.getUsername())) {
+        if (!StringUtils.isEmpty(user.getPassword())) {
             throw new BadRequestException("This account already init! If you want change information please update ");
         }
-        if (user.getId().equals(currentUser.getId())
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
-            user.setUsername(newUser.getUsername());
+        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
             user.setPassword(passwordEncoder.encode(newUser.getPassword()));
             return userRepository.save(user);
         }
@@ -219,6 +225,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
     }
+
 
 //	@Override
 //	public UserProfile setOrUpdateInfo(UserPrincipal currentUser, InfoRequest infoRequest) {
