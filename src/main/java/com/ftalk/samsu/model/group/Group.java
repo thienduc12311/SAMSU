@@ -28,7 +28,7 @@ import java.util.Set;
 @Table(name = "group_users", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedEntityGraph(name = "Group.users", attributeNodes = @NamedAttributeNode("users"))
 public class Group implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 12L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -20,80 +20,83 @@ import java.util.*;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }),
-		@UniqueConstraint(columnNames = { "email" }) })
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username"}),
+        @UniqueConstraint(columnNames = {"email"})})
 public class User extends DateAudit {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
-	@Column(name = "name")
-	@Size(max = 1000)
-	private String name;
+    @Column(name = "name")
+    @Size(max = 1000)
+    private String name;
 
-	@NotBlank
-	@Column(name = "username")
-	@Size(max = 45)
-	private String username;
+    @NotBlank
+    @Column(name = "username")
+    @Size(max = 45)
+    private String username;
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	@Size(max = 255)
-	@Column(name = "password")
-	private String password;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(max = 255)
+    @Column(name = "password")
+    private String password;
 
-	@NotBlank
-	@NaturalId
-	@Size(max = 45)
-	@Column(name = "email")
-	@Email
-	private String email;
+    @NotBlank
+    @NaturalId
+    @Size(max = 45)
+    @Column(name = "email")
+    @Email
+    private String email;
 
-//	@ManyToMany(fetch = FetchType.LAZY,
-//			cascade = {
-//					CascadeType.PERSIST,
-//					CascadeType.MERGE
-//			},
-//			mappedBy = "users")
-//	@JsonIgnore
-//	private Set<Group> groups;
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "group_members",
+            joinColumns = {@JoinColumn(name = "users_id")},
+            inverseJoinColumns = {@JoinColumn(name = "groups_id")})
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    private Set<Group> groups;
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "departments_id")
-	private Department department;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "departments_id")
+    private Department department;
 
-	@Column(name = "avatar")
-	@Size(max = 1000)
-	private String avatar;
+    @Column(name = "avatar")
+    @Size(max = 1000)
+    private String avatar;
 
-	@Column(name = "dob")
-	private Date dob;
+    @Column(name = "dob")
+    private Date dob;
 
 //	@Column(name = "created_at")
 //	private Date created_at;
 
-	@NotNull
-	@Column(name = "role")
-	private Short role;
+    @NotNull
+    @Column(name = "role")
+    private Short role;
 
-	@NotNull
-	@Column(name = "status")
-	private Short status;
+    @NotNull
+    @Column(name = "status")
+    private Short status;
 
-	@NotNull
-	@Column(name = "rollnumber")
-	private String rollnumber;
+    @NotNull
+    @Column(name = "rollnumber")
+    private String rollnumber;
 
-	public User(String username, String password, String email, String name, String rollnumber, Short role,  Short status) {
-		this.username = username;
-		this.password = password;
-		this.email = email;
-		this.role = role;
-		this.status = status;
-		this.name = name;
-		this.rollnumber = rollnumber;
-	}
+    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.status = status;
+        this.name = name;
+        this.rollnumber = rollnumber;
+    }
 
 }
