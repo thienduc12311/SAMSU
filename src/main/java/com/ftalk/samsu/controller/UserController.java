@@ -75,6 +75,16 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping()
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PagedResponse<User>> getUsersCreatedBy(
+                                                                 @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                 @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<User> response = userService.getAllUserIn(page, size);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {

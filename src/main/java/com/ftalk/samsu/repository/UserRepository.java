@@ -1,9 +1,13 @@
 package com.ftalk.samsu.repository;
 
 import com.ftalk.samsu.exception.ResourceNotFoundException;
+import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,7 +33,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 	@NotNull Optional<User> findById(@NotNull Integer id);
 
-	Set<User> findAllByIdIn(Set<Integer> userID);
+	Set<User> findAllByRollnumberIn(Set<String> userID);
+
+	Page<User> findAll(Pageable pageable);
 
 	@Modifying
 	@Query("UPDATE User u SET u.password = :newPassword WHERE u.id = :userId AND u.password = :oldPassword")

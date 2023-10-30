@@ -1,6 +1,7 @@
 package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.*;
+import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.user.*;
 import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.payload.user.*;
@@ -12,10 +13,15 @@ import com.ftalk.samsu.repository.PostRepository;
 import com.ftalk.samsu.repository.RoleRepository;
 import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.service.UserService;
+import com.ftalk.samsu.utils.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,10 +30,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final String FIND_KEY = "id";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private UserRepository userRepository;
@@ -127,6 +136,22 @@ public class UserServiceImpl implements UserService {
         return new UserImportResponse(userImportList.size(),importList.size(),importListFailed.size(),importListFailed);
     }
 
+    @Override
+    public PagedResponse<User> getAllUserIn(Integer page, Integer size){
+        AppUtils.validatePageNumberAndSize(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, FIND_KEY);
+        Page<User> users = userRepository.findAll(pageable);
+        if (users.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), users.getNumber(), users.getSize(), users.getTotalElements(),
+                    users.getTotalPages(), users.isLast());
+        }
+
+//        List<UserResponse> userResponses = Arrays.asList(modelMapper.map(users.getContent(), UserResponse[].class));
+
+        return new PagedResponse<>(users.getContent(), users.getNumber(), users.getSize(), users.getTotalElements(), users.getTotalPages(),
+                users.isLast());
+    }
+
     private UserImportFailed checkValid(UserImport userImport){
         if (userImport.isValid()){
             return new UserImportFailed(userImport, "Have required field null");
@@ -202,29 +227,29 @@ public class UserServiceImpl implements UserService {
         return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
     }
 
-    @Override
-    public ApiResponse giveAdmin(String username) {
-        User user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
-        roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
-                .orElseThrow(() -> new AppException("User role not set")));
-        roles.add(
-                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
-//		user.setRoles(roles);
-        userRepository.save(user);
-        return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
-    }
-
-    @Override
-    public ApiResponse removeAdmin(String username) {
-        User user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
-        roles.add(
-                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
-//		user.setRoles(roles);
-        userRepository.save(user);
-        return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
-    }
+//    @Override
+//    public ApiResponse giveAdmin(String username) {
+//        User user = userRepository.getUserByName(username);
+//        List<Role> roles = new ArrayList<>();
+//        roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
+//                .orElseThrow(() -> new AppException("User role not set")));
+//        roles.add(
+//                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
+////		user.setRoles(roles);
+//        userRepository.save(user);
+//        return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
+//    }
+//
+//    @Override
+//    public ApiResponse removeAdmin(String username) {
+//        User user = userRepository.getUserByName(username);
+//        List<Role> roles = new ArrayList<>();
+//        roles.add(
+//                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
+////		user.setRoles(roles);
+//        userRepository.save(user);
+//        return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
+//    }
 
 
 //	@Override

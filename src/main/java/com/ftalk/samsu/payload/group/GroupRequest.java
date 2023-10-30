@@ -12,5 +12,5 @@ public class GroupRequest {
     @NotBlank
     @Size(max = 500)
     private String name;
-    private Set<Integer> userIds;
+    private Set<String> userRollnumbers;
 }

@@ -62,7 +62,7 @@ public class GroupServiceImpl implements GroupService {
     public Group updateGroup(GroupRequest groupRequest, Integer id) {
         Group existingGroup = groupRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Group not found"));
-        Set<User> listUser = userRepository.findAllByIdIn(groupRequest.getUserIds());
+        Set<User> listUser = userRepository.findAllByRollnumberIn(groupRequest.getUserRollnumbers());
         existingGroup.setName(groupRequest.getName());
         existingGroup.setUsers(listUser);
         groupRepository.save(existingGroup);
@@ -78,7 +78,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public Group addGroup(GroupRequest groupRequest, UserPrincipal userPrincipal) {
         validateGroup(groupRequest);
-        Set<User> users = userRepository.findAllByIdIn(groupRequest.getUserIds());
+        Set<User> users = userRepository.findAllByRollnumberIn(groupRequest.getUserRollnumbers());
         Group group = new Group(groupRequest.getName(), users);
         return groupRepository.save(group);
     }

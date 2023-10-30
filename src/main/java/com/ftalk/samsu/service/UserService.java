@@ -23,6 +23,8 @@ public interface UserService {
 
 	UserImportResponse addListUser(List<UserImport> user);
 
+	PagedResponse<User> getAllUserIn(Integer page, Integer size);
+
 	User updateUser(User newUser, String rollnumber, UserPrincipal currentUser);
 
 	User updateUser(User newUser, UserPrincipal currentUser);
@@ -30,11 +32,5 @@ public interface UserService {
 	User initAccount(UserInitFirstTime newUser, UserPrincipal currentUser);
 
 	ApiResponse deleteUser(String username, UserPrincipal currentUser);
-
-	ApiResponse giveAdmin(String username);
-
-	ApiResponse removeAdmin(String username);
-
-//	UserProfile setOrUpdateInfo(UserPrincipal currentUser, InfoRequest infoRequest);
 
 }
