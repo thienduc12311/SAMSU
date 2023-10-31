@@ -159,6 +159,9 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByUsername(userImport.getUsername())) {
             return new UserImportFailed(userImport, "Username is already taken");
         }
+        if (userRepository.existsByEmail(userImport.getUsername())) {
+            return new UserImportFailed(userImport, "Email is already taken");
+        }
         if ( userRepository.existsByRollnumber(userImport.getRollnumber())) {
             return new UserImportFailed(userImport, "Rollnumber is already taken");
         }
