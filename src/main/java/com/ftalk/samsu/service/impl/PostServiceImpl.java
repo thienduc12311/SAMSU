@@ -31,12 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.ftalk.samsu.utils.AppConstants.CATEGORY;
-import static com.ftalk.samsu.utils.AppConstants.CREATED_AT;
-import static com.ftalk.samsu.utils.AppConstants.ID;
-import static com.ftalk.samsu.utils.AppConstants.POST;
-import static com.ftalk.samsu.utils.AppConstants.TAG;
-import static com.ftalk.samsu.utils.AppConstants.USER;
+import static com.ftalk.samsu.utils.AppConstants.*;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -54,7 +49,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PagedResponse<Post> getAllPosts(int page, int size) {
-        validatePageNumberAndSize(page, size);
+        AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
 
@@ -68,7 +63,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PagedResponse<Post> getPostsByCreatedBy(String username, int page, int size) {
-        validatePageNumberAndSize(page, size);
+        AppUtils.validatePageNumberAndSize(page, size);
         User user = userRepository.getUserByName(username);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Post> posts = postRepository.findById(user.getId(), pageable);
@@ -113,7 +108,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post updatePost(Long id, PostRequest newPostRequest, UserPrincipal currentUser) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(POST, ID, id));
+        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         Category category = categoryRepository.findById(newPostRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(CATEGORY, ID, newPostRequest.getCategoryId()));
         if (post.getUser().getId().equals(currentUser.getId())
@@ -130,7 +125,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ApiResponse deletePost(Long id, UserPrincipal currentUser) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(POST, ID, id));
+        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         if (post.getUser().getId().equals(currentUser.getId())
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
             postRepository.deleteById(id);
@@ -186,20 +181,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getPost(Long id) {
-        return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(POST, ID, id));
+        return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
     }
 
-    private void validatePageNumberAndSize(int page, int size) {
-        if (page < 0) {
-            throw new BadRequestException("Page number cannot be less than zero.");
-        }
 
-        if (size < 0) {
-            throw new BadRequestException("Size number cannot be less than zero.");
-        }
-
-        if (size > AppConstants.MAX_PAGE_SIZE) {
-            throw new BadRequestException("Page size must not be greater than " + AppConstants.MAX_PAGE_SIZE);
-        }
-    }
 }

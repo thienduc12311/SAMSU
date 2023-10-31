@@ -33,7 +33,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 	@NotNull Optional<User> findById(@NotNull Integer id);
 
-	Set<User> findAllByRollnumberIn(Set<String> userID);
+	Set<User> findAllByRollnumberIn(Set<String> userRollnumbers);
 
 	Page<User> findAll(Pageable pageable);
 
@@ -42,6 +42,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	int updatePasswordById(String oldPassword, String newPassword, Integer userId);
 
 	Optional<User> findByRollnumber(String rollnumber);
+
+	Integer getIdByRollnumber(String rollnumber);
 
 	default User getUser(UserPrincipal currentUser) {
 		return getUserByName(currentUser.getUsername());

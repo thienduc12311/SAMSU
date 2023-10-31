@@ -1,4 +1,4 @@
-package com.ftalk.samsu.controller;
+package com.ftalk.samsu.controller.user;
 
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.user.User;
@@ -78,8 +78,8 @@ public class UserController {
     @GetMapping()
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<User>> getUsersCreatedBy(
-                                                                 @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-                                                                 @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
         PagedResponse<User> response = userService.getAllUserIn(page, size);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -96,7 +96,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<UserImportResponse> addListUser(@Valid @RequestBody List<UserImport> userImports) {
         UserImportResponse userImportResponse = userService.addListUser(userImports);
-        return new ResponseEntity<>(userImportResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(userImportResponse, HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/{rollnumber}")
@@ -105,8 +105,18 @@ public class UserController {
                                            @PathVariable(value = "rollnumber") String rollnumber, @CurrentUser UserPrincipal currentUser) {
         User updatedUSer = userService.updateUser(newUser, rollnumber, currentUser);
 
-        return new ResponseEntity<>(updatedUSer, HttpStatus.CREATED);
+        return new ResponseEntity<>(updatedUSer, HttpStatus.ACCEPTED);
     }
+
+    @GetMapping("/validateToken")
+    public ResponseEntity<User> updateUser(@Valid @RequestBody String secret,
+                                           @CurrentUser UserPrincipal currentUser) {
+        if (userService.validateToken(secret, currentUser)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
 
     @DeleteMapping("/{rollnumber}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('Manager')")

@@ -19,11 +19,12 @@ public class AppConstants {
 
 	public static final String USER = "User";
 
+	public static final String ROLLNUMBER = "Rollnumber";
 	public static final String CATEGORY = "Category";
 
 	public static final String TAG = "Tag";
 
-	public static final String POST = "Post";
+	public static final String EVENT_PROPOSAL = "EventProposal";
 
 	public static final String TODO = "ToDo";
 

@@ -38,6 +38,8 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private static final String FIND_KEY = "id";
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    private static final String SECRET_CHECK_TOKEN = "SAMSU_123456";
     @Autowired
     private UserRepository userRepository;
 
@@ -228,6 +230,11 @@ public class UserServiceImpl implements UserService {
 //		userRepository.deleteById(user.getId());
 
         return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
+    }
+
+    @Override
+    public boolean validateToken(String secret, UserPrincipal currentUser) {
+        return SECRET_CHECK_TOKEN.equals(secret);
     }
 
 //    @Override

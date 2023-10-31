@@ -43,22 +43,20 @@ public class SemesterController {
 	@PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
 	public ResponseEntity<Semester> addSemester(@Valid @RequestBody Semester semester, @CurrentUser UserPrincipal currentUser) {
 		Semester newSemester = semesterService.addSemester(semester, currentUser);
-
 		return new ResponseEntity< >(newSemester, HttpStatus.CREATED);
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Semester> getSemester(@PathVariable(name = "id") String id) {
-		Semester semester = semesterService.getSemester(id);
-
+	@GetMapping("/{name}")
+	public ResponseEntity<Semester> getSemester(@PathVariable(name = "name") String name) {
+		Semester semester = semesterService.getSemester(name);
 		return new ResponseEntity< >(semester, HttpStatus.OK);
 	}
 
-	@PutMapping("/{id}")
+	@PutMapping("/{name}")
 	@PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
-	public ResponseEntity<Semester> updateSemester(@PathVariable(name = "id") String id, @Valid @RequestBody Semester semester, @CurrentUser UserPrincipal currentUser) {
+	public ResponseEntity<Semester> updateSemester(@PathVariable(name = "name") String name, @Valid @RequestBody Semester semester, @CurrentUser UserPrincipal currentUser) {
 
-		Semester updatedSemester = semesterService.updateSemester(id, semester, currentUser);
+		Semester updatedSemester = semesterService.updateSemester(name, semester, currentUser);
 
 		return new ResponseEntity< >(updatedSemester, HttpStatus.OK);
 	}

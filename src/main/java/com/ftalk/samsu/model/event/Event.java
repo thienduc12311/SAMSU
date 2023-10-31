@@ -7,6 +7,7 @@ import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
@@ -53,30 +55,27 @@ public class Event extends DateAudit implements Serializable {
 	private User creatorUserId;
 
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "event_proposal_id")
+	private User eventProposalId;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "event_leader_users_id")
 	private User eventLeaderUserId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private User user;
+	@NotNull
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "semesters_name")
+	private User semestersName;
 
-	@OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Photo> photo;
+	@Column(name = "banner_url")
+	@Size(max = 1000)
+	private String bannerUrl;
 
-	@JsonIgnore
-	public User getUser() {
-		return user;
-	}
+	@Column(name = "fileUrls")
+	@Size(max = 2000)
+	private String fileUrls;
 
-	public List<Photo> getPhoto() {
-		return this.photo == null ? null : new ArrayList<>(this.photo);
-	}
+	@Column(name = "start_time")
+	private Date start_time;
 
-	public void setPhoto(List<Photo> photo) {
-		if (photo == null) {
-			this.photo = null;
-		} else {
-			this.photo = Collections.unmodifiableList(photo);
-		}
-	}
 }

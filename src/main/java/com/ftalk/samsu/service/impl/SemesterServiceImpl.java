@@ -51,10 +51,9 @@ public class SemesterServiceImpl implements SemesterService {
     }
 
     @Override
-    public Semester updateSemester(String id, Semester newSemester, UserPrincipal currentUser) {
-        Semester semester = semesterRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
-        semester.setName(newSemester.getName());
-        return semesterRepository.save(semester);
+    public Semester updateSemester(String name, Semester newSemester, UserPrincipal currentUser) {
+        semesterRepository.deleteById(name);
+        return addSemester(newSemester, currentUser);
     }
 
     @Override
@@ -65,9 +64,7 @@ public class SemesterServiceImpl implements SemesterService {
             semesterRepository.deleteById(id);
             return new ApiResponse(Boolean.TRUE, "You successfully deleted semester");
         }
-
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to delete this semester");
-
         throw new UnauthorizedException(apiResponse);
     }
 }

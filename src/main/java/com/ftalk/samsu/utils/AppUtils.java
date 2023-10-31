@@ -17,4 +17,5 @@ public class AppUtils {
 			throw new SamsuApiException(HttpStatus.BAD_REQUEST, "Page size must not be greater than " + AppConstants.MAX_PAGE_SIZE);
 		}
 	}
+
 }

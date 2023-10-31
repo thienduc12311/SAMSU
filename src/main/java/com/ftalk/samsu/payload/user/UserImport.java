@@ -12,8 +12,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Data
-@Validated
 public class UserImport {
+    @NotBlank
     private String username;
 
     private String password;

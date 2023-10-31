@@ -33,4 +33,6 @@ public interface UserService {
 
 	ApiResponse deleteUser(String username, UserPrincipal currentUser);
 
+	boolean validateToken(String secret, UserPrincipal currentUser);
+
 }
