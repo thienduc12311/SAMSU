@@ -35,7 +35,7 @@ app:
   jwtExpirationInMs: 604800000
 
 cors:
-  allowedOrigins: 'http://localhost:4200,https://samsu-fpt.software'
+  allowedOrigins: 'http://localhost:4200,http://localhost:3001,https://samsu-fpt.software'
 
 server:
   port: 8081
