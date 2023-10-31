@@ -39,5 +39,4 @@ cors:
 
 server:
   port: 8081
-  error:
-      include-stacktrace=never
+  error: include-stacktrace=never
