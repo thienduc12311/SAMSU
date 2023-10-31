@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserImportFailed checkValid(UserImport userImport){
-        if (userImport.isValid()){
+        if (!userImport.isValid()){
             return new UserImportFailed(userImport, "Have required field null");
         }
         if (userRepository.existsByUsername(userImport.getUsername())) {
