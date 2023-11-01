@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-@RestController
-@RequestMapping("/api/posts")
 public class PostController {
 	@Autowired
 	private PostService postService;
@@ -60,8 +58,6 @@ public class PostController {
 		return new ResponseEntity< >(response, HttpStatus.OK);
 	}
 
-	@PostMapping
-	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<PostResponse> addPost(@Valid @RequestBody PostRequest postRequest,
                                                 @CurrentUser UserPrincipal currentUser) {
 		PostResponse postResponse = postService.addPost(postRequest, currentUser);

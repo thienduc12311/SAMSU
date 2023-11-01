@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-@RestController
-@RequestMapping("/api/categories")
 public class CategoryController {
 	@Autowired
 	private CategoryService categoryService;
