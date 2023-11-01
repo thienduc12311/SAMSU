@@ -1,6 +1,7 @@
 package com.ftalk.samsu;
 
 import com.ftalk.samsu.security.JwtAuthenticationFilter;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,7 @@ import java.util.TimeZone;
 
 @SpringBootApplication
 @EntityScan(basePackageClasses = {SamsuApiApplication.class, Jsr310Converters.class})
-
+@OpenAPIDefinition
 public class SamsuApiApplication {
 
     public static void main(String[] args) {
