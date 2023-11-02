@@ -99,4 +99,8 @@ public class User extends DateAudit {
         this.rollnumber = rollnumber;
     }
 
+    public User(Integer id) {
+        this.id = id;
+    }
+
 }

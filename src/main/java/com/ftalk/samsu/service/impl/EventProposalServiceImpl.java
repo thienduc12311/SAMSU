@@ -2,6 +2,7 @@ package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
+import com.ftalk.samsu.exception.SamsuApiException;
 import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.Tag;
@@ -18,16 +19,20 @@ import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.repository.EventProposalRepository;
 import com.ftalk.samsu.repository.SemesterRepository;
 import com.ftalk.samsu.repository.UserRepository;
+import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.EventProposalService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -41,6 +46,7 @@ import static com.ftalk.samsu.utils.AppConstants.*;
 
 @Service
 public class EventProposalServiceImpl implements EventProposalService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventProposalServiceImpl.class);
     @Autowired
     private EventProposalRepository eventProposalRepository;
 
@@ -96,8 +102,12 @@ public class EventProposalServiceImpl implements EventProposalService {
             throw new BadRequestException("Invalid urls attached");
         }
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
-        if (eventProposal.getCreatorUserId().getId().equals(currentUser.getId())) {
-            if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
+        boolean isAdmin = currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()));
+        if (eventProposal.getCreatorUserId().getId().equals(currentUser.getId()) || isAdmin) {
+            if (isAdmin) {
+                updateEvaluate(id, new EventProposalEvaluateRequest(
+                        newEventProposalUpdateRequest.getFeedback(), newEventProposalUpdateRequest.getStatus()), currentUser);
+            } else if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
                 eventProposal.setStatus(EventProposalConstants.WAITING_APPROVE.getValue());
                 eventProposal.setAccepterUserId(null);
             }
@@ -126,17 +136,33 @@ public class EventProposalServiceImpl implements EventProposalService {
 
     @Override
     public ApiResponse updateEventProposalEvaluate(Integer id, EventProposalEvaluateRequest eventProposalEvaluateRequest, UserPrincipal currentUser) {
-        EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+            if (updateEvaluate(id,eventProposalEvaluateRequest,currentUser)){
+                return new ApiResponse(Boolean.TRUE, "You successfully updated eventProposal");
+            } else {
+                throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR,"Update event proposal evaluate failed");
+            }
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update this eventProposal");
+        throw new UnauthorizedException(apiResponse);
+    }
+
+    public boolean updateEvaluate(Integer id, EventProposalEvaluateRequest eventProposalEvaluateRequest, UserPrincipal currentUser) {
+        try {
+            EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
             eventProposal.setStatus(eventProposalEvaluateRequest.getStatus());
+            if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
+                eventProposal.setAccepterUserId(new User(currentUser.getId()));
+            }
             if (!StringUtils.isEmpty(eventProposalEvaluateRequest.getFeedback())) {
                 eventProposal.setFeedback(eventProposalEvaluateRequest.getFeedback());
             }
             eventProposalRepository.save(eventProposal);
-            return new ApiResponse(Boolean.TRUE, "You successfully updated eventProposal");
+            return true;
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(),ex);
         }
-        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update this eventProposal");
-        throw new UnauthorizedException(apiResponse);
+        return false;
     }
 
 
