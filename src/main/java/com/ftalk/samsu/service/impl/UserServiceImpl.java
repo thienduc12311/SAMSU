@@ -14,6 +14,7 @@ import com.ftalk.samsu.repository.RoleRepository;
 import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
+import com.ftalk.samsu.utils.user.PasswordValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,12 +211,14 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.isEmpty(user.getPassword())) {
             throw new BadRequestException("This account already init! If you want change information please update ");
         }
-        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+        if (PasswordValidator.isPasswordValid(newUser.getPassword())) {
             user.setPassword(passwordEncoder.encode(newUser.getPassword()));
             return userRepository.save(user);
+        } else {
+            throw new BadRequestException("Password must be at least 8 characters long, 1 special characters and 1 uppercase letter");
         }
-        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + currentUser.getEmail());
-        throw new UnauthorizedException(apiResponse);
+//        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + currentUser.getEmail());
+//        throw new UnauthorizedException(apiResponse);
     }
 
     @Override
