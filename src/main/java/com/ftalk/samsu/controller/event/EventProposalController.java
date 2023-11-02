@@ -4,6 +4,7 @@ import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
+import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.security.CurrentUser;
@@ -37,6 +38,7 @@ public class EventProposalController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<PagedResponse<EventProposal>> getMyEventProposal(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
@@ -89,15 +91,14 @@ public class EventProposalController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/updateStatus/{eventProposalId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<ApiResponse> updateStatusEventProposal(
-            @RequestParam(name = "page", required = true) Short status,
+    @PutMapping("/evaluate/{eventProposalId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> updateEventProposalEvaluate(
+            @Valid @RequestBody EventProposalEvaluateRequest eventProposalEvaluateRequest,
             @PathVariable(value = "eventProposalId") Integer eventProposalId,
             @CurrentUser UserPrincipal currentUser) {
-        ApiResponse apiResponse = eventProposalService.updateEventProposalStatus(eventProposalId,status, currentUser);
+        ApiResponse apiResponse = eventProposalService.updateEventProposalEvaluate(eventProposalId, eventProposalEvaluateRequest, currentUser);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
-
 
 }

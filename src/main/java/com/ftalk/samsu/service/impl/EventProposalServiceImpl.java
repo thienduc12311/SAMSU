@@ -12,6 +12,7 @@ import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostResponse;
+import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.repository.EventProposalRepository;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,7 +92,7 @@ public class EventProposalServiceImpl implements EventProposalService {
 
     @Override
     public EventProposal updateEventProposal(Integer id, EventProposalUpdateRequest newEventProposalUpdateRequest, UserPrincipal currentUser) {
-        if (!EventUtils.validateFileUrlsS3(newEventProposalUpdateRequest.getFileUrls())){
+        if (!EventUtils.validateFileUrlsS3(newEventProposalUpdateRequest.getFileUrls())) {
             throw new BadRequestException("Invalid urls attached");
         }
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
@@ -114,7 +116,7 @@ public class EventProposalServiceImpl implements EventProposalService {
     public ApiResponse deleteEventProposal(Integer id, UserPrincipal currentUser) {
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         if (eventProposal.getCreatorUserId().getId().equals(currentUser.getId())
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))){
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
             eventProposalRepository.deleteById(id);
             return new ApiResponse(Boolean.TRUE, "You successfully deleted eventProposal");
         }
@@ -123,10 +125,13 @@ public class EventProposalServiceImpl implements EventProposalService {
     }
 
     @Override
-    public ApiResponse updateEventProposalStatus(Integer id, Short status, UserPrincipal currentUser) {
+    public ApiResponse updateEventProposalEvaluate(Integer id, EventProposalEvaluateRequest eventProposalEvaluateRequest, UserPrincipal currentUser) {
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
-        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))){
-            eventProposal.setStatus(status);
+        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+            eventProposal.setStatus(eventProposalEvaluateRequest.getStatus());
+            if (!StringUtils.isEmpty(eventProposalEvaluateRequest.getFeedback())) {
+                eventProposal.setFeedback(eventProposalEvaluateRequest.getFeedback());
+            }
             eventProposalRepository.save(eventProposal);
             return new ApiResponse(Boolean.TRUE, "You successfully updated eventProposal");
         }
@@ -135,10 +140,9 @@ public class EventProposalServiceImpl implements EventProposalService {
     }
 
 
-
     @Override
     public EventProposal addEventProposal(EventProposalRequest eventProposalRequest, UserPrincipal currentUser) {
-        if (!EventUtils.validateFileUrlsS3(eventProposalRequest.getFileUrls())){
+        if (!EventUtils.validateFileUrlsS3(eventProposalRequest.getFileUrls())) {
             throw new BadRequestException("Invalid urls attached");
         }
         User creator = userRepository.findById(currentUser.getId())
@@ -151,7 +155,7 @@ public class EventProposalServiceImpl implements EventProposalService {
     public EventProposal getEventProposal(Integer id, UserPrincipal currentUser) {
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         if (eventProposal.getCreatorUserId().getId().equals(currentUser.getId())
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))){
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
             return eventProposal;
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to access this eventProposal");
