@@ -28,4 +28,6 @@ public interface GroupService {
 
 	Group addGroup(GroupRequest group, UserPrincipal userPrincipal);
 
+	ApiResponse deleteGroup(Integer groupID);
+
 }

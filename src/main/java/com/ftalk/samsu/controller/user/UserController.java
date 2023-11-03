@@ -119,7 +119,7 @@ public class UserController {
 
 
     @DeleteMapping("/{rollnumber}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('Manager')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable(value = "rollnumber") String username,
                                                   @CurrentUser UserPrincipal currentUser) {
         ApiResponse apiResponse = userService.deleteUser(username, currentUser);

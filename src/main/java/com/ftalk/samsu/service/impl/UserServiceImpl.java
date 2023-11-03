@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
-        return new UserProfile(user.getUsername(), user.getRollnumber(),user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null);
+        return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User addUser(User user) {
-        if ( userRepository.existsByRollnumber(user.getRollnumber())) {
+        if (userRepository.existsByRollnumber(user.getRollnumber())) {
             ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "Rollnumber is already taken");
             throw new BadRequestException(apiResponse);
         }
@@ -104,12 +104,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(UserPasswordRequest userPasswordRequest, UserPrincipal currentUser) {
-        if (!userPasswordRequest.isValid()){
+        if (!userPasswordRequest.isValid()) {
             throw new BadRequestException("Password must be at least 8 characters long, 1 special characters and 1 uppercase letter");
         }
         int rs = userRepository.updatePasswordById(userPasswordRequest.getOldPassword(), userPasswordRequest.getNewPassword(), currentUser.getId());
-        if (rs < 1){
-            throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR,"Can't update password with jwt token, please contact with admin!");
+        if (rs < 1) {
+            throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't update password with jwt token, please contact with admin!");
         }
     }
 
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
         for (UserImport userImport : userImportList) {
             try {
                 UserImportFailed userImportFailed = checkValid(userImport);
-                if (userImportFailed != null){
+                if (userImportFailed != null) {
                     importListFailed.add(userImportFailed);
                     continue;
                 }
@@ -133,14 +133,14 @@ public class UserServiceImpl implements UserService {
         try {
             userRepository.saveAll(importList);
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(),ex);
+            LOGGER.error(ex.getMessage(), ex);
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Import list user failed with DataIntegrityViolationException"));
         }
-        return new UserImportResponse(userImportList.size(),importList.size(),importListFailed.size(),importListFailed);
+        return new UserImportResponse(userImportList.size(), importList.size(), importListFailed.size(), importListFailed);
     }
 
     @Override
-    public PagedResponse<User> getAllUserIn(Integer page, Integer size){
+    public PagedResponse<User> getAllUserIn(Integer page, Integer size) {
         AppUtils.validatePageNumberAndSize(page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, FIND_KEY);
         Page<User> users = userRepository.findAll(pageable);
@@ -155,8 +155,8 @@ public class UserServiceImpl implements UserService {
                 users.isLast());
     }
 
-    private UserImportFailed checkValid(UserImport userImport){
-        if (!userImport.isValid()){
+    private UserImportFailed checkValid(UserImport userImport) {
+        if (!userImport.isValid()) {
             return new UserImportFailed(userImport, "Have required field null");
         }
         if (userRepository.existsByUsername(userImport.getUsername())) {
@@ -165,7 +165,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(userImport.getUsername())) {
             return new UserImportFailed(userImport, "Email is already taken");
         }
-        if ( userRepository.existsByRollnumber(userImport.getRollnumber())) {
+        if (userRepository.existsByRollnumber(userImport.getRollnumber())) {
             return new UserImportFailed(userImport, "Rollnumber is already taken");
         }
         return null;
@@ -225,13 +225,12 @@ public class UserServiceImpl implements UserService {
     public ApiResponse deleteUser(String username, UserPrincipal currentUser) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", username));
-        if (!user.getId().equals(currentUser.getId()) || !currentUser.getAuthorities()
+        if (!currentUser.getAuthorities()
                 .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
             ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to delete profile of: " + username);
             throw new AccessDeniedException(apiResponse);
         }
-//		userRepository.deleteById(user.getId());
-
+        userRepository.deleteById(user.getId());
         return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
     }
 

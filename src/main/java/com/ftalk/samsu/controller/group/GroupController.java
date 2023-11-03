@@ -56,6 +56,12 @@ public class GroupController {
         return new ResponseEntity<>(group, HttpStatus.OK);
     }
 
+    @DeleteMapping("/{groupID}")
+    public ResponseEntity<ApiResponse> deleteGroup(@PathVariable(value = "groupID") Integer id) {
+        ApiResponse apiResponse = groupService.deleteGroup(id);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
     @GetMapping("/name/{groupName}")
     public ResponseEntity<Group> getGroupByName(@PathVariable(value = "groupName") String name) {
         Group groups = groupService.getGroupByName(name);

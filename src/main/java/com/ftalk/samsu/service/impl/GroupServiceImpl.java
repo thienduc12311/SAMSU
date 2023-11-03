@@ -23,6 +23,8 @@ import com.ftalk.samsu.service.GroupService;
 import com.ftalk.samsu.service.PostService;
 import com.ftalk.samsu.utils.AppConstants;
 import com.ftalk.samsu.utils.AppUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +40,7 @@ import static com.ftalk.samsu.utils.AppConstants.*;
 
 @Service
 public class GroupServiceImpl implements GroupService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
     @Autowired
     private GroupRepository groupRepository;
     @Autowired
@@ -81,6 +84,12 @@ public class GroupServiceImpl implements GroupService {
         Set<User> users = userRepository.findAllByRollnumberIn(groupRequest.getUserRollnumbers());
         Group group = new Group(groupRequest.getName(), users);
         return groupRepository.save(group);
+    }
+
+    @Override
+    public ApiResponse deleteGroup(Integer groupID) {
+        groupRepository.deleteById(groupID);
+        return new ApiResponse(Boolean.TRUE, "You successfully deleted group: " + groupID);
     }
 
     private void validateGroup(GroupRequest groupRequest) {

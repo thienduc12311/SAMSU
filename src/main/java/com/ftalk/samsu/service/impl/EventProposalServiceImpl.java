@@ -103,14 +103,16 @@ public class EventProposalServiceImpl implements EventProposalService {
         }
         EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
         boolean isAdmin = currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()));
+
+        if (isAdmin) {
+            updateEvaluate(id, new EventProposalEvaluateRequest(
+                    newEventProposalUpdateRequest.getFeedback(), newEventProposalUpdateRequest.getStatus()), currentUser);
+        } else if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
+            eventProposal.setStatus(EventProposalConstants.WAITING_APPROVE.getValue());
+            eventProposal.setAccepterUserId(null);
+        }
+
         if (eventProposal.getCreatorUserId().getId().equals(currentUser.getId()) || isAdmin) {
-            if (isAdmin) {
-                updateEvaluate(id, new EventProposalEvaluateRequest(
-                        newEventProposalUpdateRequest.getFeedback(), newEventProposalUpdateRequest.getStatus()), currentUser);
-            } else if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
-                eventProposal.setStatus(EventProposalConstants.WAITING_APPROVE.getValue());
-                eventProposal.setAccepterUserId(null);
-            }
             eventProposal.setTitle(newEventProposalUpdateRequest.getTitle());
             eventProposal.setContent(newEventProposalUpdateRequest.getContent());
             eventProposal.setModifyAt(new Date());
