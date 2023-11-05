@@ -60,9 +60,9 @@ public class UserController {
         return new ResponseEntity<>(userIdentityAvailability, HttpStatus.OK);
     }
 
-    @GetMapping("/{username}/profile")
-    public ResponseEntity<UserProfile> getUSerProfile(@PathVariable(value = "username") String username) {
-        UserProfile userProfile = userService.getUserProfile(username);
+    @GetMapping("/{rollnumber}/profile")
+    public ResponseEntity<UserProfile> getUSerProfile(@PathVariable(value = "rollnumber") String rollnumber,@CurrentUser UserPrincipal currentUser) {
+        UserProfile userProfile = userService.getUserProfile(rollnumber,currentUser);
         return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 

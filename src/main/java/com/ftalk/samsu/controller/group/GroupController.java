@@ -7,6 +7,7 @@ import com.ftalk.samsu.model.group.Group;
 import com.ftalk.samsu.payload.AlbumResponse;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
+import com.ftalk.samsu.payload.event.GroupImportMemberResponse;
 import com.ftalk.samsu.payload.group.GroupRequest;
 import com.ftalk.samsu.payload.request.AlbumRequest;
 import com.ftalk.samsu.security.CurrentUser;
@@ -55,6 +56,13 @@ public class GroupController {
         Group group = groupService.updateGroup(groupRequest, id);
         return new ResponseEntity<>(group, HttpStatus.OK);
     }
+
+    @PutMapping("/{groupID}/list")
+    public ResponseEntity<GroupImportMemberResponse> addListMemberToGroup(@Valid @RequestBody GroupRequest groupRequest, @PathVariable(value = "groupID") Integer id) {
+        GroupImportMemberResponse groupImportMemberResponse = groupService.addMemberToExistGroup(groupRequest, id);
+        return new ResponseEntity<>(groupImportMemberResponse, HttpStatus.OK);
+    }
+
 
     @DeleteMapping("/{groupID}")
     public ResponseEntity<ApiResponse> deleteGroup(@PathVariable(value = "groupID") Integer id) {

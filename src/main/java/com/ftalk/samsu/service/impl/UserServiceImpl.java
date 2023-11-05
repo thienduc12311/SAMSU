@@ -5,6 +5,7 @@ import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.user.*;
 import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.payload.user.*;
+import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.role.Role;
@@ -73,8 +74,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserProfile getUserProfile(String username) {
-        return null;
+    public UserProfile getUserProfile(String rollnumber, UserPrincipal currentUser) {
+        if (currentUser.getRollnumber().equals(rollnumber)
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))){
+            User user = userRepository.getUserByRollnumber(rollnumber);
+            return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(),
+                    UserRole.getRole(user.getRole()),UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment().getName()) ;
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile of: " + rollnumber);
+        throw new UnauthorizedException(apiResponse);
     }
 
     @Override

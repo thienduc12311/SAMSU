@@ -7,7 +7,9 @@ import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.PostResponse;
+import com.ftalk.samsu.payload.event.GroupImportMemberResponse;
 import com.ftalk.samsu.payload.group.GroupRequest;
+import com.ftalk.samsu.payload.user.UserImportResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 
 import java.util.List;
@@ -23,6 +25,8 @@ public interface GroupService {
 	Group getGroupByName(String name);
 
 	Group updateGroup(GroupRequest group, Integer id);
+
+	GroupImportMemberResponse addMemberToExistGroup(GroupRequest group, Integer id);
 
 	Set<User> getGroupMembersById(Integer id);
 

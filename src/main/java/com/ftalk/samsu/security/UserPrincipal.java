@@ -28,14 +28,18 @@ public class UserPrincipal implements UserDetails {
 	@JsonIgnore
 	private String password;
 
+	@Getter
+	private final String rollnumber;
+
 	private final Collection<? extends GrantedAuthority> authorities;
 
-	public UserPrincipal(Integer id, String username, String email, String password,
+	public UserPrincipal(Integer id, String username, String email, String password, String rollnumber,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.username = username;
 		this.email = email;
 		this.password = password;
+		this.rollnumber = rollnumber;
 		if (authorities == null) {
 			this.authorities = null;
 		} else {
@@ -47,7 +51,7 @@ public class UserPrincipal implements UserDetails {
 		List<GrantedAuthority> authorities = new ArrayList<>();
 		authorities.add(new SimpleGrantedAuthority(UserRole.getRole(user.getRole())));
 		return new UserPrincipal(user.getId(), user.getUsername(),
-				user.getEmail(), user.getPassword(),authorities);
+				user.getEmail(), user.getPassword(),user.getRollnumber(),authorities);
 	}
 
 	@Override
