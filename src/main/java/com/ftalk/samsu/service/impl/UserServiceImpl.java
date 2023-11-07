@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))){
             User user = userRepository.getUserByRollnumber(rollnumber);
             return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(),
-                    UserRole.getRole(user.getRole()),UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment().getName()) ;
+                    UserRole.getRole(user.getRole()),UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null) ;
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile of: " + rollnumber);
         throw new UnauthorizedException(apiResponse);
