@@ -22,7 +22,7 @@ public class EventProposalUpdateRequest {
 
 	@NotNull
 	@Size(max = 10)
-	private Short status;
+	private String status;
 
 	@NotNull
 	@Size(max = 2000)

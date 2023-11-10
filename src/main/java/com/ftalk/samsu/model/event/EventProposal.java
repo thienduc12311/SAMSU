@@ -69,11 +69,21 @@ public class EventProposal extends DateAudit implements Serializable {
 		this.fileUrls = fileUrls;
 	}
 
-	public EventProposal(EventProposalRequest eventProposalRequest, Short status, User creatorUserId) {
+//	public EventProposal(EventProposalRequest eventProposalRequest, Short status, User creatorUserId) {
+//		this.title = eventProposalRequest.getTitle();
+//		this.content =  eventProposalRequest.getContent();
+//		this.status = status;
+//		this.creatorUserId = creatorUserId ;
+//		this.fileUrls = eventProposalRequest.getFileUrls();
+//	}
+
+	public EventProposal(EventProposalRequest eventProposalRequest, Short status, User creatorUserId, boolean createDate) {
 		this.title = eventProposalRequest.getTitle();
 		this.content =  eventProposalRequest.getContent();
 		this.status = status;
 		this.creatorUserId = creatorUserId ;
 		this.fileUrls = eventProposalRequest.getFileUrls();
+		if (createDate) this.setCreatedAt(new Date());
+//		if (modifyDate) this.modifyAt = new Date();
 	}
 }

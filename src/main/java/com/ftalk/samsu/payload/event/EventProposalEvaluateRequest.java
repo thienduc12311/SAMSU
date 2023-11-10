@@ -15,6 +15,6 @@ public class EventProposalEvaluateRequest {
 
 	@NotNull
 	@Size(max = 10)
-	private Short status;
+	private String status;
 
 }

@@ -76,7 +76,9 @@ public class EventProposalServiceImpl implements EventProposalService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
 
-        Page<EventProposal> eventProposals = eventProposalRepository.findAllByCreatorUserId(currentUser.getId(), pageable);
+        User user = userRepository.getUser(currentUser);
+
+        Page<EventProposal> eventProposals = eventProposalRepository.findAllByCreatorUserId(user, pageable);
 
         List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
 
@@ -86,12 +88,10 @@ public class EventProposalServiceImpl implements EventProposalService {
 
     @Override
     public PagedResponse<EventProposal> getEventProposalsByCreatedBy(String rollnumber, int page, int size) {
-        Integer userId = userRepository.getIdByRollnumber(rollnumber);
-
         AppUtils.validatePageNumberAndSize(page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
-
-        eventProposalRepository.findAllByCreatorUserId(userId, pageable);
+        User user = userRepository.getUserByRollnumber(rollnumber);
+        eventProposalRepository.findAllByCreatorUserId(user, pageable);
 
         return null;
     }
@@ -107,8 +107,8 @@ public class EventProposalServiceImpl implements EventProposalService {
         if (isAdmin) {
             updateEvaluate(id, new EventProposalEvaluateRequest(
                     newEventProposalUpdateRequest.getFeedback(), newEventProposalUpdateRequest.getStatus()), currentUser);
-        } else if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
-            eventProposal.setStatus(EventProposalConstants.WAITING_APPROVE.getValue());
+        } else {
+            eventProposal.setStatus(EventProposalConstants.PROCESSING.getValue());
             eventProposal.setAccepterUserId(null);
         }
 
@@ -152,8 +152,8 @@ public class EventProposalServiceImpl implements EventProposalService {
     public boolean updateEvaluate(Integer id, EventProposalEvaluateRequest eventProposalEvaluateRequest, UserPrincipal currentUser) {
         try {
             EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
-            eventProposal.setStatus(eventProposalEvaluateRequest.getStatus());
-            if (EventProposalConstants.ACCEPTED.getValue() == eventProposal.getStatus()) {
+            eventProposal.setStatus(EventProposalConstants.findValue(eventProposalEvaluateRequest.getStatus()));
+            if (EventProposalConstants.APPROVED.getValue() == eventProposal.getStatus()) {
                 eventProposal.setAccepterUserId(new User(currentUser.getId()));
             }
             if (!StringUtils.isEmpty(eventProposalEvaluateRequest.getFeedback())) {
@@ -175,7 +175,7 @@ public class EventProposalServiceImpl implements EventProposalService {
         }
         User creator = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(USER, USERNAME, currentUser.getUsername()));
-        EventProposal eventProposal = new EventProposal(eventProposalRequest, EventProposalConstants.WAITING_APPROVE.getValue(), creator);
+        EventProposal eventProposal = new EventProposal(eventProposalRequest, EventProposalConstants.PROCESSING.getValue(), creator, true);
         return eventProposalRepository.save(eventProposal);
     }
 

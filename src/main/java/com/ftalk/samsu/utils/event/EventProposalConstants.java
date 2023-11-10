@@ -1,13 +1,14 @@
 package com.ftalk.samsu.utils.event;
 
+import com.ftalk.samsu.exception.BadRequestException;
 import lombok.Getter;
 
 public enum EventProposalConstants {
 
-    PENDING((short) 0),
-    ACCEPTED((short) 1),
-    WAITING_APPROVE((short) 2),
-    DENIED((short) 3);
+    PROCESSING((short) 0),
+    REVIEWED((short) 1),
+    APPROVED((short) 2),
+    REJECTED((short) 3);
 
     private short value;
 
@@ -19,12 +20,21 @@ public enum EventProposalConstants {
         this.value = value;
     }
 
-    public static EventProposalConstants findByValue(short value) {
+    public static EventProposalConstants findByValue(Short value) {
         for (EventProposalConstants v : values()) {
             if (v.getValue() == value) {
                 return v;
             }
         }
         return null;
+    }
+
+    public static Short findValue(String value) {
+        for (EventProposalConstants v : values()) {
+            if (v.name().equals(value)) {
+                return v.getValue();
+            }
+        }
+        throw new BadRequestException("Not found status");
     }
 }

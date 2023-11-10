@@ -15,12 +15,10 @@ public class EventProposalRequest {
 	private String title;
 
 	@NotBlank(message = "Content cannot be empty")
-	@Column(name = "content")
 	@Size(max = 5000)
 	private String content;
 
 	@NotBlank(message = "Attach file cannot be empty")
-	@Column(name = "fileUrls")
 	@Size(max = 2000)
 	private String fileUrls;
 
