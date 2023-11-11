@@ -54,7 +54,7 @@ public class AuthController {
     @Autowired
     private CustomUserDetailsServiceImpl customUserDetailsService;
 
-    @PostMapping("/callback/login-google")
+    @RequestMapping("/callback/login-google")
     public ResponseEntity<LoginGoogleResponse> loginGoogleCallback(HttpServletRequest request, @RequestParam("code") String code) throws ClientProtocolException, IOException {
         if (code == null || code.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
@@ -63,7 +63,7 @@ public class AuthController {
         return signInByGoogleWithAccessToken(request, accessToken);
     }
 
-    @PostMapping("/login-google")
+    @RequestMapping("/login-google")
     public ResponseEntity<LoginGoogleResponse> loginGoogle(HttpServletRequest request, @RequestParam("accessToken") String accessToken) throws ClientProtocolException, IOException {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new SamsuApiException(HttpStatus.FORBIDDEN, "Sorry, You're not authorized to access this resource.");
