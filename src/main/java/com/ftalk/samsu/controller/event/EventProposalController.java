@@ -6,6 +6,7 @@ import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
+import com.ftalk.samsu.payload.event.EventProposalResponse;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
@@ -60,27 +61,27 @@ public class EventProposalController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<EventProposal> createEventProposal(@Valid @RequestBody EventProposalRequest eventProposalRequest,
+    public ResponseEntity<EventProposalResponse> createEventProposal(@Valid @RequestBody EventProposalRequest eventProposalRequest,
                                                              @CurrentUser UserPrincipal currentUser) {
         EventProposal response = eventProposalService.addEventProposal(eventProposalRequest, currentUser);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(new EventProposalResponse(response), HttpStatus.OK);
     }
 
     @GetMapping("/{eventProposalId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<EventProposal> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+    public ResponseEntity<EventProposalResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
         EventProposal response = eventProposalService.getEventProposal(eventProposalId, currentUser);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(new EventProposalResponse(response), HttpStatus.OK);
     }
 
     @PutMapping("/{eventProposalId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<EventProposal> updateEventProposal(@Valid @RequestBody EventProposalUpdateRequest eventProposalUpdateRequest,
+    public ResponseEntity<EventProposalResponse> updateEventProposal(@Valid @RequestBody EventProposalUpdateRequest eventProposalUpdateRequest,
                                                              @PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                              @CurrentUser UserPrincipal currentUser) {
         EventProposal response = eventProposalService.updateEventProposal(eventProposalId, eventProposalUpdateRequest, currentUser);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(new EventProposalResponse(response), HttpStatus.OK);
     }
 
     @DeleteMapping("/{eventProposalId}")

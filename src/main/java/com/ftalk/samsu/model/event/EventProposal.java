@@ -41,15 +41,14 @@ public class EventProposal extends DateAudit implements Serializable {
 
 	@NotNull
 	@Column(name = "status")
-	@Size(max = 10)
 	private Short status;
 
 	@NotNull
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	@JoinColumn(name = "creator_users_id")
 	private User creatorUserId;
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY,  orphanRemoval = true)
 	@JoinColumn(name = "accepter_users_id")
 	private User accepterUserId;
 
