@@ -156,7 +156,7 @@ public class EventProposalServiceImpl implements EventProposalService {
             EventProposal eventProposal = eventProposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_PROPOSAL, ID, id));
             eventProposal.setStatus(EventProposalConstants.findValue(eventProposalEvaluateRequest.getStatus()));
             if (EventProposalConstants.APPROVED.getValue() == eventProposal.getStatus()) {
-                eventProposal.setAccepterUserId(new User(currentUser.getId()));
+                eventProposal.setAccepterUserId(userRepository.getUser(currentUser));
             }
             if (!StringUtils.isEmpty(eventProposalEvaluateRequest.getFeedback())) {
                 eventProposal.setFeedback(eventProposalEvaluateRequest.getFeedback());
