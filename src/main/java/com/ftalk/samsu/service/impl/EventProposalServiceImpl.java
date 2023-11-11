@@ -15,6 +15,7 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostResponse;
 import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
+import com.ftalk.samsu.payload.event.EventProposalResponse;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.repository.EventProposalRepository;
 import com.ftalk.samsu.repository.SemesterRepository;
@@ -57,7 +58,7 @@ public class EventProposalServiceImpl implements EventProposalService {
     private SemesterRepository semesterRepository;
 
     @Override
-    public PagedResponse<EventProposal> getAllEventProposals(int page, int size) {
+    public PagedResponse<EventProposalResponse> getAllEventProposals(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
@@ -66,12 +67,12 @@ public class EventProposalServiceImpl implements EventProposalService {
 
         List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
 
-        return new PagedResponse<>(content, eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
+        return new PagedResponse<>(EventUtils.listToList(content), eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
                 eventProposals.getTotalPages(), eventProposals.isLast());
     }
 
     @Override
-    public PagedResponse<EventProposal> getAllMyEventProposals(int page, int size, UserPrincipal currentUser) {
+    public PagedResponse<EventProposalResponse> getAllMyEventProposals(int page, int size, UserPrincipal currentUser) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
@@ -82,18 +83,19 @@ public class EventProposalServiceImpl implements EventProposalService {
 
         List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
 
-        return new PagedResponse<>(content, eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
+        return new PagedResponse<>(EventUtils.listToList(content), eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
                 eventProposals.getTotalPages(), eventProposals.isLast());
     }
 
     @Override
-    public PagedResponse<EventProposal> getEventProposalsByCreatedBy(String rollnumber, int page, int size) {
+    public PagedResponse<EventProposalResponse> getEventProposalsByCreatedBy(String rollnumber, int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         User user = userRepository.getUserByRollnumber(rollnumber);
-        eventProposalRepository.findAllByCreatorUserId(user, pageable);
-
-        return null;
+        Page<EventProposal> eventProposals = eventProposalRepository.findAllByCreatorUserId(user, pageable);
+        List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
+        return new PagedResponse<>(EventUtils.listToList(content), eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
+                eventProposals.getTotalPages(), eventProposals.isLast());
     }
 
     @Override

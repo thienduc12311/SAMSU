@@ -31,31 +31,31 @@ public class EventProposalController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<EventProposal>> getAllEventProposal(
+    public ResponseEntity<PagedResponse<EventProposalResponse>> getAllEventProposal(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<EventProposal> response = eventProposalService.getAllEventProposals(page, size);
+        PagedResponse<EventProposalResponse> response = eventProposalService.getAllEventProposals(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<PagedResponse<EventProposal>> getMyEventProposal(
+    public ResponseEntity<PagedResponse<EventProposalResponse>> getMyEventProposal(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
             @CurrentUser UserPrincipal currentUser) {
-        PagedResponse<EventProposal> response = eventProposalService.getAllMyEventProposals(page, size, currentUser);
+        PagedResponse<EventProposalResponse> response = eventProposalService.getAllMyEventProposals(page, size, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/user/{rollnumber}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<EventProposal>> getEventProposalByCreator(
+    public ResponseEntity<PagedResponse<EventProposalResponse>> getEventProposalByCreator(
             @PathVariable(value = "rollnumber") String rollnumber,
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
             @CurrentUser UserPrincipal currentUser) {
-        PagedResponse<EventProposal> response = eventProposalService.getEventProposalsByCreatedBy(rollnumber, page, size);
+        PagedResponse<EventProposalResponse> response = eventProposalService.getEventProposalsByCreatedBy(rollnumber, page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

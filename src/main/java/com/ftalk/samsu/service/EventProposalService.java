@@ -7,16 +7,17 @@ import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.PostResponse;
 import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
+import com.ftalk.samsu.payload.event.EventProposalResponse;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.security.UserPrincipal;
 
 public interface EventProposalService {
 
-	PagedResponse<EventProposal> getAllEventProposals(int page, int size);
+	PagedResponse<EventProposalResponse> getAllEventProposals(int page, int size);
 
-	PagedResponse<EventProposal> getAllMyEventProposals(int page, int size, UserPrincipal currentUser);
+	PagedResponse<EventProposalResponse> getAllMyEventProposals(int page, int size, UserPrincipal currentUser);
 
-	PagedResponse<EventProposal> getEventProposalsByCreatedBy(String rollnumber, int page, int size);
+	PagedResponse<EventProposalResponse> getEventProposalsByCreatedBy(String rollnumber, int page, int size);
 
 	EventProposal updateEventProposal(Integer id, EventProposalUpdateRequest eventProposalUpdateRequest, UserPrincipal currentUser);
 

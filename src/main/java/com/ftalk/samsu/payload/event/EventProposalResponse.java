@@ -1,20 +1,12 @@
 package com.ftalk.samsu.payload.event;
 
 import com.ftalk.samsu.model.event.EventProposal;
-import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import lombok.Data;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
 public class EventProposalResponse {
@@ -27,6 +19,7 @@ public class EventProposalResponse {
     private String accepterRollnumber;
     private String fileUrls;
     private Date modifyAt;
+    private Date createAt;
 
     public EventProposalResponse(EventProposal eventProposal){
         id = eventProposal.getId();
@@ -40,5 +33,8 @@ public class EventProposalResponse {
         }
         fileUrls = eventProposal.getFileUrls();
         modifyAt = eventProposal.getModifyAt();
+        createAt = eventProposal.getCreatedAt();
     }
+
+
 }
