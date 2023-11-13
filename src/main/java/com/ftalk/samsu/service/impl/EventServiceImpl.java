@@ -63,7 +63,7 @@ public class EventServiceImpl implements EventService {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
-        Page<Event> events = eventRepository.findAlls(pageable);
+        Page<Event> events = eventRepository.findAll(pageable);
 
 		if (events.getNumberOfElements() == 0) {
 			return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),

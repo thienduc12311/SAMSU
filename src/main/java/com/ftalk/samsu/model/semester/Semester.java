@@ -21,6 +21,7 @@ public class Semester {
 
 	private static final long serialVersionUID = -5298707266367331514L;
 
+	@Id
 	@Column(name = "name")
 	private String name;
 

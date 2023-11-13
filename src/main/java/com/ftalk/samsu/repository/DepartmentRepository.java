@@ -15,5 +15,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
 
 	Optional<Department> findById(Integer id);
 
-	Page<Event> findAll(Integer eventId, Pageable pageable);
+	Page<Department> findAll(Pageable pageable);
 }

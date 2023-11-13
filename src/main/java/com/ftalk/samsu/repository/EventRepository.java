@@ -16,7 +16,7 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Integer> {
 	Page<Event> findById(Integer eventId, Pageable pageable);
 
-	Page<Event> findAlls(Pageable pageable);
+	Page<Event> findAll(Pageable pageable);
 
 	Page<Event> findByCreatorUser(User user, Pageable pageable);
 
