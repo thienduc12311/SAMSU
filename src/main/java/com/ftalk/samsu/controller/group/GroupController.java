@@ -1,22 +1,13 @@
 package com.ftalk.samsu.controller.group;
 
-import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResponseEntityErrorException;
-import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.group.Group;
-import com.ftalk.samsu.payload.AlbumResponse;
 import com.ftalk.samsu.payload.ApiResponse;
-import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.event.GroupImportMemberResponse;
+import com.ftalk.samsu.payload.group.GroupImportMemberResponse;
 import com.ftalk.samsu.payload.group.GroupRequest;
-import com.ftalk.samsu.payload.request.AlbumRequest;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
-import com.ftalk.samsu.service.AlbumService;
 import com.ftalk.samsu.service.GroupService;
-import com.ftalk.samsu.service.PhotoService;
-import com.ftalk.samsu.utils.AppConstants;
-import com.ftalk.samsu.utils.AppUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

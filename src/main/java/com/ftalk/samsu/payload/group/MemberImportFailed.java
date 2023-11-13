@@ -1,4 +1,4 @@
-package com.ftalk.samsu.payload.event;
+package com.ftalk.samsu.payload.group;
 
 import com.ftalk.samsu.payload.user.UserImport;
 import lombok.AllArgsConstructor;

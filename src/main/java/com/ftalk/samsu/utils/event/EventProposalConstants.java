@@ -8,7 +8,8 @@ public enum EventProposalConstants {
     PROCESSING((short) 0),
     REVIEWED((short) 1),
     APPROVED((short) 2),
-    REJECTED((short) 3);
+    REJECTED((short) 3),
+    USED((short) 4);
 
     private short value;
 

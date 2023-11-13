@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.Instant;
 
 @EqualsAndHashCode
@@ -21,6 +22,7 @@ public class Department {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
+	@NotBlank
 	@Column(name = "name")
 	private String name;
 

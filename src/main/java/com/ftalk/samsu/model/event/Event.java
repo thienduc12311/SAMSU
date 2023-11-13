@@ -3,10 +3,14 @@ package com.ftalk.samsu.model.event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.audit.DateAudit;
+import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
@@ -14,14 +18,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "events", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
 public class Event extends DateAudit implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -32,7 +35,6 @@ public class Event extends DateAudit implements Serializable {
 
 	@NotNull
 	@Column(name = "status")
-	@Size(max = 10)
 	private Short status;
 
 	@NotNull
@@ -52,21 +54,24 @@ public class Event extends DateAudit implements Serializable {
 	@NotNull
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "creator_user_id")
-	private User creatorUserId;
+	private User creatorUser;
 
+	@NotNull
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "event_proposal_id")
-	private User eventProposalId;
+	private EventProposal eventProposal;
 
+	@NotNull
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "event_leader_users_id")
-	private User eventLeaderUserId;
+	private User eventLeaderUser;
 
 	@NotNull
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "semesters_name")
-	private User semestersName;
+	private Semester semester;
 
+	@NotBlank
 	@Column(name = "banner_url")
 	@Size(max = 1000)
 	private String bannerUrl;
@@ -75,7 +80,34 @@ public class Event extends DateAudit implements Serializable {
 	@Size(max = 2000)
 	private String fileUrls;
 
+	@NotNull
 	@Column(name = "start_time")
-	private Date start_time;
+	private Date startTime;
 
+	@ManyToMany(fetch = FetchType.LAZY, cascade = {
+			CascadeType.PERSIST,
+			CascadeType.MERGE
+	})
+	@JoinTable(name = "department_collaborators",
+			joinColumns = {@JoinColumn(name = "events_id")},
+			inverseJoinColumns = {@JoinColumn(name = "departments_id")})
+	private List<Department> departments;
+
+	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+	private List<FeedbackQuestion> feedbackQuestions;
+
+	public Event(Short status, Integer duration, String title, String content, User creatorUser,
+				 EventProposal eventProposal, User eventLeaderUser, Semester semester, String bannerUrl, String fileUrls, Date startTime) {
+		this.status = status;
+		this.duration = duration;
+		this.title = title;
+		this.content = content;
+		this.creatorUser = creatorUser;
+		this.eventProposal = eventProposal;
+		this.eventLeaderUser = eventLeaderUser;
+		this.semester = semester;
+		this.bannerUrl = bannerUrl;
+		this.fileUrls = fileUrls;
+		this.startTime = startTime;
+	}
 }
