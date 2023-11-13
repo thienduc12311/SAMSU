@@ -93,6 +93,17 @@ public class Event extends DateAudit implements Serializable {
 			inverseJoinColumns = {@JoinColumn(name = "departments_id")})
 	private List<Department> departments;
 
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	@ManyToMany(fetch = FetchType.LAZY, cascade = {
+			CascadeType.PERSIST,
+			CascadeType.MERGE
+	})
+	@JoinTable(name = "participants",
+			joinColumns = {@JoinColumn(name = "events_id")},
+			inverseJoinColumns = {@JoinColumn(name = "users_id")})
+	private Set<User> participants;
+
 	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
 	private List<FeedbackQuestion> feedbackQuestions;
 

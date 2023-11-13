@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 @Data
@@ -54,7 +55,9 @@ public class EventCreateRequest {
 
     private List<FeedbackQuestionRequest> feedbackQuestionRequestList;
 
-    private List<Integer> departmentIds;
+    private Set<Integer> departmentIds;
+
+    private Set<String> rollnumbers;
 
 
 }

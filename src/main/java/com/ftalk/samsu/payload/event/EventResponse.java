@@ -16,6 +16,7 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
 public class EventResponse {
@@ -32,6 +33,7 @@ public class EventResponse {
     private String fileUrls;
     private Date startTime;
     private List<Department> departments;
+    private List<String> participants;
     private List<FeedbackQuestion> feedbackQuestions;
     private Date createAt;
 
@@ -49,6 +51,7 @@ public class EventResponse {
         fileUrls = event.getFileUrls();
         departments = event.getDepartments();
         feedbackQuestions = event.getFeedbackQuestions();
+        participants = event.getParticipants().parallelStream().map(User::getRollnumber).collect(Collectors.toList());
         createAt = event.getCreatedAt();
     }
 

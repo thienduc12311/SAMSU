@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static com.ftalk.samsu.utils.AppConstants.*;
 
@@ -91,7 +92,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
-        List<Department> departments = new ArrayList<>(eventCreateRequest.getDepartmentIds().size());
+        List<Department> departments = departmentRepository.findAllById(eventCreateRequest.getDepartmentIds());
         for (Integer departmentId : eventCreateRequest.getDepartmentIds()) {
             Department department = departmentRepository.findById(departmentId).orElseThrow(() -> new BadRequestException("Departments collaborator not found!!"));
             departments.add(department);
@@ -102,12 +103,14 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("EventProposal not approved");
         }
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
+        Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester())
                 .orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest);
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(),
                 eventCreateRequest.getContent(), creator, eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(),
                 eventProposal.getFileUrls(), eventCreateRequest.getStartTime());
+        event.setParticipants(participants);
         event.setDepartments(departments);
         event.setFeedbackQuestions(feedbackQuestions);
         return eventRepository.save(event);
