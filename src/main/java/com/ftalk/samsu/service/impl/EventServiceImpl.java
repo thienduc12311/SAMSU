@@ -66,10 +66,10 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
 
-		if (events.getNumberOfElements() == 0) {
-			return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),
+        if (events.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),
                     events.getTotalElements(), events.getTotalPages(), events.isLast());
-		}
+        }
         return new PagedResponse<>(events.getContent(), events.getNumber(), events.getSize(), events.getTotalElements(),
                 events.getTotalPages(), events.isLast());
 
@@ -77,12 +77,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getEvent(Integer id, UserPrincipal currentUser) {
-        return eventRepository.findById(id).orElseThrow(()-> new BadRequestException("EventId not found!!"));
+        return eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
     }
 
     @Override
     public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
-        Event event =  eventRepository.findById(id).orElseThrow(()-> new BadRequestException("EventId not found!!"));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         event.setTitle(eventCreateRequest.getTitle());
         event.setContent(eventCreateRequest.getContent());
         event.setDuration(event.getDuration());
@@ -92,11 +92,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
-        List<Department> departments = departmentRepository.findAllById(eventCreateRequest.getDepartmentIds());
-        for (Integer departmentId : eventCreateRequest.getDepartmentIds()) {
-            Department department = departmentRepository.findById(departmentId).orElseThrow(() -> new BadRequestException("Departments collaborator not found!!"));
-            departments.add(department);
-        }
+        List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
+//        for (Integer departmentId : eventCreateRequest.getDepartmentIds()) {
+//            Department department = departmentRepository.findById(departmentId).orElseThrow(() -> new BadRequestException("Departments collaborator not found!!"));
+//            departments.add(department);
+//        }
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId())
                 .orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {

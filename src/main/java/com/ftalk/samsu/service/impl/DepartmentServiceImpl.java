@@ -44,7 +44,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public PagedResponse<Department> getAll(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, ID);
 
         Page<Department> departments = departmentRepository.findAll(pageable);
 

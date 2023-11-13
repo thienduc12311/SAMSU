@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 import java.time.Instant;
 
 @EqualsAndHashCode
@@ -15,7 +16,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @Table(name = "departments")
-public class Department {
+public class Department implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
