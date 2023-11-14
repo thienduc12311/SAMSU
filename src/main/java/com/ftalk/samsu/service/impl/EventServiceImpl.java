@@ -58,7 +58,8 @@ public class EventServiceImpl implements EventService {
     private EventProposalRepository eventProposalRepository;
     @Autowired
     private SemesterRepository semesterRepository;
-
+    @Autowired
+    private FeedbackQuestionRepository feedbackQuestionRepository;
     @Override
     public PagedResponse<Event> getAllEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
@@ -106,22 +107,30 @@ public class EventServiceImpl implements EventService {
         Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester())
                 .orElseThrow(() -> new BadRequestException("Semester not found!!"));
-        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest);
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(),
-                eventCreateRequest.getContent(), creator, eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(),
-                eventProposal.getFileUrls(), eventCreateRequest.getStartTime());
+                eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser,
+                semester, eventCreateRequest.getBannerUrl(), eventProposal.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
-        event.setFeedbackQuestions(feedbackQuestions);
-        return eventRepository.save(event);
+        Event eventSaved = eventRepository.save(event);
+        try {
+            List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
+            feedbackQuestionRepository.saveAll(feedbackQuestions);
+            eventSaved.setFeedbackQuestions(feedbackQuestions);
+        } catch (Exception ex) {
+            eventRepository.delete(eventSaved);
+            throw new BadRequestException("Create Feedback form failed!!");
+        }
+        return eventSaved;
     }
 
     @NotNull
-    private List<FeedbackQuestion> getFeedbackQuestions(EventCreateRequest eventCreateRequest) {
+    private List<FeedbackQuestion> getFeedbackQuestions(EventCreateRequest eventCreateRequest, Event event) {
         List<FeedbackQuestion> feedbackQuestions = new ArrayList<>(eventCreateRequest.getFeedbackQuestionRequestList().size());
         for (FeedbackQuestionRequest feedbackQuestionRequest : eventCreateRequest.getFeedbackQuestionRequestList()) {
             FeedbackQuestion feedbackQuestion = new FeedbackQuestion(feedbackQuestionRequest.getType(),
                     feedbackQuestionRequest.getQuestion(), feedbackQuestionRequest.getAnswer());
+            feedbackQuestion.setEvent(event);
             feedbackQuestions.add(feedbackQuestion);
         }
         return feedbackQuestions;

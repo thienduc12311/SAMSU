@@ -42,6 +42,10 @@ public class Event extends DateAudit implements Serializable {
 	private Integer duration;
 
 	@NotNull
+	@Column(name = "attend_score")
+	private Short attendScore;
+
+	@NotNull
 	@Column(name = "title")
 	@Size(max = 1000)
 	private String title;
@@ -107,12 +111,13 @@ public class Event extends DateAudit implements Serializable {
 	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
 	private List<FeedbackQuestion> feedbackQuestions;
 
-	public Event(Short status, Integer duration, String title, String content, User creatorUser,
+	public Event(Short status, Integer duration, String title, String content, User creatorUser, Short attendScore,
 				 EventProposal eventProposal, User eventLeaderUser, Semester semester, String bannerUrl, String fileUrls, Date startTime) {
 		this.status = status;
 		this.duration = duration;
 		this.title = title;
 		this.content = content;
+		this.attendScore = attendScore;
 		this.creatorUser = creatorUser;
 		this.eventProposal = eventProposal;
 		this.eventLeaderUser = eventLeaderUser;

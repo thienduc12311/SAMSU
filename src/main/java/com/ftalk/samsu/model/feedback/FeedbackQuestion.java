@@ -40,7 +40,6 @@ public class FeedbackQuestion extends DateAudit implements Serializable {
     @Size(max = 2000)
     private String question;
 
-    @NotBlank
     @Column(name = "answer")
     @Size(max = 2000)
     private String answer;
@@ -48,7 +47,7 @@ public class FeedbackQuestion extends DateAudit implements Serializable {
     @JsonIgnore
     @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "events_id")
     private Event event;
 
     public FeedbackQuestion(Short type, String question, String answer) {

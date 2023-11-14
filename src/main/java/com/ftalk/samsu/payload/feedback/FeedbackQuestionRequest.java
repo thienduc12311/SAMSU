@@ -22,7 +22,6 @@ public class FeedbackQuestionRequest {
     @Size(max = 2000)
     private String question;
 
-    @NotBlank
     @Size(max = 2000)
     private String answer;
 }
