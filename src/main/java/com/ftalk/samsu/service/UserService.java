@@ -6,6 +6,8 @@ import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.user.User;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface UserService {
 
@@ -32,6 +34,8 @@ public interface UserService {
 	User initAccount(UserInitFirstTime newUser, UserPrincipal currentUser);
 
 	ApiResponse deleteUser(String username, UserPrincipal currentUser);
+
+	Map<String, User> getMapUserByRollnumber(Set<String> rollnumber);
 
 	boolean validateToken(String secret, UserPrincipal currentUser);
 

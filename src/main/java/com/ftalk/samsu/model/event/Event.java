@@ -108,8 +108,15 @@ public class Event extends DateAudit implements Serializable {
 			inverseJoinColumns = {@JoinColumn(name = "users_id")})
 	private Set<User> participants;
 
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
 	private List<FeedbackQuestion> feedbackQuestions;
+
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+	private List<Task> tasks;
 
 	public Event(Short status, Integer duration, String title, String content, User creatorUser, Short attendScore,
 				 EventProposal eventProposal, User eventLeaderUser, Semester semester, String bannerUrl, String fileUrls, Date startTime) {

@@ -62,6 +62,8 @@ public class EventCreateRequest {
 
     private Set<String> rollnumbers;
 
+    private Set<TaskRequest> taskRequests;
+
     public void validate(){
         if (!StringUtils.isEmpty(fileUrls) && !EventUtils.validateFileUrlsS3(fileUrls)){
             throw new BadRequestException("FileUrls not valid");

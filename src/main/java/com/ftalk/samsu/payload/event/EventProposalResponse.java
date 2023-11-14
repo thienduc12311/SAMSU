@@ -1,6 +1,7 @@
 package com.ftalk.samsu.payload.event;
 
 import com.ftalk.samsu.model.event.EventProposal;
+import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import lombok.Data;
 import java.util.Date;
@@ -15,8 +16,8 @@ public class EventProposalResponse {
     private String content;
     private String feedback;
     private String status;
-    private String creatorRollnumber;
-    private String accepterRollnumber;
+    private UserProfileReduce creator;
+    private UserProfileReduce accepter;
     private String fileUrls;
     private Date modifyAt;
     private Date createAt;
@@ -27,9 +28,9 @@ public class EventProposalResponse {
         content = eventProposal.getContent();
         feedback = eventProposal.getFeedback();
         status = Objects.requireNonNull(EventProposalConstants.findByValue(eventProposal.getStatus())).name();
-        creatorRollnumber = eventProposal.getCreatorUserId().getRollnumber();
+        creator = new UserProfileReduce(eventProposal.getCreatorUserId().getUsername(), eventProposal.getCreatorUserId().getAvatar());
         if (eventProposal.getAccepterUserId() != null) {
-            accepterRollnumber = eventProposal.getAccepterUserId().getRollnumber();
+            accepter = new UserProfileReduce(eventProposal.getAccepterUserId().getUsername(), eventProposal.getAccepterUserId().getAvatar());
         }
         fileUrls = eventProposal.getFileUrls();
         modifyAt = eventProposal.getModifyAt();

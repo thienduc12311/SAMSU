@@ -31,10 +31,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -241,6 +239,14 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.deleteById(user.getId());
         return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
+    }
+
+    @Override
+    public Map<String, User> getMapUserByRollnumber(Set<String> rollnumber) {
+        Set<User> userList = userRepository.findAllByRollnumberIn(rollnumber);
+        Map<String, User> userMap = userList.parallelStream()
+                .collect(Collectors.toMap(User::getRollnumber, user -> user));
+        return userMap;
     }
 
     @Override

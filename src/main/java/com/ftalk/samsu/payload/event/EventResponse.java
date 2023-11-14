@@ -6,6 +6,7 @@ import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import lombok.Data;
 
@@ -25,9 +26,9 @@ public class EventResponse {
     private Integer duration;
     private String title;
     private String content;
-    private String creatorUserRollnumber;
+    private UserProfileReduce creator;
     private Integer eventProposalId;
-    private String eventLeaderUserRollnumber;
+    private UserProfileReduce eventLeader;
     private Semester semester;
     private String bannerUrl;
     private String fileUrls;
@@ -43,9 +44,9 @@ public class EventResponse {
         duration = event.getDuration();
         title = event.getTitle();
         content = event.getContent();
-        creatorUserRollnumber = event.getCreatorUser().getRollnumber();
+        creator = new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar());
         eventProposalId = event.getEventProposal() != null ? event.getEventProposal().getId() : null;
-        eventLeaderUserRollnumber = event.getEventLeaderUser() != null ? event.getEventLeaderUser().getRollnumber() : null;
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
