@@ -1,12 +1,15 @@
 package com.ftalk.samsu.payload.event;
 
+import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
+import com.ftalk.samsu.utils.event.EventUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
@@ -59,5 +62,13 @@ public class EventCreateRequest {
 
     private Set<String> rollnumbers;
 
+    public void validate(){
+        if (!StringUtils.isEmpty(fileUrls) && !EventUtils.validateFileUrlsS3(fileUrls)){
+            throw new BadRequestException("FileUrls not valid");
+        }
 
+        if (!StringUtils.isEmpty(bannerUrl) && !EventUtils.validateUrlS3(bannerUrl)){
+            throw new BadRequestException("FileUrls not valid");
+        }
+    }
 }

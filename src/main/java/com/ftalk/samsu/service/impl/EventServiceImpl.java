@@ -92,6 +92,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
+        eventCreateRequest.validate();
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
 //        for (Integer departmentId : eventCreateRequest.getDepartmentIds()) {
