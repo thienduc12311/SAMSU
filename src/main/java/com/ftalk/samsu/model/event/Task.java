@@ -2,6 +2,7 @@ package com.ftalk.samsu.model.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ftalk.samsu.model.audit.DateAudit;
+import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.event.TaskRequest;
 import lombok.AllArgsConstructor;
@@ -58,6 +59,11 @@ public class Task extends DateAudit implements Serializable {
     @NotNull
     @Column(name = "score")
     private Short score;
+
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "gradeSubCriteria_id")
+    private GradeSubCriteria gradeSubCriteria;
 
 //    @JsonIgnore
 //    @EqualsAndHashCode.Exclude

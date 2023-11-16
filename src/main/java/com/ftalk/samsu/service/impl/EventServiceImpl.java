@@ -8,6 +8,7 @@ import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.Tag;
 import com.ftalk.samsu.model.event.*;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
@@ -23,6 +24,7 @@ import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.EventService;
+import com.ftalk.samsu.service.GradePolicyService;
 import com.ftalk.samsu.service.PhotoService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppConstants;
@@ -66,6 +68,9 @@ public class EventServiceImpl implements EventService {
     TaskRepository taskRepository;
     @Autowired
     AssigneeRepository assigneeRepository;
+
+    @Autowired
+    GradePolicyService gradePolicyService;
 
     @Override
     public PagedResponse<Event> getAllEvents(int page, int size) {
@@ -121,7 +126,7 @@ public class EventServiceImpl implements EventService {
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
         feedbackQuestionRepository.saveAll(feedbackQuestions);
         eventSaved.setFeedbackQuestions(feedbackQuestions);
-        eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator));
+        eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
         return eventSaved;
     }
 
@@ -136,10 +141,11 @@ public class EventServiceImpl implements EventService {
         return feedbackQuestions;
     }
 
-    private List<Task> getTask(EventCreateRequest eventCreateRequest, Event event, User creator) {
+    private List<Task> getTask(EventCreateRequest eventCreateRequest, Event event, User creator, UserPrincipal currentUser) {
         List<Task> tasks = new ArrayList<>(eventCreateRequest.getTaskRequests().size());
         for (TaskRequest taskRequest : eventCreateRequest.getTaskRequests()) {
             Task task = new Task(taskRequest);
+            GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
             task.setEvent(event);
             task.setCreatorUserId(creator);
             Task taskSaved = taskRepository.save(task);

@@ -24,6 +24,7 @@ public class TaskRequest {
     private String content;
     private Short status;
     private Short score;
+    private Integer gradeSubCriteriaId;
     private List<AssigneeRequest> assignees;
 
     public Set<String> getAssignee() {
