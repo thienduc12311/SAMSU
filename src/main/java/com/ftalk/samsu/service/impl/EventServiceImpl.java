@@ -144,9 +144,10 @@ public class EventServiceImpl implements EventService {
     private List<Task> getTask(EventCreateRequest eventCreateRequest, Event event, User creator, UserPrincipal currentUser) {
         List<Task> tasks = new ArrayList<>(eventCreateRequest.getTaskRequests().size());
         for (TaskRequest taskRequest : eventCreateRequest.getTaskRequests()) {
-            Task task = new Task(taskRequest);
             GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
+            Task task = new Task(taskRequest);
             task.setEvent(event);
+            task.setGradeSubCriteria(gradeSubCriteria);
             task.setCreatorUserId(creator);
             Task taskSaved = taskRepository.save(task);
             Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssignee());
