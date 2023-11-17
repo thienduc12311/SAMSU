@@ -27,11 +27,11 @@ public class GradeSubCriteria implements Serializable {
     private String content;
 
 
-    @NotBlank
+    @NotNull
     @Column(name = "min_score")
     private Short minScore;
 
-    @NotBlank
+    @NotNull
     @Column(name = "max_score")
     private Short maxScore;
 
