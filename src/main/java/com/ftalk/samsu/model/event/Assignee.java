@@ -24,7 +24,7 @@ import java.util.Set;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "assignee")
+@Table(name = "assignees")
 public class Assignee extends DateAudit implements Serializable {
 	private static final long serialVersionUID = 1L;
 

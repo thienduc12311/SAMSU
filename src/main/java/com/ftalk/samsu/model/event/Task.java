@@ -62,7 +62,7 @@ public class Task extends DateAudit implements Serializable {
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "gradeSubCriteria_id")
+    @JoinColumn(name = "gradesubcriteria_id")
     private GradeSubCriteria gradeSubCriteria;
 
 //    @JsonIgnore

@@ -126,7 +126,9 @@ public class EventServiceImpl implements EventService {
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
         feedbackQuestionRepository.saveAll(feedbackQuestions);
         eventSaved.setFeedbackQuestions(feedbackQuestions);
-        eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
+        if (eventCreateRequest.getTaskRequests() != null){
+            eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
+        }
         return eventSaved;
     }
 
