@@ -6,18 +6,16 @@ import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.PolicyDocument;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.EventCreateRequest;
-import com.ftalk.samsu.payload.gradePolicy.GradeCriteriaRequest;
-import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaRequest;
-import com.ftalk.samsu.payload.gradePolicy.PolicyDocumentRequest;
+import com.ftalk.samsu.payload.gradePolicy.*;
 import com.ftalk.samsu.security.UserPrincipal;
 
 public interface GradePolicyService {
 
     PagedResponse<PolicyDocument> getAllPolicyDocuments(int page, int size);
 
-    PagedResponse<GradeCriteria> getAllGradeCriterias(int page, int size);
+    PagedResponse<GradeCriteriaResponse> getAllGradeCriterias(int page, int size);
 
-    PagedResponse<GradeSubCriteria> getAllGradeSubCriterias(int page, int size);
+    PagedResponse<GradeSubCriteriaResponse> getAllGradeSubCriterias(int page, int size);
 
     PolicyDocument getPolicyDocument(Integer id, UserPrincipal currentUser);
 

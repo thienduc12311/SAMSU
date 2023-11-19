@@ -10,9 +10,7 @@ import com.ftalk.samsu.model.group.Group;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.gradePolicy.GradeCriteriaRequest;
-import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaRequest;
-import com.ftalk.samsu.payload.gradePolicy.PolicyDocumentRequest;
+import com.ftalk.samsu.payload.gradePolicy.*;
 import com.ftalk.samsu.payload.group.GroupImportMemberResponse;
 import com.ftalk.samsu.payload.group.GroupRequest;
 import com.ftalk.samsu.payload.group.MemberImportFailed;
@@ -21,6 +19,7 @@ import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.GradePolicyService;
 import com.ftalk.samsu.service.GroupService;
 import com.ftalk.samsu.utils.AppUtils;
+import com.ftalk.samsu.utils.ListConverter;
 import com.ftalk.samsu.utils.event.EventUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     }
 
     @Override
-    public PagedResponse<GradeCriteria> getAllGradeCriterias(int page, int size) {
+    public PagedResponse<GradeCriteriaResponse> getAllGradeCriterias(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, ID);
@@ -74,12 +73,12 @@ public class GradePolicyServiceImpl implements GradePolicyService {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),
                     events.getTotalElements(), events.getTotalPages(), events.isLast());
         }
-        return new PagedResponse<>(events.getContent(), events.getNumber(), events.getSize(), events.getTotalElements(),
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), GradeCriteriaResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(),
                 events.getTotalPages(), events.isLast());
     }
 
     @Override
-    public PagedResponse<GradeSubCriteria> getAllGradeSubCriterias(int page, int size) {
+    public PagedResponse<GradeSubCriteriaResponse> getAllGradeSubCriterias(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, ID);
@@ -89,7 +88,7 @@ public class GradePolicyServiceImpl implements GradePolicyService {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),
                     events.getTotalElements(), events.getTotalPages(), events.isLast());
         }
-        return new PagedResponse<>(events.getContent(), events.getNumber(), events.getSize(), events.getTotalElements(),
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), GradeSubCriteriaResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(),
                 events.getTotalPages(), events.isLast());
     }
 

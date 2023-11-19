@@ -4,6 +4,7 @@ import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.PolicyDocument;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaRequest;
+import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaResponse;
 import com.ftalk.samsu.payload.gradePolicy.PolicyDocumentRequest;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
@@ -26,31 +27,31 @@ public class GradeSubCriteriaController {
     private GradePolicyService gradePolicyService;
 
     @GetMapping
-    public ResponseEntity<PagedResponse<GradeSubCriteria>> getAll(
+    public ResponseEntity<PagedResponse<GradeSubCriteriaResponse>> getAll(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<GradeSubCriteria> response = gradePolicyService.getAllGradeSubCriterias(page, size);
+        PagedResponse<GradeSubCriteriaResponse> response = gradePolicyService.getAllGradeSubCriterias(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<GradeSubCriteria> create(@Valid @RequestBody GradeSubCriteriaRequest gradeSubCriteriaRequest,
+    public ResponseEntity<GradeSubCriteriaResponse> create(@Valid @RequestBody GradeSubCriteriaRequest gradeSubCriteriaRequest,
                                                  @CurrentUser UserPrincipal currentUser) {
         GradeSubCriteria gradeSubCriteria = gradePolicyService.addGradeSubCriteria(gradeSubCriteriaRequest, currentUser);
-        return new ResponseEntity<>(gradeSubCriteria, HttpStatus.CREATED);
+        return new ResponseEntity<>(new GradeSubCriteriaResponse(gradeSubCriteria), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GradeSubCriteria> get(@PathVariable(name = "id") Integer id, @CurrentUser UserPrincipal currentUser) {
+    public ResponseEntity<GradeSubCriteriaResponse> get(@PathVariable(name = "id") Integer id, @CurrentUser UserPrincipal currentUser) {
         GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(id, currentUser);
-        return new ResponseEntity<>(gradeSubCriteria, HttpStatus.OK);
+        return new ResponseEntity<>(new GradeSubCriteriaResponse(gradeSubCriteria), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GradeSubCriteria> update(@PathVariable(name = "id") Integer id,
+    public ResponseEntity<GradeSubCriteriaResponse> update(@PathVariable(name = "id") Integer id,
                                                  @Valid @RequestBody GradeSubCriteriaRequest gradeSubCriteriaRequest, @CurrentUser UserPrincipal currentUser) {
         GradeSubCriteria gradeSubCriteria = gradePolicyService.updateGradeSubCriteria(id, gradeSubCriteriaRequest, currentUser);
-        return new ResponseEntity<>(gradeSubCriteria, HttpStatus.OK);
+        return new ResponseEntity<>(new GradeSubCriteriaResponse(gradeSubCriteria), HttpStatus.OK);
     }
 
 }
