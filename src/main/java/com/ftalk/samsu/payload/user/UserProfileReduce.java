@@ -12,4 +12,5 @@ import java.util.Date;
 public class UserProfileReduce {
 	private String username;
 	private String avatar;
+	private String rollnumber;
 }

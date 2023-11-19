@@ -7,16 +7,10 @@ import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
-import com.ftalk.samsu.utils.event.EventProposalConstants;
 import lombok.Data;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
@@ -38,15 +32,15 @@ public class EventResponse {
     private List<FeedbackQuestion> feedbackQuestions;
     private Date createAt;
 
-    public EventResponse(Event event){
+    public EventResponse(Event event) {
         id = event.getId();
         status = event.getStatus();
         duration = event.getDuration();
         title = event.getTitle();
         content = event.getContent();
-        creator = new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar());
+        creator = new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
         eventProposalId = event.getEventProposal() != null ? event.getEventProposal().getId() : null;
-        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar()) : null;
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();

@@ -28,9 +28,9 @@ public class EventProposalResponse {
         content = eventProposal.getContent();
         feedback = eventProposal.getFeedback();
         status = Objects.requireNonNull(EventProposalConstants.findByValue(eventProposal.getStatus())).name();
-        creator = new UserProfileReduce(eventProposal.getCreatorUserId().getUsername(), eventProposal.getCreatorUserId().getAvatar());
+        creator = new UserProfileReduce(eventProposal.getCreatorUserId().getUsername(), eventProposal.getCreatorUserId().getAvatar(),eventProposal.getCreatorUserId().getRollnumber());
         if (eventProposal.getAccepterUserId() != null) {
-            accepter = new UserProfileReduce(eventProposal.getAccepterUserId().getUsername(), eventProposal.getAccepterUserId().getAvatar());
+            accepter = new UserProfileReduce(eventProposal.getAccepterUserId().getUsername(), eventProposal.getAccepterUserId().getAvatar(), eventProposal.getCreatorUserId().getRollnumber());
         }
         fileUrls = eventProposal.getFileUrls();
         modifyAt = eventProposal.getModifyAt();
