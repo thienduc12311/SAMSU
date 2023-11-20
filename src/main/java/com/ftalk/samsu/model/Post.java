@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.ftalk.samsu.model.audit.UserDateAudit;
+import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.PostRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -22,6 +24,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,67 +32,53 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Table(name = "posts", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
+@Table(name = "posts")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Post extends UserDateAudit {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Integer id;
 
+	@NotNull
 	@Column(name = "title")
 	private String title;
 
+	@NotNull
 	@Column(name = "body")
 	private String body;
 
+	@Column(name = "kudos")
+	private Integer kudos ;
+
+	@EqualsAndHashCode.Exclude
+	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "events_id")
+	private Event event;
+
+	@EqualsAndHashCode.Exclude
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "creator_users_id")
 	private User user;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id")
-	private Category category;
+	@Column(name = "image_urls")
+	private String image_urls ;
 
-	@JsonIgnore
-	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Comment> comments;
+	@Column(name = "file_urls")
+	private String file_urls ;
 
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "post_tag", joinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-	private List<Tag> tags;
+	@Column(name = "status")
+	private Short status ;
 
-	@JsonIgnore
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public List<Comment> getComments() {
-		return comments == null ? null : new ArrayList<>(comments);
-	}
-
-	public void setComments(List<Comment> comments) {
-		if (comments == null) {
-			this.comments = null;
-		} else {
-			this.comments = Collections.unmodifiableList(comments);
-		}
-	}
-
-	public List<Tag> getTags() {
-		return tags == null ? null : new ArrayList<>(tags);
-	}
-
-	public void setTags(List<Tag> tags) {
-		if (tags == null) {
-			this.tags = null;
-		} else {
-			this.tags = Collections.unmodifiableList(tags);
-		}
+	public Post(PostRequest postRequest) {
+		this.title = postRequest.getTitle();
+		this.body = postRequest.getBody();
+		this.kudos = postRequest.getKudos() != null ? postRequest.getKudos() : 0;
+		this.image_urls = postRequest.getImage_urls();
+		this.file_urls = postRequest.getFile_urls();
+		this.status = postRequest.getStatus();
 	}
 }

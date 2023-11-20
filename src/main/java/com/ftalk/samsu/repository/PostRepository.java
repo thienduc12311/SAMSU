@@ -10,12 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Integer> {
 	Page<Post> findById(Integer userId, Pageable pageable);
 
-	Page<Post> findByCategory(Long categoryId, Pageable pageable);
-
-	Page<Post> findByTags(List<Tag> tags, Pageable pageable);
-
-	Long countById(Integer userId);
+	Integer countById(Integer userId);
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 
@@ -12,6 +13,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 public class AssigneeId implements Serializable {
-    private Integer tasks_id;
-    private Integer users_id;
+    @Column(name = "tasks_id")
+    private Integer tasksId;
+    @Column(name = "users_id")
+    private Integer usersId;
 }

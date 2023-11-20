@@ -2,6 +2,7 @@ package com.ftalk.samsu.model.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ftalk.samsu.model.Photo;
+import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.audit.DateAudit;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.semester.Semester;
@@ -112,6 +113,11 @@ public class Event extends DateAudit implements Serializable {
 	@EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
 	private List<FeedbackQuestion> feedbackQuestions;
+
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = CascadeType.ALL)
+	private List<Post> posts;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude

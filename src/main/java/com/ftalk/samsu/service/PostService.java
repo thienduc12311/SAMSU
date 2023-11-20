@@ -13,16 +13,12 @@ public interface PostService {
 
 	PagedResponse<Post> getPostsByCreatedBy(String username, int page, int size);
 
-	PagedResponse<Post> getPostsByCategory(Long id, int page, int size);
+	Post updatePost(Integer id, PostRequest newPostRequest, UserPrincipal currentUser);
 
-	PagedResponse<Post> getPostsByTag(Long id, int page, int size);
+	ApiResponse deletePost(Integer id, UserPrincipal currentUser);
 
-	Post updatePost(Long id, PostRequest newPostRequest, UserPrincipal currentUser);
+	Post addPost(PostRequest postRequest, UserPrincipal currentUser);
 
-	ApiResponse deletePost(Long id, UserPrincipal currentUser);
-
-	PostResponse addPost(PostRequest postRequest, UserPrincipal currentUser);
-
-	Post getPost(Long id);
+	Post getPost(Integer id);
 
 }

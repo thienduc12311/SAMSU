@@ -25,6 +25,8 @@ public class TaskRequest {
     private Short status;
     private Short score;
     private Integer gradeSubCriteriaId;
+    /// <summary>Not need when create event</summary>
+    private Integer eventId;
     private List<AssigneeRequest> assignees;
 
     public Set<String> getAssignee() {

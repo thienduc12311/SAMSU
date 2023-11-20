@@ -66,11 +66,11 @@ public class UserController {
         return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 
-    @GetMapping("/{username}/posts")
-    public ResponseEntity<PagedResponse<Post>> getPostsCreatedBy(@PathVariable(value = "username") String username,
+    @GetMapping("/{rollnumber}/posts")
+    public ResponseEntity<PagedResponse<Post>> getPostsCreatedBy(@PathVariable(value = "username") String rollnumber,
                                                                  @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
                                                                  @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<Post> response = postService.getPostsByCreatedBy(username, page, size);
+        PagedResponse<Post> response = postService.getPostsByCreatedBy(rollnumber, page, size);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

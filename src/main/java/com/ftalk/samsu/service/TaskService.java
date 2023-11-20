@@ -9,6 +9,9 @@ import com.ftalk.samsu.payload.event.TaskRequest;
 import com.ftalk.samsu.security.UserPrincipal;
 
 public interface TaskService {
+	Task findTaskByEvent(Integer eventId, UserPrincipal currentUser);
+
 	Task createTask(TaskRequest taskRequest, UserPrincipal currentUser);
 
+	Task updateTask(Integer id, TaskRequest taskRequest, UserPrincipal currentUser);
 }
