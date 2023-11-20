@@ -16,7 +16,7 @@ public class UserProfileReduce {
 	private String rollnumber;
 
 	public UserProfileReduce(User user) {
-		this.username = user.getUsername();
+		this.username = user.getName();
 		this.avatar = user.getAvatar();
 		this.rollnumber = user.getRollnumber();
 	}

@@ -31,6 +31,7 @@ public class EventResponse {
     private List<String> participants;
     private List<FeedbackQuestion> feedbackQuestions;
     private Date createAt;
+    private Short attendScore;
 
     public EventResponse(Event event) {
         id = event.getId();
@@ -38,9 +39,9 @@ public class EventResponse {
         duration = event.getDuration();
         title = event.getTitle();
         content = event.getContent();
-        creator = new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
+        creator = new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
         eventProposalId = event.getEventProposal() != null ? event.getEventProposal().getId() : null;
-        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
@@ -48,6 +49,8 @@ public class EventResponse {
         feedbackQuestions = event.getFeedbackQuestions();
         participants = event.getParticipants().parallelStream().map(User::getRollnumber).collect(Collectors.toList());
         createAt = event.getCreatedAt();
+        startTime = event.getStartTime();
+        attendScore = event.getAttendScore();
     }
 
 
