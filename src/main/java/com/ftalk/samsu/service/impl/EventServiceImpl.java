@@ -5,6 +5,7 @@ import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.Album;
 import com.ftalk.samsu.model.Photo;
+import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.Tag;
 import com.ftalk.samsu.model.event.*;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
@@ -39,6 +40,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -101,16 +103,36 @@ public class EventServiceImpl implements EventService {
 
     private PagedResponse<EventResponse> getEventPagedResponse(Page<Event> events) {
         if (events.getNumberOfElements() == 0) {
-            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(),
-                    events.getTotalElements(), events.getTotalPages(), events.isLast());
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
         }
-        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(),
-                events.getTotalPages(), events.isLast());
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
     }
 
     @Override
     public Event getEvent(Integer id, UserPrincipal currentUser) {
         return eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+    }
+
+    @Override
+    public ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        User user = userRepository.getUser(currentUser);
+        if (user == null) throw  new BadRequestException("Your not found!!");
+        if (isAdd) {
+            if (event.getParticipants() == null) event.setParticipants(new HashSet<>());
+            event.getParticipants().add(user);
+        } else {
+            if (event.getParticipants() != null)
+                event.getParticipants().remove(user);
+        }
+        eventRepository.save(event);
+        return new ApiResponse(Boolean.TRUE, "Update success");
+    }
+
+    @Override
+    public List<Post> getEventPost(Integer id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        return event.getPosts();
     }
 
     @Override
@@ -128,18 +150,14 @@ public class EventServiceImpl implements EventService {
         eventCreateRequest.validate();
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
-        EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId())
-                .orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
+        EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
         Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
-        Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester())
-                .orElseThrow(() -> new BadRequestException("Semester not found!!"));
-        Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(),
-                eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser,
-                semester, eventCreateRequest.getBannerUrl(), eventProposal.getFileUrls(), eventCreateRequest.getStartTime());
+        Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
+        Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventProposal.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
         Event eventSaved = eventRepository.save(event);
@@ -155,8 +173,7 @@ public class EventServiceImpl implements EventService {
     private List<FeedbackQuestion> getFeedbackQuestions(EventCreateRequest eventCreateRequest, Event event) {
         List<FeedbackQuestion> feedbackQuestions = new ArrayList<>(eventCreateRequest.getFeedbackQuestionRequestList().size());
         for (FeedbackQuestionRequest feedbackQuestionRequest : eventCreateRequest.getFeedbackQuestionRequestList()) {
-            FeedbackQuestion feedbackQuestion = new FeedbackQuestion(feedbackQuestionRequest.getType(),
-                    feedbackQuestionRequest.getQuestion(), feedbackQuestionRequest.getAnswer());
+            FeedbackQuestion feedbackQuestion = new FeedbackQuestion(feedbackQuestionRequest.getType(), feedbackQuestionRequest.getQuestion(), feedbackQuestionRequest.getAnswer());
             feedbackQuestion.setEvent(event);
             feedbackQuestions.add(feedbackQuestion);
         }

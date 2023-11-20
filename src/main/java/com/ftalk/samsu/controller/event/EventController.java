@@ -1,5 +1,6 @@
 package com.ftalk.samsu.controller.event;
 
+import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.payload.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
@@ -43,10 +45,24 @@ public class EventController {
     }
 
     @GetMapping("/{eventProposalId}/posts")
-    public ResponseEntity<EventResponse> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
-                                                          @CurrentUser UserPrincipal currentUser) {
-        Event response = eventService.getEvent(eventProposalId, currentUser);
-        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
+    public ResponseEntity<List<Post>> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                            @CurrentUser UserPrincipal currentUser) {
+        List<Post> response = eventService.getEventPost(eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/register")
+    public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.register(true, eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/unregister")
+    public ResponseEntity<ApiResponse> unregister(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                  @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.register(false, eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 //    @GetMapping("/me")
@@ -73,7 +89,7 @@ public class EventController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest eventCreateRequest,
-                                                             @CurrentUser UserPrincipal currentUser) {
+                                                     @CurrentUser UserPrincipal currentUser) {
         Event response = eventService.addEvent(eventCreateRequest, currentUser);
         return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
     }
