@@ -1,5 +1,6 @@
 package com.ftalk.samsu.controller.event;
 
+import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.payload.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
@@ -27,10 +29,39 @@ public class EventController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<Event>> getAllEvent(
+    public ResponseEntity<PagedResponse<EventResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<Event> response = eventService.getAllEvents(page, size);
+        PagedResponse<EventResponse> response = eventService.getAllEvents(page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/public")
+    public ResponseEntity<PagedResponse<EventResponse>> getAllEventPublic(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<EventResponse> response = eventService.getAllEventsPublic(page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/posts")
+    public ResponseEntity<List<Post>> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                            @CurrentUser UserPrincipal currentUser) {
+        List<Post> response = eventService.getEventPost(eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/register")
+    public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.register(true, eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/unregister")
+    public ResponseEntity<ApiResponse> unregister(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                  @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.register(false, eventProposalId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -58,7 +89,7 @@ public class EventController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest eventCreateRequest,
-                                                             @CurrentUser UserPrincipal currentUser) {
+                                                     @CurrentUser UserPrincipal currentUser) {
         Event response = eventService.addEvent(eventCreateRequest, currentUser);
         return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
     }

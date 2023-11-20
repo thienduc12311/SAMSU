@@ -31,6 +31,7 @@ public class EventResponse {
     private List<String> participants;
     private List<FeedbackQuestion> feedbackQuestions;
     private Date createAt;
+    private Short attendScore;
 
     public EventResponse(Event event) {
         id = event.getId();
@@ -48,6 +49,8 @@ public class EventResponse {
         feedbackQuestions = event.getFeedbackQuestions();
         participants = event.getParticipants().parallelStream().map(User::getRollnumber).collect(Collectors.toList());
         createAt = event.getCreatedAt();
+        startTime = event.getStartTime();
+        attendScore = event.getAttendScore();
     }
 
 

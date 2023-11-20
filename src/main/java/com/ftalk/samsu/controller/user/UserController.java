@@ -38,9 +38,6 @@ public class UserController {
     @Autowired
     private PostService postService;
 
-    @Autowired
-    private AlbumService albumService;
-
     @GetMapping("/me")
     public ResponseEntity<UserProfile> getCurrentUser(@CurrentUser UserPrincipal currentUser) {
         UserProfile userProfile = userService.getCurrentUser(currentUser);

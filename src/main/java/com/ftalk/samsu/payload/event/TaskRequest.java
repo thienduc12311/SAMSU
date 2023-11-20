@@ -29,7 +29,7 @@ public class TaskRequest {
     private Integer eventId;
     private List<AssigneeRequest> assignees;
 
-    public Set<String> getAssignee() {
+    public Set<String> getAssigneeRollnumber() {
         return assignees.parallelStream().map(AssigneeRequest::getRollnumber).collect(Collectors.toSet());
     }
 }
