@@ -86,7 +86,7 @@ public class TaskServiceImpl implements TaskService {
         task.setGradeSubCriteria(gradeSubCriteria);
         task.setCreatorUserId(creator);
         Task taskSaved = taskRepository.save(task);
-        Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssignee());
+        Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
         for (AssigneeRequest assigneeRequest : taskRequest.getAssignees()) {
             Assignee assignee = new Assignee(new AssigneeId(taskSaved.getId(), assigneeUser.get(assigneeRequest.getRollnumber()).getId()), assigneeRequest.getStatus());
             assigneeRepository.save(assignee);

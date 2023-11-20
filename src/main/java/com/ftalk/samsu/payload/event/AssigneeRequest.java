@@ -10,6 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssigneeRequest {
-    private String Rollnumber;
+    private String rollnumber;
     private Short status;
 }

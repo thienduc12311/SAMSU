@@ -27,11 +27,26 @@ public class EventController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<Event>> getAllEvent(
+    public ResponseEntity<PagedResponse<EventResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<Event> response = eventService.getAllEvents(page, size);
+        PagedResponse<EventResponse> response = eventService.getAllEvents(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/public")
+    public ResponseEntity<PagedResponse<EventResponse>> getAllEventPublic(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<EventResponse> response = eventService.getAllEventsPublic(page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventProposalId}/posts")
+    public ResponseEntity<EventResponse> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+                                                          @CurrentUser UserPrincipal currentUser) {
+        Event response = eventService.getEvent(eventProposalId, currentUser);
+        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
     }
 
 //    @GetMapping("/me")

@@ -26,6 +26,7 @@ import com.ftalk.samsu.service.EventProposalService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,10 @@ public class EventProposalServiceImpl implements EventProposalService {
 
         User user = userRepository.getUser(currentUser);
 
+        return getEventProposalResponsePagedResponse(pageable, user);
+    }
+
+    private PagedResponse<EventProposalResponse> getEventProposalResponsePagedResponse(Pageable pageable, User user) {
         Page<EventProposal> eventProposals = eventProposalRepository.findAllByCreatorUserId(user, pageable);
 
         List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
@@ -92,10 +97,7 @@ public class EventProposalServiceImpl implements EventProposalService {
         AppUtils.validatePageNumberAndSize(page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         User user = userRepository.getUserByRollnumber(rollnumber);
-        Page<EventProposal> eventProposals = eventProposalRepository.findAllByCreatorUserId(user, pageable);
-        List<EventProposal> content = eventProposals.getNumberOfElements() == 0 ? Collections.emptyList() : eventProposals.getContent();
-        return new PagedResponse<>(EventUtils.listToList(content), eventProposals.getNumber(), eventProposals.getSize(), eventProposals.getTotalElements(),
-                eventProposals.getTotalPages(), eventProposals.isLast());
+        return getEventProposalResponsePagedResponse(pageable, user);
     }
 
     @Override
