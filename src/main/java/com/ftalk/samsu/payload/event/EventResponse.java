@@ -38,9 +38,9 @@ public class EventResponse {
         duration = event.getDuration();
         title = event.getTitle();
         content = event.getContent();
-        creator = new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
+        creator = new UserProfileReduce(event.getCreatorUser().getName(),event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
         eventProposalId = event.getEventProposal() != null ? event.getEventProposal().getId() : null;
-        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
