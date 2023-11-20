@@ -11,12 +11,14 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfileReduce {
+	private String name;
 	private String username;
 	private String avatar;
 	private String rollnumber;
 
 	public UserProfileReduce(User user) {
-		this.username = user.getName();
+		this.name = user.getName();
+		this.username = user.getUsername();
 		this.avatar = user.getAvatar();
 		this.rollnumber = user.getRollnumber();
 	}
