@@ -41,14 +41,14 @@ public class CommentController {
 	@PostMapping
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<Comment> addComment(@Valid @RequestBody CommentRequest commentRequest,
-			@PathVariable(name = "postId") Long postId, @CurrentUser UserPrincipal currentUser) {
+			@PathVariable(name = "postId") Integer postId, @CurrentUser UserPrincipal currentUser) {
 		Comment newComment = commentService.addComment(commentRequest, postId, currentUser);
 
 		return new ResponseEntity<>(newComment, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Comment> getComment(@PathVariable(name = "postId") Long postId,
+	public ResponseEntity<Comment> getComment(@PathVariable(name = "postId") Integer postId,
 			@PathVariable(name = "id") Long id) {
 		Comment comment = commentService.getComment(postId, id);
 
@@ -57,7 +57,7 @@ public class CommentController {
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-	public ResponseEntity<Comment> updateComment(@PathVariable(name = "postId") Long postId,
+	public ResponseEntity<Comment> updateComment(@PathVariable(name = "postId") Integer postId,
 			@PathVariable(name = "id") Long id, @Valid @RequestBody CommentRequest commentRequest,
 			@CurrentUser UserPrincipal currentUser) {
 
@@ -68,7 +68,7 @@ public class CommentController {
 
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-	public ResponseEntity<ApiResponse> deleteComment(@PathVariable(name = "postId") Long postId,
+	public ResponseEntity<ApiResponse> deleteComment(@PathVariable(name = "postId") Integer postId,
 			@PathVariable(name = "id") Long id, @CurrentUser UserPrincipal currentUser) {
 
 		ApiResponse response = commentService.deleteComment(postId, id, currentUser);

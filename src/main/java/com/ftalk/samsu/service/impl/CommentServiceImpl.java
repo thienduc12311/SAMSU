@@ -59,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Comment addComment(CommentRequest commentRequest, Long postId, UserPrincipal currentUser) {
+	public Comment addComment(CommentRequest commentRequest, Integer postId, UserPrincipal currentUser) {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException(POST_STR, ID_STR, postId));
 		User user = userRepository.getUser(currentUser);
@@ -72,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Comment getComment(Long postId, Long id) {
+	public Comment getComment(Integer postId, Long id) {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException(POST_STR, ID_STR, postId));
 		Comment comment = commentRepository.findById(id)
@@ -85,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Comment updateComment(Long postId, Long id, CommentRequest commentRequest,
+	public Comment updateComment(Integer postId, Long id, CommentRequest commentRequest,
 			UserPrincipal currentUser) {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException(POST_STR, ID_STR, postId));
@@ -106,7 +106,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public ApiResponse deleteComment(Long postId, Long id, UserPrincipal currentUser) {
+	public ApiResponse deleteComment(Integer postId, Long id, UserPrincipal currentUser) {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException(POST_STR, ID_STR, postId));
 		Comment comment = commentRepository.findById(id)

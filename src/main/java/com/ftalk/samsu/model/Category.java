@@ -35,24 +35,9 @@ public class Category extends UserDateAudit {
 	@Column(name = "name")
 	private String name;
 
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Post> posts;
-
 	public Category(String name) {
 		super();
 		this.name = name;
-	}
-
-	public List<Post> getPosts() {
-		return this.posts == null ? null : new ArrayList<>(this.posts);
-	}
-
-	public void setPosts(List<Post> posts) {
-		if (posts == null) {
-			this.posts = null;
-		} else {
-			this.posts = Collections.unmodifiableList(posts);
-		}
 	}
 
 }

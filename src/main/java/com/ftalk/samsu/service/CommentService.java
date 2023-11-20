@@ -10,12 +10,12 @@ public interface CommentService {
 
 	PagedResponse<Comment> getAllComments(Long postId, int page, int size);
 
-	Comment addComment(CommentRequest commentRequest, Long postId, UserPrincipal currentUser);
+	Comment addComment(CommentRequest commentRequest, Integer postId, UserPrincipal currentUser);
 
-	Comment getComment(Long postId, Long id);
+	Comment getComment(Integer postId, Long id);
 
-	Comment updateComment(Long postId, Long id, CommentRequest commentRequest, UserPrincipal currentUser);
+	Comment updateComment(Integer postId, Long id, CommentRequest commentRequest, UserPrincipal currentUser);
 
-	ApiResponse deleteComment(Long postId, Long id, UserPrincipal currentUser);
+	ApiResponse deleteComment(Integer postId, Long id, UserPrincipal currentUser);
 
 }
