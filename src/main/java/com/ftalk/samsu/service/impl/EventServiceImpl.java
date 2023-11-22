@@ -137,10 +137,32 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
+        User creator = userRepository.getUser(currentUser);
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
+        Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
+        EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
+        Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
+        List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
+        event.setStatus(eventCreateRequest.getStatus());
+        event.setDuration(eventCreateRequest.getDuration());
         event.setTitle(eventCreateRequest.getTitle());
         event.setContent(eventCreateRequest.getContent());
-        event.setDuration(event.getDuration());
+        event.setAttendScore(eventCreateRequest.getAttendScore());
+        event.setEventProposal(eventProposal);
+        event.setEventLeaderUser(eventLeaderUser);
+        event.setSemester(semester);
+        event.setBannerUrl(eventCreateRequest.getBannerUrl());
+        event.setFileUrls(eventCreateRequest.getFileUrls());
+        event.setStartTime(eventCreateRequest.getStartTime());
+        event.setParticipants(participants);
+        event.setDepartments(departments);
+        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
+        feedbackQuestionRepository.saveAll(feedbackQuestions);
+        event.setFeedbackQuestions(feedbackQuestions);
+        if (eventCreateRequest.getTaskRequests() != null) {
+            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
+        }
         return eventRepository.save(event);
     }
 
