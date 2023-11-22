@@ -2,6 +2,7 @@ package com.ftalk.samsu.payload.event;
 
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
+import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
@@ -30,6 +31,7 @@ public class EventResponse {
     private List<Department> departments;
     private List<String> participants;
     private List<FeedbackQuestion> feedbackQuestions;
+    private List<Task> tasks;
     private Date createAt;
     private Short attendScore;
 
@@ -39,9 +41,11 @@ public class EventResponse {
         duration = event.getDuration();
         title = event.getTitle();
         content = event.getContent();
-        creator = new UserProfileReduce(event.getCreatorUser().getName(),event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
+        creator = new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getUsername(),
+                event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
         eventProposalId = event.getEventProposal() != null ? event.getEventProposal().getId() : null;
-        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getUsername(), event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber()) : null;
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getEventLeaderUser().getName(),
+                event.getEventLeaderUser().getUsername(), event.getEventLeaderUser().getAvatar(), event.getEventLeaderUser().getRollnumber()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
@@ -51,6 +55,7 @@ public class EventResponse {
         createAt = event.getCreatedAt();
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
+        tasks = event.getTasks() != null ? event.getTasks() : null;
     }
 
 
