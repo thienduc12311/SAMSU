@@ -8,6 +8,7 @@ import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
+import com.ftalk.samsu.utils.ListConverter;
 import lombok.Data;
 
 import java.util.Date;
@@ -31,7 +32,7 @@ public class EventResponse {
     private List<Department> departments;
     private List<String> participants;
     private List<FeedbackQuestion> feedbackQuestions;
-    private List<Task> tasks;
+    private List<TaskResponse> tasks;
     private Date createAt;
     private Short attendScore;
 
@@ -55,7 +56,7 @@ public class EventResponse {
         createAt = event.getCreatedAt();
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
-        tasks = event.getTasks() != null ? event.getTasks() : null;
+        tasks = event.getTasks() != null ? ListConverter.listToList(event.getTasks(), TaskResponse::new) : null;
     }
 
 
