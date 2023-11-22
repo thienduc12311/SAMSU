@@ -51,17 +51,17 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{eventProposalId}/register")
-    public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+    @GetMapping("/{eventId}/register")
+    public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventId") Integer eventId,
                                                 @CurrentUser UserPrincipal currentUser) {
-        ApiResponse response = eventService.register(true, eventProposalId, currentUser);
+        ApiResponse response = eventService.register(true, eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{eventProposalId}/unregister")
-    public ResponseEntity<ApiResponse> unregister(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+    @GetMapping("/{eventId}/unregister")
+    public ResponseEntity<ApiResponse> unregister(@PathVariable(value = "eventId") Integer eventId,
                                                   @CurrentUser UserPrincipal currentUser) {
-        ApiResponse response = eventService.register(false, eventProposalId, currentUser);
+        ApiResponse response = eventService.register(false, eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
