@@ -110,14 +110,22 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getEvent(Integer id, UserPrincipal currentUser) {
-        return eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+            return event;
+        }
+        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            return event;
+        }
+        throw new UnauthorizedException("You don't have permission");
     }
 
     @Override
     public ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User user = userRepository.getUser(currentUser);
-        if (user == null) throw  new BadRequestException("Your not found!!");
+        if (user == null) throw new BadRequestException("Your not found!!");
         if (isAdd) {
             if (event.getParticipants() == null) event.setParticipants(new HashSet<>());
             event.getParticipants().add(user);
