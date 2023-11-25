@@ -31,6 +31,7 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @GetMapping("/answers/questionId/{questionId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<PagedResponse<FeedbackAnswerResponse>> getAllAnswerByQuestionId(
             @PathVariable(name = "questionId") Integer questionId,
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
