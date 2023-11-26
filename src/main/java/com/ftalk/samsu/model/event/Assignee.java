@@ -31,6 +31,14 @@ public class Assignee extends DateAudit implements Serializable {
 	@EmbeddedId
 	private AssigneeId id;
 
+	@ManyToOne
+	@MapsId("usersId")
+	@JoinColumn(name = "users_id")
+	private User assignee;
+	@ManyToOne
+	@MapsId("tasksId")
+	@JoinColumn(name = "tasks_id")
+	private Task task;
 	@NotNull
 	@Column(name = "status")
 	private Short status;

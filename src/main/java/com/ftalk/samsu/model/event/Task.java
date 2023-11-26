@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
@@ -75,6 +76,8 @@ public class Task extends DateAudit implements Serializable {
 //            joinColumns = {@JoinColumn(name = "tasks_id")},
 //            inverseJoinColumns = {@JoinColumn(name = "users_id")})
 //    private Set<User> assignees;
+    @OneToMany(mappedBy = "task")
+    private List<Assignee> assignees;
 
     public Task(TaskRequest taskRequest) {
         this.title = taskRequest.getTitle();

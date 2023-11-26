@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class ListConverter<T, K> {
     public static <T, K> List<K> listToList(List<T> ts, Function<T, K> constructor) {
-        return ts.parallelStream()
+        return ts.stream()
                 .map(constructor)
                 .collect(Collectors.toList());
     }

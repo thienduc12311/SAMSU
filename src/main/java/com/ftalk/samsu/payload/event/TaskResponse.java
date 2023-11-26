@@ -27,6 +27,7 @@ public class TaskResponse {
     private String title;
     private String content;
     private Short status;
+    private List<UserProfileReduce> assignees;
     private UserProfileReduce creator;
     private Integer eventId;
     private Short score;
@@ -38,6 +39,7 @@ public class TaskResponse {
         content = task.getContent();
         status = task.getStatus();
         creator = task.getCreatorUserId() != null ? new UserProfileReduce(task.getCreatorUserId()) : null;
+        assignees = task.getAssignees().stream().map(assignee -> new UserProfileReduce(assignee.getAssignee())).collect(Collectors.toList());
         eventId = task.getEvent() != null ? task.getEvent().getId() : null;
         score = task.getScore();
         gradeSubCriteria = new GradeSubCriteriaResponse(task.getGradeSubCriteria());
