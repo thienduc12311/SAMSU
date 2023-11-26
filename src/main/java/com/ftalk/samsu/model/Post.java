@@ -7,8 +7,10 @@ import com.ftalk.samsu.model.audit.UserDateAudit;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.PostRequest;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -32,6 +34,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "posts")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Post extends UserDateAudit {
