@@ -64,10 +64,10 @@ public class UserController {
     }
 
     @GetMapping("/event/{eventId}/profile/{rollnumber}")
-    public ResponseEntity<UserProfile> getUSerProfileByStaff(@PathVariable(value = "rollnumber") String rollnumber,
+    public ResponseEntity<UserProfileReduce> getUSerProfileByStaff(@PathVariable(value = "rollnumber") String rollnumber,
                                                              @PathVariable(value = "eventId") Integer eventId,
                                                              @CurrentUser UserPrincipal currentUser) {
-        UserProfile userProfile = userService.getUserProfile(rollnumber,currentUser);
+        UserProfileReduce userProfile = userService.getStudentByStaff(eventId,rollnumber,currentUser);
         return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 
