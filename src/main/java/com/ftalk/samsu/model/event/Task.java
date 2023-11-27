@@ -66,16 +66,6 @@ public class Task extends DateAudit implements Serializable {
     @JoinColumn(name = "gradesubcriteria_id")
     private GradeSubCriteria gradeSubCriteria;
 
-//    @JsonIgnore
-//    @EqualsAndHashCode.Exclude
-//    @ManyToMany(fetch = FetchType.LAZY, cascade = {
-//            CascadeType.PERSIST,
-//            CascadeType.MERGE
-//    })
-//    @JoinTable(name = "assignees",
-//            joinColumns = {@JoinColumn(name = "tasks_id")},
-//            inverseJoinColumns = {@JoinColumn(name = "users_id")})
-//    private Set<User> assignees;
     @OneToMany(mappedBy = "task")
     private List<Assignee> assignees;
 

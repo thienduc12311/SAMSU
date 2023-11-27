@@ -24,6 +24,9 @@ public interface EventService {
 
 	ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser);
 
+	ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser);
+
+
 	List<Post> getEventPost(Integer id, UserPrincipal currentUser);
 
 	Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser);

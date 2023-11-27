@@ -23,6 +23,7 @@ import com.ftalk.samsu.service.GradePolicyService;
 import com.ftalk.samsu.service.TaskService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
+import com.ftalk.samsu.utils.event.AssigneeConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ftalk.samsu.utils.AppConstants.ID;
 
@@ -95,6 +96,36 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Boolean isTaskStaff(Integer taskId, Integer userId) {
+        Optional<Assignee> assignee = assigneeRepository.findById(new AssigneeId(taskId, userId));
+        if (assignee.isPresent() && (AssigneeConstants.ACCEPT.getValue() == assignee.get().getStatus())) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean checkPermissionCheckIn(Integer eventId, Integer userId) {
+        Integer taskCheckinId = getTaskIdByTitle(eventId, "Checkin");
+        return isTaskStaff(taskCheckinId, userId);
+    }
+
+    @Override
+    public Set<String> getTaskStaff(Integer taskId) {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", taskId));
+        List<Assignee> assigneeList = task.getAssignees();
+        if (assigneeList == null || assigneeList.isEmpty()) {
+            throw new BadRequestException("Task don't have assignee");
+        }
+        return assigneeList.parallelStream().map(assignee -> assignee.getAssignee().getRollnumber()).collect(Collectors.toSet());
+    }
+
+    public Integer getTaskIdByTitle(Integer eventId, String title) {
+        Task task = taskRepository.findTaskByEventsIdAndTitle(eventId, title).orElseThrow(() -> new ResourceNotFoundException("Task Checkin", "Event Id", eventId));
+        return task.getId();
+    }
+
+    @Override
     public Task updateTask(Integer id, TaskRequest taskRequest, UserPrincipal currentUser) {
         taskValidate(taskRequest);
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", id));
@@ -102,7 +133,7 @@ public class TaskServiceImpl implements TaskService {
             GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
             task.setGradeSubCriteria(gradeSubCriteria);
         }
-        if (!taskRequest.getEventId().equals(task.getEvent().getId()) ){
+        if (!taskRequest.getEventId().equals(task.getEvent().getId())) {
             Event event = eventService.getEvent(taskRequest.getEventId(), currentUser);
             task.setEvent(event);
         }

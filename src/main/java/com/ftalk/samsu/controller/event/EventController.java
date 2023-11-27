@@ -114,6 +114,15 @@ public class EventController {
         return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
     }
 
+    @PostMapping("/event/{eventId}/checkin/{rollnumber}")
+    public ResponseEntity<ApiResponse> checkin(
+            @PathVariable(value = "eventId") Integer eventId,
+            @PathVariable(value = "rollnumber") String rollnumber,
+            @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.checkIn(eventId,rollnumber, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {

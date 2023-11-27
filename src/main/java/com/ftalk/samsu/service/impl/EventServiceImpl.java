@@ -10,6 +10,8 @@ import com.ftalk.samsu.model.Tag;
 import com.ftalk.samsu.model.event.*;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
+import com.ftalk.samsu.model.participant.Participant;
+import com.ftalk.samsu.model.participant.ParticipantId;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
@@ -25,10 +27,7 @@ import com.ftalk.samsu.payload.event.TaskRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
-import com.ftalk.samsu.service.EventService;
-import com.ftalk.samsu.service.GradePolicyService;
-import com.ftalk.samsu.service.PhotoService;
-import com.ftalk.samsu.service.UserService;
+import com.ftalk.samsu.service.*;
 import com.ftalk.samsu.utils.AppConstants;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
@@ -74,6 +73,9 @@ public class EventServiceImpl implements EventService {
     private UserService userService;
 
     @Autowired
+    private TaskService taskService;
+
+    @Autowired
     TaskRepository taskRepository;
 
     @Autowired
@@ -81,6 +83,9 @@ public class EventServiceImpl implements EventService {
 
     @Autowired
     GradePolicyService gradePolicyService;
+
+    @Autowired
+    ParticipantRepository participantRepository;
 
     @Override
     public PagedResponse<EventResponse> getAllEvents(int page, int size) {
@@ -145,6 +150,26 @@ public class EventServiceImpl implements EventService {
         }
         eventRepository.save(event);
         return new ApiResponse(Boolean.TRUE, "Update success");
+    }
+
+    @Override
+    public ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser) {
+        boolean havePermission = taskService.checkPermissionCheckIn(eventId, currentUser.getId());
+        User user = userRepository.getUserByRollnumber(rollnumber);
+        if (havePermission
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            Optional<Participant> participantOptional = participantRepository.findById(new ParticipantId(user.getId(),eventId));
+            if (participantOptional.isPresent()) {
+                Participant participant = participantOptional.get();
+                participant.setCheckin(new Date());
+                participantRepository.save(participant);
+                return new ApiResponse(Boolean.TRUE, "Checkin success");
+            }
+            return new ApiResponse(Boolean.FALSE, "Checkin failed. User is not registered");
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile student");
+        throw new UnauthorizedException(apiResponse);
     }
 
     @Override

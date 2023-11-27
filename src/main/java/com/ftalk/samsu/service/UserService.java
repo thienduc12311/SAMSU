@@ -25,6 +25,8 @@ public interface UserService {
 
 	UserImportResponse addListUser(List<UserImport> user);
 
+	UserProfileReduce getStudentByStaff(Integer eventID, String rollnumber, UserPrincipal currentUser);
+
 	PagedResponse<User> getAllUserIn(Integer page, Integer size);
 
 	User updateUser(User newUser, String rollnumber, UserPrincipal currentUser);

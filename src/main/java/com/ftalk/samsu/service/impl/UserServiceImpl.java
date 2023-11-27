@@ -2,6 +2,7 @@ package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.*;
 import com.ftalk.samsu.model.Album;
+import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.*;
 import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.payload.user.*;
@@ -13,6 +14,7 @@ import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.repository.PostRepository;
 import com.ftalk.samsu.repository.RoleRepository;
 import com.ftalk.samsu.repository.UserRepository;
+import com.ftalk.samsu.service.TaskService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.user.PasswordValidator;
@@ -52,6 +54,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private TaskService taskService;
+
     @Override
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
@@ -75,12 +80,25 @@ public class UserServiceImpl implements UserService {
     public UserProfile getUserProfile(String rollnumber, UserPrincipal currentUser) {
         if (currentUser.getRollnumber().equals(rollnumber)
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))){
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
             User user = userRepository.getUserByRollnumber(rollnumber);
             return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(),
-                    UserRole.getRole(user.getRole()),UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null) ;
+                    UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null);
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile of: " + rollnumber);
+        throw new UnauthorizedException(apiResponse);
+    }
+
+    @Override
+    public UserProfileReduce getStudentByStaff(Integer eventID, String rollnumber, UserPrincipal currentUser) {
+        boolean havePermission = taskService.checkPermissionCheckIn(eventID, currentUser.getId());
+        if (havePermission
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            User user = userRepository.getUserByRollnumber(rollnumber);
+            return new UserProfileReduce(user);
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile student");
         throw new UnauthorizedException(apiResponse);
     }
 

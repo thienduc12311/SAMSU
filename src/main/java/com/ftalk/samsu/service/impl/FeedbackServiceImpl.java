@@ -7,6 +7,8 @@ import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.feedback.FeedbackAnswer;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.participant.Participant;
+import com.ftalk.samsu.model.participant.ParticipantId;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
@@ -29,9 +31,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import javax.transaction.Transactional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ParticipantRepository participantRepository;
 
 
     @Override
@@ -77,13 +81,18 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackAnswerRepository.save(feedbackAnswer);
     }
 
+    @Transactional
     @Override
     public List<FeedbackAnswerResponse> submitFeedbackAnswer(Integer eventId, List<FeedbackAnswerRequest> feedbackAnswerRequests, UserPrincipal currentUser) {
-        User user = userRepository.getUser(currentUser);
-        Event event = eventRepository.getOne(eventId);
-        if (event.getParticipants() == null || !event.getParticipants().contains(user)){
+        Optional<Participant> participantOptional = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId));
+        if (!participantOptional.isPresent()) {
             throw new BadRequestException("You're not register this event");
         }
+        if (participantOptional.get().getCheckout() != null) {
+            throw new BadRequestException("You already submit feedback");
+        }
+        User user = userRepository.getUser(currentUser);
+        Event event = eventRepository.getOne(eventId);
         List<FeedbackQuestion> feedbackQuestions = event.getFeedbackQuestions();
         Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
                 Function.identity()));
@@ -101,6 +110,8 @@ public class FeedbackServiceImpl implements FeedbackService {
             return feedbackAnswer;
         }).collect(Collectors.toList());
 
+        participantOptional.get().setCheckout(new Date());
+        participantRepository.save(participantOptional.get());
         return ListConverter.listToList(feedbackAnswerRepository.saveAll(feedbackAnswers), FeedbackAnswerResponse::new);
     }
 

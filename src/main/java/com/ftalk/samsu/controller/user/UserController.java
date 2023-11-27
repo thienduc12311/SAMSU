@@ -63,6 +63,14 @@ public class UserController {
         return new ResponseEntity<>(userProfile, HttpStatus.OK);
     }
 
+    @GetMapping("/event/{eventId}/profile/{rollnumber}")
+    public ResponseEntity<UserProfile> getUSerProfileByStaff(@PathVariable(value = "rollnumber") String rollnumber,
+                                                             @PathVariable(value = "eventId") Integer eventId,
+                                                             @CurrentUser UserPrincipal currentUser) {
+        UserProfile userProfile = userService.getUserProfile(rollnumber,currentUser);
+        return new ResponseEntity<>(userProfile, HttpStatus.OK);
+    }
+
     @GetMapping("/{rollnumber}/posts")
     public ResponseEntity<PagedResponse<Post>> getPostsCreatedBy(@PathVariable(value = "username") String rollnumber,
                                                                  @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,

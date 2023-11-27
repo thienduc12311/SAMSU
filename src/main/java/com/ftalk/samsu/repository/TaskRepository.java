@@ -14,6 +14,7 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
 	Page<Task> findAll(Pageable pageable);
 
+	Optional<Task> findTaskByEventsIdAndTitle(Integer eventId, String tile);
 	Optional<Task> findById(Integer id);
 
 }
