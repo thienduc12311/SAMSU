@@ -3,6 +3,7 @@ package com.ftalk.samsu.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.ftalk.samsu.model.audit.DateAudit;
 import com.ftalk.samsu.model.audit.UserDateAudit;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.User;
@@ -38,7 +39,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "posts")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Post extends UserDateAudit {
+public class Post extends DateAudit {
 	private static final long serialVersionUID = 1L;
 
 	@Id
