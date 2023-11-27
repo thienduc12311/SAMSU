@@ -31,11 +31,15 @@ public class Assignee extends DateAudit implements Serializable {
 	@EmbeddedId
 	private AssigneeId id;
 
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	@ManyToOne
 	@MapsId("usersId")
 	@JoinColumn(name = "users_id")
 	private User assignee;
 
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	@ManyToOne
 	@MapsId("tasksId")
 	@JoinColumn(name = "tasks_id")
