@@ -37,14 +37,4 @@ public class TaskController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/evaluate/{eventProposalId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> updateEventProposalEvaluate(
-            @Valid @RequestBody EventProposalEvaluateRequest eventProposalEvaluateRequest,
-            @PathVariable(value = "eventProposalId") Integer eventProposalId,
-            @CurrentUser UserPrincipal currentUser) {
-        ApiResponse apiResponse = eventProposalService.updateEventProposalEvaluate(eventProposalId, eventProposalEvaluateRequest, currentUser);
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
 }
