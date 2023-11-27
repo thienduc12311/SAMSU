@@ -52,7 +52,8 @@ public class EventProposal extends DateAudit implements Serializable {
     @JoinColumn(name = "creator_users_id")
     private User creatorUserId;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    //@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne
     @JoinColumn(name = "accepter_users_id")
     private User accepterUserId;
 
