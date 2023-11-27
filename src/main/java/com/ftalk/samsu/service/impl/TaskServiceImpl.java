@@ -121,7 +121,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     public Integer getTaskIdByTitle(Integer eventId, String title) {
-        Task task = taskRepository.findTaskByEventsIdAndTitle(eventId, title).orElseThrow(() -> new ResourceNotFoundException("Task Checkin", "Event Id", eventId));
+        Task task = taskRepository.findTaskByEventIdAndTitle(eventId, title).orElseThrow(() -> new ResourceNotFoundException("Task Checkin", "Event Id", eventId));
         return task.getId();
     }
 

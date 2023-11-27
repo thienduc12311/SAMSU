@@ -93,6 +93,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
         User user = userRepository.getUser(currentUser);
         Event event = eventRepository.getOne(eventId);
+//        Date time = event.getStartTime();
+//        long now = time.getTime() + event.getDuration();
+//        if (now )
         List<FeedbackQuestion> feedbackQuestions = event.getFeedbackQuestions();
         Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
                 Function.identity()));
