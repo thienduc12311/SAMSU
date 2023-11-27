@@ -29,7 +29,7 @@ public interface UserService {
 
 	PagedResponse<User> getAllUserIn(Integer page, Integer size);
 
-	User updateUser(User newUser, String rollnumber, UserPrincipal currentUser);
+	User updateUser(UserUpdate newUser, String rollnumber, UserPrincipal currentUser);
 
 	User updateUser(User newUser, UserPrincipal currentUser);
 

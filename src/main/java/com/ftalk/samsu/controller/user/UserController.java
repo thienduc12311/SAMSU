@@ -106,7 +106,7 @@ public class UserController {
 
     @PutMapping("/{rollnumber}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> updateUser(@Valid @RequestBody User newUser,
+    public ResponseEntity<User> updateUser(@Valid @RequestBody UserUpdate newUser,
                                            @PathVariable(value = "rollnumber") String rollnumber, @CurrentUser UserPrincipal currentUser) {
         User updatedUSer = userService.updateUser(newUser, rollnumber, currentUser);
 

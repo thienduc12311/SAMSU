@@ -48,7 +48,6 @@ public class User extends DateAudit {
     @NaturalId
     @Size(max = 45)
     @Column(name = "email")
-    @Email
     private String email;
 
     @ManyToMany(fetch = FetchType.LAZY,

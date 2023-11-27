@@ -6,6 +6,7 @@ import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.*;
 import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.payload.user.*;
+import com.ftalk.samsu.repository.DepartmentRepository;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
@@ -56,6 +57,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Override
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
@@ -197,14 +201,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(User newUser, String rollnumber, UserPrincipal currentUser) {
+    public User updateUser(UserUpdate newUser, String rollnumber, UserPrincipal currentUser) {
         User user = userRepository.getUserByRollnumber(rollnumber);
-        if (!checkUsernameAvailability(newUser.getUsername()).getAvailable()) {
+        if (!Objects.equals(user.getUsername(), newUser.getUsername()) && !checkUsernameAvailability(newUser.getUsername()).getAvailable()) {
             throw new BadRequestException("Username not available");
         }
         if (user.getId().equals(currentUser.getId())
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
-            user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+            if (newUser.getAvatar() != null) user.setAvatar(newUser.getAvatar());
+            if (newUser.getDepartmentId() != null) {
+                user.setDepartment(departmentRepository.getOne(newUser.getDepartmentId()));
+            }
+            if (newUser.getStatus() != null) user.setStatus(newUser.getStatus());
+            if (newUser.getName() != null) user.setName(newUser.getName());
+            if (newUser.getEmail() != null) user.setEmail(newUser.getEmail());
+            if (newUser.getUsername() != null) user.setUsername(newUser.getUsername());
+            if (newUser.getDob() != null) user.setDob(newUser.getDob());
+            if (newUser.getRole() != null) user.setRole(UserRole.getRoleValue(newUser.getRole()));
+            if (newUser.getPassword() != null) user.setPassword(passwordEncoder.encode(newUser.getPassword()));
             return userRepository.save(user);
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + rollnumber);
