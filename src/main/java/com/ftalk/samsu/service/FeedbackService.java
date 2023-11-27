@@ -8,6 +8,7 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 
 import java.util.List;
@@ -23,4 +24,5 @@ public interface FeedbackService {
 
 	FeedbackQuestion getFeedbackQuestion(Integer id, UserPrincipal currentUser);
 
+	List<FeedbackQuestionResponse> getFeedbackQuestions(Integer id, UserPrincipal currentUser);
 }

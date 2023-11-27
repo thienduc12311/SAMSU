@@ -14,6 +14,7 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.FeedbackService;
@@ -78,11 +79,11 @@ public class FeedbackServiceImpl implements FeedbackService {
         List<FeedbackQuestion> feedbackQuestions = feedbackQuestionRepository.findAllByEventId(eventId);
         Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
                 Function.identity()));
-        if (feedbackQuestions == null || feedbackQuestions.isEmpty()){
+        if (feedbackQuestions == null || feedbackQuestions.isEmpty()) {
             throw new BadRequestException("EventId don't have feedback form");
         }
 
-        if (feedbackQuestions.size() == feedbackAnswerRequests.size()){
+        if (feedbackQuestions.size() == feedbackAnswerRequests.size()) {
             throw new BadRequestException("Question number of event not match feedback answers");
         }
         List<FeedbackAnswer> feedbackAnswers = feedbackAnswerRequests.parallelStream().map(feedbackAnswerRequest -> {
@@ -103,5 +104,14 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public FeedbackQuestion getFeedbackQuestion(Integer id, UserPrincipal currentUser) {
         return feedbackQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("FeedbackQuestions", ID, id));
+    }
+
+    @Override
+    public List<FeedbackQuestionResponse> getFeedbackQuestions(Integer id, UserPrincipal currentUser) {
+        List<FeedbackQuestion> feedbackQuestionList = feedbackQuestionRepository.findAllByEventId(id);
+        if (feedbackQuestionList == null || feedbackQuestionList.isEmpty()) {
+            throw new BadRequestException("EventId don't have feedback form");
+        }
+        return ListConverter.listToList(feedbackQuestionList, FeedbackQuestionResponse::new);
     }
 }
