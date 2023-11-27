@@ -1,11 +1,14 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.AssigneeId;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.event.AssigneeRequest;
 import com.ftalk.samsu.repository.AssigneeRepository;
 import com.ftalk.samsu.security.UserPrincipal;
+import com.ftalk.samsu.service.AssigneeService;
 import com.ftalk.samsu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class AssigneeServiceImpl {
+public class AssigneeServiceImpl implements AssigneeService {
     @Autowired
     private AssigneeRepository assigneeRepository;
     @Autowired
@@ -45,4 +48,13 @@ public class AssigneeServiceImpl {
         return assigneeRepository.findByIdTasksId(taskId);
     }
 
+
+    public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal){
+        Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, userPrincipal.getId())).orElseThrow(
+                () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
+        );
+        assignee.setStatus(status);
+        assigneeRepository.save(assignee);
+        return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
+    }
 }
