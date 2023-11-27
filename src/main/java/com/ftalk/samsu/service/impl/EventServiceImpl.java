@@ -101,6 +101,16 @@ public class EventServiceImpl implements EventService {
         return getEventPagedResponse(events);
     }
 
+    @Override
+    public PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size) {
+        AppUtils.validatePageNumberAndSize(page, size);
+        User user = userRepository.getUserByRollnumber(rollNumber);
+        if (user == null) throw new BadRequestException("User not found!!");
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
+        Page<Event> events = eventRepository.findByParticipantsRollnumber(rollNumber, pageable);
+        return getEventPagedResponse(events);
+    }
+
     private PagedResponse<EventResponse> getEventPagedResponse(Page<Event> events) {
         if (events.getNumberOfElements() == 0) {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());

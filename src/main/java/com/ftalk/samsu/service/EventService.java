@@ -18,6 +18,8 @@ public interface EventService {
 
 	PagedResponse<EventResponse> getAllEventsPublic(int page, int size);
 
+	PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size);
+
 	Event getEvent(Integer id, UserPrincipal currentUser);
 
 	ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser);

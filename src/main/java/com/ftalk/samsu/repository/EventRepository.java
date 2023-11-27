@@ -23,5 +23,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 	Page<Event> findByStatus(Short status, Pageable pageable);
 
 	Page<Event> findByDepartments(List<Department> departments, Pageable pageable);
+	Page<Event> findByParticipantsRollnumber(String rollNumber, Pageable pageable);
 
 }
