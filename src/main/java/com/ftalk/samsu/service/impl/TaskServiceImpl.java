@@ -106,8 +106,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Boolean checkPermissionCheckIn(Integer eventId, Integer userId) {
-        Integer taskCheckinId = getTaskIdByTitle(eventId, "Checkin");
-        return isTaskStaff(taskCheckinId, userId);
+        Integer taskCheckinId = null;
+        try{
+            taskCheckinId = getTaskIdByTitle(eventId, "Checkin");
+        } catch (Exception ex){
+            LOGGER.error(ex.getMessage(),ex);
+        }
+        return taskCheckinId != null ? isTaskStaff(taskCheckinId, userId) : false;
     }
 
     @Override

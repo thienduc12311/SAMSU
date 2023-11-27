@@ -58,6 +58,8 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+
+
     @GetMapping("/{eventId}/register")
     public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventId") Integer eventId,
                                                 @CurrentUser UserPrincipal currentUser) {
