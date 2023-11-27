@@ -22,7 +22,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "feedback_questions")
+@Table(name = "feedback_answers")
 public class FeedbackAnswer extends DateAudit implements Serializable {
     private static final long serialVersionUID = 14L;
 

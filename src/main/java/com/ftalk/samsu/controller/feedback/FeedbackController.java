@@ -57,6 +57,14 @@ public class FeedbackController {
         return new ResponseEntity<>(feedbackAnswers, HttpStatus.CREATED);
     }
 
+    @GetMapping("/event/{eventId}/questions")
+    public ResponseEntity<List<FeedbackQuestionResponse>> get(
+            @PathVariable(name = "eventId") Integer id,
+            @CurrentUser UserPrincipal currentUser) {
+        List<FeedbackQuestionResponse> feedbackQuestions = feedbackService.getFeedbackQuestions(id, currentUser);
+        return new ResponseEntity<>(feedbackQuestions, HttpStatus.CREATED);
+    }
+
     @GetMapping("/answers/{id}")
     public ResponseEntity<FeedbackAnswerResponse> getAnswer(@PathVariable(name = "id") Integer id, @CurrentUser UserPrincipal currentUser) {
         FeedbackAnswer feedbackAnswer = feedbackService.getFeedbackAnswer(id, currentUser);
@@ -68,5 +76,6 @@ public class FeedbackController {
         FeedbackQuestion feedbackQuestion = feedbackService.getFeedbackQuestion(id, currentUser);
         return new ResponseEntity<>(new FeedbackQuestionResponse(feedbackQuestion), HttpStatus.OK);
     }
+
 
 }
