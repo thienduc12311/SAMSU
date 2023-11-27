@@ -37,4 +37,12 @@ public class TaskController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<PagedResponse<AssigneeResponse>> getAllMyAssignee(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
+            @CurrentUser UserPrincipal currentUser) {
+        PagedResponse<AssigneeResponse> apiResponse = assigneeService.getAllMyTasks(page, size, currentUser);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
 }
