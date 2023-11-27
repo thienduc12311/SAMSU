@@ -1,5 +1,6 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.Post;
@@ -29,6 +30,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.ftalk.samsu.utils.AppConstants.*;
 
@@ -66,6 +70,29 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackAnswer.setUser(user);
         feedbackAnswer.setFeedbackQuestion(feedbackQuestion);
         return feedbackAnswerRepository.save(feedbackAnswer);
+    }
+
+    @Override
+    public List<FeedbackAnswerResponse> submitFeedbackAnswer(Integer eventId, List<FeedbackAnswerRequest> feedbackAnswerRequests, UserPrincipal currentUser) {
+        User user = userRepository.getUser(currentUser);
+        List<FeedbackQuestion> feedbackQuestions = feedbackQuestionRepository.findAllByEventId(eventId);
+        Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
+                Function.identity()));
+        if (feedbackQuestions == null || feedbackQuestions.isEmpty()){
+            throw new BadRequestException("EventId don't have feedback form");
+        }
+
+        if (feedbackQuestions.size() == feedbackAnswerRequests.size()){
+            throw new BadRequestException("Question number of event not match feedback answers");
+        }
+        List<FeedbackAnswer> feedbackAnswers = feedbackAnswerRequests.parallelStream().map(feedbackAnswerRequest -> {
+            FeedbackAnswer feedbackAnswer = new FeedbackAnswer(feedbackAnswerRequest);
+            feedbackAnswer.setUser(user);
+            feedbackAnswer.setFeedbackQuestion(feedbackQuestionMap.get(feedbackAnswerRequest.getQuestionId()));
+            return feedbackAnswer;
+        }).collect(Collectors.toList());
+
+        return ListConverter.listToList(feedbackAnswerRepository.saveAll(feedbackAnswers), FeedbackAnswerResponse::new);
     }
 
     @Override

@@ -10,11 +10,14 @@ import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 
+import java.util.List;
+
 public interface FeedbackService {
 
 	PagedResponse<FeedbackAnswerResponse> getAllFeedbackAnswerByQuestionId(Integer questionId, int page, int size);
 
 	FeedbackAnswer submitFeedbackAnswer(FeedbackAnswerRequest id, UserPrincipal currentUser);
+	List<FeedbackAnswerResponse> submitFeedbackAnswer(Integer eventId, List<FeedbackAnswerRequest> feedbackAnswerRequests, UserPrincipal currentUser);
 
 	FeedbackAnswer getFeedbackAnswer(Integer id, UserPrincipal currentUser);
 

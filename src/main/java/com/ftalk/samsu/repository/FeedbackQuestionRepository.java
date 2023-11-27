@@ -17,6 +17,8 @@ public interface FeedbackQuestionRepository extends JpaRepository<FeedbackQuesti
 
 	Page<FeedbackQuestion> findAll(Pageable pageable);
 
+	List<FeedbackQuestion> findAllByEventId(Integer id);
+
 	Optional<FeedbackQuestion> findById(Integer id);
 
 }
