@@ -30,7 +30,7 @@ public class EventResponse {
     private String fileUrls;
     private Date startTime;
     private List<Department> departments;
-    private List<String> participants;
+    private List<UserProfileReduce> participants;
     private List<FeedbackQuestion> feedbackQuestions;
     private List<TaskResponse> tasks;
     private Date createAt;
@@ -52,7 +52,7 @@ public class EventResponse {
         fileUrls = event.getFileUrls();
         departments = event.getDepartments();
         feedbackQuestions = event.getFeedbackQuestions();
-        participants = event.getParticipants().parallelStream().map(User::getRollnumber).collect(Collectors.toList());
+        participants = event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList());
         createAt = event.getCreatedAt();
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
