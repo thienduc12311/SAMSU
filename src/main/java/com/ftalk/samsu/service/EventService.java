@@ -2,6 +2,7 @@ package com.ftalk.samsu.service;
 
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Event;
+import com.ftalk.samsu.model.participant.Participant;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PhotoRequest;
@@ -21,6 +22,7 @@ public interface EventService {
 	PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size);
 
 	Event getEvent(Integer id, UserPrincipal currentUser);
+	List<Participant> getAllEventParticipants(Integer eventId);
 
 	ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser);
 

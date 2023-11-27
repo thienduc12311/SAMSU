@@ -3,6 +3,7 @@ package com.ftalk.samsu.controller.event;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
+import com.ftalk.samsu.model.participant.Participant;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.*;
@@ -48,6 +49,12 @@ public class EventController {
     public ResponseEntity<List<Post>> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                             @CurrentUser UserPrincipal currentUser) {
         List<Post> response = eventService.getEventPost(eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventId}/participants")
+    public ResponseEntity<List<Participant>> getEventParticipants(@PathVariable(value = "eventId") Integer eventId) {
+        List<Participant> response = eventService.getAllEventParticipants(eventId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -119,7 +126,7 @@ public class EventController {
             @PathVariable(value = "eventId") Integer eventId,
             @PathVariable(value = "rollnumber") String rollnumber,
             @CurrentUser UserPrincipal currentUser) {
-        ApiResponse response = eventService.checkIn(eventId,rollnumber, currentUser);
+        ApiResponse response = eventService.checkIn(eventId, rollnumber, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -98,6 +98,8 @@ public class EventServiceImpl implements EventService {
 
     }
 
+
+
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
@@ -137,6 +139,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Participant> getAllEventParticipants(Integer eventId) {
+        return participantRepository.findByParticipantId_EventsId(eventId);
+    }
+
+    @Override
     public ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User user = userRepository.getUser(currentUser);
@@ -162,6 +169,9 @@ public class EventServiceImpl implements EventService {
             Optional<Participant> participantOptional = participantRepository.findById(new ParticipantId(user.getId(),eventId));
             if (participantOptional.isPresent()) {
                 Participant participant = participantOptional.get();
+                if (participant.getCheckin() != null) {
+                    throw new BadRequestException("This user already checkin!");
+                }
                 participant.setCheckin(new Date());
                 participantRepository.save(participant);
                 return new ApiResponse(Boolean.TRUE, "Checkin success");
