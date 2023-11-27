@@ -39,7 +39,7 @@ public class TaskResponse {
         content = task.getContent();
         status = task.getStatus();
         creator = task.getCreatorUserId() != null ? new UserProfileReduce(task.getCreatorUserId()) : null;
-        assignees = task.getAssignees().stream().map(assignee -> new UserProfileReduce(assignee.getAssignee())).collect(Collectors.toList());
+        assignees = task.getAssignees() != null ? task.getAssignees().stream().map(assignee -> new UserProfileReduce(assignee.getAssignee())).collect(Collectors.toList()) : null;
         eventId = task.getEvent() != null ? task.getEvent().getId() : null;
         score = task.getScore();
         gradeSubCriteria = new GradeSubCriteriaResponse(task.getGradeSubCriteria());

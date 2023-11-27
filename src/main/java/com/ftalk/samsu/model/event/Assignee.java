@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Lazy;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -33,16 +34,14 @@ public class Assignee extends DateAudit implements Serializable {
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	@ManyToOne
-	@MapsId("usersId")
-	@JoinColumn(name = "users_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "users_id", insertable = false, updatable = false)
 	private User assignee;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	@ManyToOne
-	@MapsId("tasksId")
-	@JoinColumn(name = "tasks_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tasks_id", insertable = false, updatable = false)
 	private Task task;
 
 	@NotNull
@@ -53,7 +52,4 @@ public class Assignee extends DateAudit implements Serializable {
 		this.id = assigneeId;
 		this.status = status;
 	}
-
-
-
 }

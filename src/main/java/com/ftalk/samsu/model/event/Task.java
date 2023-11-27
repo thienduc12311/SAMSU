@@ -66,6 +66,7 @@ public class Task extends DateAudit implements Serializable {
     @JoinColumn(name = "gradesubcriteria_id")
     private GradeSubCriteria gradeSubCriteria;
 
+
     @OneToMany(mappedBy = "task")
     private List<Assignee> assignees;
 
