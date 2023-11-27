@@ -28,7 +28,7 @@ public class EventController {
     EventService eventService;
 
     @GetMapping
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<EventResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
@@ -87,6 +87,7 @@ public class EventController {
 //    }
 
     @GetMapping("user/{rollnumber}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<EventResponse>> getEventByRollNumber(
             @PathVariable(value = "rollnumber") String rollnumber,
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
@@ -94,6 +95,17 @@ public class EventController {
         PagedResponse<EventResponse> response = eventService.getEventsByRollNumber(rollnumber, page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PagedResponse<EventResponse>> getMyEvents(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
+            @CurrentUser UserPrincipal currentUser) {
+        PagedResponse<EventResponse> response = eventService.getEventsByRollNumber(currentUser.getRollnumber(), page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest eventCreateRequest,
