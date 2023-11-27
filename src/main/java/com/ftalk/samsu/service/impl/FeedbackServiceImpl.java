@@ -43,6 +43,10 @@ public class FeedbackServiceImpl implements FeedbackService {
     private FeedbackAnswerRepository feedbackAnswerRepository;
 
     @Autowired
+    private EventRepository eventRepository;
+
+
+    @Autowired
     private FeedbackQuestionRepository feedbackQuestionRepository;
 
     @Autowired
@@ -76,7 +80,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<FeedbackAnswerResponse> submitFeedbackAnswer(Integer eventId, List<FeedbackAnswerRequest> feedbackAnswerRequests, UserPrincipal currentUser) {
         User user = userRepository.getUser(currentUser);
-        List<FeedbackQuestion> feedbackQuestions = feedbackQuestionRepository.findAllByEventId(eventId);
+        Event event = eventRepository.getOne(eventId);
+        if (event.getParticipants() == null || !event.getParticipants().contains(user)){
+            throw new BadRequestException("You're not register this event");
+        }
+        List<FeedbackQuestion> feedbackQuestions = event.getFeedbackQuestions();
         Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
                 Function.identity()));
         if (feedbackQuestions == null || feedbackQuestions.isEmpty()) {
