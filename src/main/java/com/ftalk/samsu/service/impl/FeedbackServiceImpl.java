@@ -83,7 +83,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new BadRequestException("EventId don't have feedback form");
         }
 
-        if (feedbackQuestions.size() == feedbackAnswerRequests.size()) {
+        if (feedbackQuestions.size() != feedbackAnswerRequests.size()) {
             throw new BadRequestException("Question number of event not match feedback answers");
         }
         List<FeedbackAnswer> feedbackAnswers = feedbackAnswerRequests.parallelStream().map(feedbackAnswerRequest -> {
