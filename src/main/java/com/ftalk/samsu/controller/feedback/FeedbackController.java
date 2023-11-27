@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/feedback")
@@ -42,9 +43,18 @@ public class FeedbackController {
 
     @PostMapping("/answers")
     public ResponseEntity<FeedbackAnswerResponse> create(@Valid @RequestBody FeedbackAnswerRequest feedbackAnswerRequest,
-                                                 @CurrentUser UserPrincipal currentUser) {
+                                                         @CurrentUser UserPrincipal currentUser) {
         FeedbackAnswer feedbackAnswer = feedbackService.submitFeedbackAnswer(feedbackAnswerRequest, currentUser);
         return new ResponseEntity<>(new FeedbackAnswerResponse(feedbackAnswer), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/event/{eventId}/submit")
+    public ResponseEntity<List<FeedbackAnswerResponse>> createList(
+            @PathVariable(name = "eventId") Integer id,
+            @Valid @RequestBody List<FeedbackAnswerRequest> feedbackAnswerRequests,
+            @CurrentUser UserPrincipal currentUser) {
+        List<FeedbackAnswerResponse> feedbackAnswers = feedbackService.submitFeedbackAnswer(id, feedbackAnswerRequests, currentUser);
+        return new ResponseEntity<>(feedbackAnswers, HttpStatus.CREATED);
     }
 
     @GetMapping("/answers/{id}")
