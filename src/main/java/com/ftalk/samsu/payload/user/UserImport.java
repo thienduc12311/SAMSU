@@ -34,7 +34,7 @@ public class UserImport {
 
     public User createUser(Short status) {
         short roleValue = UserRole.getRoleValue(role);
-        short score = UserRole.ROLE_STUDENT == roleValue ? AppConstants.DEFAULT_SCORE : (short) -1;
+        short score = UserRole.ROLE_STUDENT == roleValue ? AppConstants.DEFAULT_SCORE : (short) 0;
         return new User(username, password, email, name, rollnumber, roleValue, status, avatar, dob, score);
     }
 
