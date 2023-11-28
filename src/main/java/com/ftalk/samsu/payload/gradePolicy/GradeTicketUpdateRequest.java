@@ -14,6 +14,6 @@ public class GradeTicketUpdateRequest {
     private String evidenceUrls;
     private String feedback;
     private Integer gradeSubCriteriaId;
+    private Integer score;
     private Short status;
-
 }

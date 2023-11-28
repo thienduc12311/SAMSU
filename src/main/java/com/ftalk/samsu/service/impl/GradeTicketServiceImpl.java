@@ -92,6 +92,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         if (isAdminOrManager) {
             if (gradeTicketRequest.getStatus() != null) {
                 gradeTicket.setStatus(gradeTicketRequest.getStatus());
+                gradeTicket.setScore(gradeTicketRequest.getScore());
                 if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue()) {
                     gradeTicket.setAccepterUser(user);
                 }
@@ -120,28 +121,24 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         if (gradeTicketRequest.getStatus() != null) {
             if (isAdminOrManager) {
                 gradeTicket.setStatus(gradeTicketRequest.getStatus());
+                gradeTicket.setScore(gradeTicketRequest.getScore());
                 if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue()) {
                     gradeTicket.setAccepterUser(user);
                 }
                 else {
                     gradeTicket.setAccepterUser(null);
                 }
-
+                if (gradeTicketRequest.getFeedback() != null)
+                    gradeTicket.setFeedback(gradeTicketRequest.getFeedback());
+                if (gradeTicketRequest.getGradeSubCriteriaId() != null) {
+                    GradeSubCriteria gradeSubCriteria = gradeSubCriteriaRepository.findById(gradeTicketRequest.getGradeSubCriteriaId()).orElseThrow(() -> new BadRequestException("GradeSubCriteria not found with id " + gradeTicketRequest.getGradeSubCriteriaId()));
+                    gradeTicket.setGradeSubCriteria(gradeSubCriteria);
+                }
                 GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
                 return new GradeTicketResponse(savedGradeTicket);
             }
             else {
                 ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to change status");
-                throw new UnauthorizedException(apiResponse);
-            }
-        }
-        if (gradeTicketRequest.getGradeSubCriteriaId() != null) {
-            if (isAdminOrManager) {
-                GradeSubCriteria gradeSubCriteria = gradeSubCriteriaRepository.findById(gradeTicketRequest.getGradeSubCriteriaId()).orElseThrow(() -> new BadRequestException("GradeSubCriteria not found with id " + gradeTicketRequest.getGradeSubCriteriaId()));
-                gradeTicket.setGradeSubCriteria(gradeSubCriteria);
-            }
-            else {
-                ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to change gradeSubCriteria");
                 throw new UnauthorizedException(apiResponse);
             }
         }
@@ -151,8 +148,6 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             gradeTicket.setContent(gradeTicketRequest.getContent());
         if (gradeTicketRequest.getEvidenceUrls() != null)
             gradeTicket.setEvidenceUrls(gradeTicketRequest.getEvidenceUrls());
-        if (gradeTicketRequest.getFeedback() != null)
-            gradeTicket.setFeedback(gradeTicketRequest.getFeedback());
         gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
         gradeTicket.setAccepterUser(null);
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
