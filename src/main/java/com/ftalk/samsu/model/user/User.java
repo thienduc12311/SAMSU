@@ -70,6 +70,9 @@ public class User extends DateAudit {
     @Size(max = 1000)
     private String avatar;
 
+    @Column(name = "score")
+    private Short score;
+
     @Column(name = "dob")
     private Date dob;
 
@@ -88,17 +91,18 @@ public class User extends DateAudit {
     @Column(name = "rollnumber")
     private String rollnumber;
 
-    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status) {
+    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status, Short score) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.role = role;
         this.status = status;
         this.name = name;
+        this.score = score == null ? (short) 60 : score;
         this.rollnumber = rollnumber;
     }
 
-    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status, String avatar, Date dob) {
+    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status, String avatar, Date dob, Short score) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -108,6 +112,7 @@ public class User extends DateAudit {
         this.rollnumber = rollnumber;
         this.avatar = avatar;
         this.dob = dob;
+        this.score = score == null ? (short) 60 : score;
     }
 
     public User(Integer id) {

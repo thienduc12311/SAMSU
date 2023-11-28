@@ -40,6 +40,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     private UserRepository userRepository;
     @Autowired
     private GradeSubCriteriaRepository gradeSubCriteriaRepository;
+
     @Override
     public PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
@@ -72,6 +73,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         return new GradeTicketResponse(ticket);
     }
 
+    @Transactional
     @Override
     public GradeTicketResponse updateGradeTicket(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser) {
         User user = userRepository.getUser(currentUser);
@@ -91,17 +93,36 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         }
         if (isAdminOrManager) {
             if (gradeTicketRequest.getStatus() != null) {
+                boolean isChangeStatus = gradeTicket.getStatus() == null || gradeTicket.getStatus() != gradeTicketRequest.getStatus();
+                boolean isApproved = isChangeStatus && gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue();
+                boolean isUnApprove = isChangeStatus && gradeTicket.getStatus() == GradeTicketConstants.APPROVED.getValue();
+                boolean isIntactApproved = gradeTicket.getStatus() == gradeTicketRequest.getStatus()
+                        && gradeTicket.getStatus() == GradeTicketConstants.APPROVED.getValue();
+
+                if (isApproved) {
+                    gradeTicket.setAccepterUser(user);
+                    if (gradeTicketRequest.getScore() != null) {
+                        User creator = gradeTicket.getCreatorUser();
+                        creator.setScore((short) (creator.getScore() + gradeTicketRequest.getScore()));
+                        userRepository.save(creator);
+                    }
+                } else if (isUnApprove) {
+                    gradeTicket.setAccepterUser(null);
+                    if (gradeTicket.getScore() != null) {
+                        User creator = gradeTicket.getCreatorUser();
+                        creator.setScore((short) (creator.getScore() - gradeTicket.getScore()));
+                        userRepository.save(creator);
+                    }
+                } else if (isIntactApproved && gradeTicket.getScore() != gradeTicketRequest.getScore()) {
+                    User creator = gradeTicket.getCreatorUser();
+                    creator.setScore((short) (creator.getScore() - gradeTicket.getScore() + gradeTicketRequest.getScore()));
+                    userRepository.save(creator);
+                }
                 gradeTicket.setStatus(gradeTicketRequest.getStatus());
                 gradeTicket.setScore(gradeTicketRequest.getScore());
-                if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue()) {
-                    gradeTicket.setAccepterUser(user);
-                }
-                else {
-                    gradeTicket.setAccepterUser(null);
-                }
+
             }
-        }
-        else {
+        } else {
             if (gradeTicketRequest.getStatus() != null) {
                 ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to change status");
                 throw new UnauthorizedException(apiResponse);
@@ -124,8 +145,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
                 gradeTicket.setScore(gradeTicketRequest.getScore());
                 if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue() || gradeTicketRequest.getStatus() == GradeTicketConstants.REJECTED.getValue()) {
                     gradeTicket.setAccepterUser(user);
-                }
-                else {
+                } else {
                     gradeTicket.setAccepterUser(null);
                 }
                 if (gradeTicketRequest.getFeedback() != null)
@@ -136,8 +156,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
                 }
                 GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
                 return new GradeTicketResponse(savedGradeTicket);
-            }
-            else {
+            } else {
                 ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to change status");
                 throw new UnauthorizedException(apiResponse);
             }
@@ -153,6 +172,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
         return new GradeTicketResponse(savedGradeTicket);
     }
+
     @Override
     @Transactional
     public GradeTicketResponse addGradeTicket(GradeTicketCreateRequest gradeTicketRequest, UserPrincipal currentUser) {

@@ -31,4 +31,6 @@ public class AppConstants {
 	public static final String YOU_DON_T_HAVE_PERMISSION_TO_MAKE_THIS_OPERATION = "You don't have permission to make this operation";
 
 	public static final String APP_URL = "https://samsu-fpt.software";
+
+	public static final Short DEFAULT_SCORE = 60;
 }

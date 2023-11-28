@@ -1,6 +1,8 @@
 package com.ftalk.samsu.model.user;
 
 public class UserRole {
+    public static final Short ROLE_STUDENT = 3;
+
     public static String getRole(Short roleValue){
         switch (roleValue){
             case 0:

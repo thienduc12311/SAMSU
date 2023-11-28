@@ -3,6 +3,7 @@ package com.ftalk.samsu.payload.user;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.model.user.UserRole;
+import com.ftalk.samsu.utils.AppConstants;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +33,9 @@ public class UserImport {
     private Date dob;
 
     public User createUser(Short status) {
-        return new User(username, password, email, name, rollnumber, UserRole.getRoleValue(role), status, avatar, dob);
+        short roleValue = UserRole.getRoleValue(role);
+        short score = UserRole.ROLE_STUDENT == roleValue ? AppConstants.DEFAULT_SCORE : (short) -1;
+        return new User(username, password, email, name, rollnumber, roleValue, status, avatar, dob, score);
     }
 
     public boolean isValid() {

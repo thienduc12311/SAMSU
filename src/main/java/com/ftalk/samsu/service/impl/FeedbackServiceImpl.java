@@ -115,6 +115,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         participantOptional.get().setCheckout(new Date());
         participantRepository.save(participantOptional.get());
+        user.setScore((short) (user.getScore() + event.getAttendScore()));
+        userRepository.save(user);
         return ListConverter.listToList(feedbackAnswerRepository.saveAll(feedbackAnswers), FeedbackAnswerResponse::new);
     }
 
