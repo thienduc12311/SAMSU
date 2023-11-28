@@ -175,7 +175,7 @@ public class EventProposalServiceImpl implements EventProposalService {
             User creator = eventProposal.getCreatorUserId();
             try {
                 mailSenderService.sendEmail(creator.getEmail(), "Event Proposal Updated Staus", "Dear "
-                        + creator.getUsername() + ",\nYour event proposal was update, please check your event proposal!\n Link proposal: "
+                        + creator.getUsername() + ",<br>Your event proposal was update, please check your event proposal!<br> Link proposal: "
                         + APP_URL + PROPOSAL_DETAILS_PATH + eventProposal.getId());
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
