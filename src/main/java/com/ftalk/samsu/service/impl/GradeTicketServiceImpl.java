@@ -122,7 +122,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             if (isAdminOrManager) {
                 gradeTicket.setStatus(gradeTicketRequest.getStatus());
                 gradeTicket.setScore(gradeTicketRequest.getScore());
-                if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue()) {
+                if (gradeTicketRequest.getStatus() == GradeTicketConstants.APPROVED.getValue() || gradeTicketRequest.getStatus() == GradeTicketConstants.REJECTED.getValue()) {
                     gradeTicket.setAccepterUser(user);
                 }
                 else {
