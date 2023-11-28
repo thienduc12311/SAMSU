@@ -17,4 +17,5 @@ public class UserProfile {
 	private String status;
 	private Date dob;
 	private String department;
+	private Short score;
 }
