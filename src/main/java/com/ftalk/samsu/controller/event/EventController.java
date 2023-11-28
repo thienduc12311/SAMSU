@@ -53,8 +53,8 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}/participants")
-    public ResponseEntity<List<Participant>> getEventParticipants(@PathVariable(value = "eventId") Integer eventId) {
-        List<Participant> response = eventService.getAllEventParticipants(eventId);
+    public ResponseEntity<List<ParticipantResponse>> getEventParticipants(@PathVariable(value = "eventId") Integer eventId) {
+        List<ParticipantResponse> response = eventService.getAllEventParticipants(eventId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

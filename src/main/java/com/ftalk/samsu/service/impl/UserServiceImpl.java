@@ -276,9 +276,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, User> getMapUserByRollnumber(Set<String> rollnumber) {
         Set<User> userList = userRepository.findAllByRollnumberIn(rollnumber);
-        Map<String, User> userMap = userList.parallelStream()
+        return userList.parallelStream()
                 .collect(Collectors.toMap(User::getRollnumber, user -> user));
-        return userMap;
+    }
+
+    @Override
+    public Map<Integer, User> getMapUserById(List<Integer> ids) {
+        List<User> userList = userRepository.findByIdIn(ids);
+        return userList.parallelStream()
+                .collect(Collectors.toMap(User::getId, user -> user));
     }
 
     @Override
@@ -286,55 +292,4 @@ public class UserServiceImpl implements UserService {
         return SECRET_CHECK_TOKEN.equals(secret);
     }
 
-//    @Override
-//    public ApiResponse giveAdmin(String username) {
-//        User user = userRepository.getUserByName(username);
-//        List<Role> roles = new ArrayList<>();
-//        roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
-//                .orElseThrow(() -> new AppException("User role not set")));
-//        roles.add(
-//                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
-////		user.setRoles(roles);
-//        userRepository.save(user);
-//        return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
-//    }
-//
-//    @Override
-//    public ApiResponse removeAdmin(String username) {
-//        User user = userRepository.getUserByName(username);
-//        List<Role> roles = new ArrayList<>();
-//        roles.add(
-//                roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User role not set")));
-////		user.setRoles(roles);
-//        userRepository.save(user);
-//        return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
-//    }
-
-
-//	@Override
-//	public UserProfile setOrUpdateInfo(UserPrincipal currentUser, InfoRequest infoRequest) {
-//		User user = userRepository.findByUsername(currentUser.getUsername())
-//				.orElseThrow(() -> new ResourceNotFoundException("User", "username", currentUser.getUsername()));
-//		Geo geo = new Geo(infoRequest.getLat(), infoRequest.getLng());
-//		Address address = new Address(infoRequest.getStreet(), infoRequest.getSuite(), infoRequest.getCity(),
-//				infoRequest.getZipcode(), geo);
-//		Company company = new Company(infoRequest.getCompanyName(), infoRequest.getCatchPhrase(), infoRequest.getBs());
-//		if (user.getId().equals(currentUser.getId())
-//				|| currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
-////			user.setAddress(address);
-////			user.setCompany(company);
-////			user.setWebsite(infoRequest.getWebsite());
-////			user.setPhone(infoRequest.getPhone());
-//			User updatedUser = userRepository.save(user);
-//
-//			Long postCount = postRepository.countByCreatedBy(updatedUser.getId());
-//
-//			return new UserProfile(updatedUser.getId(), updatedUser.getUsername(),
-//					 updatedUser.getCreatedAt(),
-//					updatedUser.getEmail(), postCount);
-//		}
-//
-//		ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update users profile", HttpStatus.FORBIDDEN);
-//		throw new AccessDeniedException(apiResponse);
-//	}
 }
