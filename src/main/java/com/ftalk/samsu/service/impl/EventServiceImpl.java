@@ -20,11 +20,9 @@ import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PhotoRequest;
 import com.ftalk.samsu.payload.PhotoResponse;
-import com.ftalk.samsu.payload.event.AssigneeRequest;
-import com.ftalk.samsu.payload.event.EventCreateRequest;
-import com.ftalk.samsu.payload.event.EventResponse;
-import com.ftalk.samsu.payload.event.TaskRequest;
+import com.ftalk.samsu.payload.event.*;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
+import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.*;
@@ -45,6 +43,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ftalk.samsu.utils.AppConstants.*;
 
@@ -99,7 +98,6 @@ public class EventServiceImpl implements EventService {
     }
 
 
-
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
@@ -139,8 +137,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Participant> getAllEventParticipants(Integer eventId) {
-        return participantRepository.findByParticipantId_EventsId(eventId);
+    public List<ParticipantResponse> getAllEventParticipants(Integer eventId) {
+        List<Participant> participants = participantRepository.findByParticipantId_EventsId(eventId);
+        List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsers_id()).collect(Collectors.toList());
+        Map<Integer, User> userMap = userService.getMapUserById(ids);
+        return participants.parallelStream().map(
+                participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
+                                    new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
+                                    participant.getCheckin(), participant.getCheckout()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -166,7 +171,7 @@ public class EventServiceImpl implements EventService {
         if (havePermission
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
-            Optional<Participant> participantOptional = participantRepository.findById(new ParticipantId(user.getId(),eventId));
+            Optional<Participant> participantOptional = participantRepository.findById(new ParticipantId(user.getId(), eventId));
             if (participantOptional.isPresent()) {
                 Participant participant = participantOptional.get();
                 if (participant.getCheckin() != null) {

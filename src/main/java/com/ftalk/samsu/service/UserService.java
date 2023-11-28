@@ -38,6 +38,7 @@ public interface UserService {
 	ApiResponse deleteUser(String username, UserPrincipal currentUser);
 
 	Map<String, User> getMapUserByRollnumber(Set<String> rollnumber);
+	Map<Integer, User> getMapUserById(List<Integer> ids);
 
 	boolean validateToken(String secret, UserPrincipal currentUser);
 

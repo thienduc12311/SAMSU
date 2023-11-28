@@ -9,6 +9,7 @@ import com.ftalk.samsu.payload.PhotoRequest;
 import com.ftalk.samsu.payload.PhotoResponse;
 import com.ftalk.samsu.payload.event.EventCreateRequest;
 import com.ftalk.samsu.payload.event.EventResponse;
+import com.ftalk.samsu.payload.event.ParticipantResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public interface EventService {
 	PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size);
 
 	Event getEvent(Integer id, UserPrincipal currentUser);
-	List<Participant> getAllEventParticipants(Integer eventId);
+	List<ParticipantResponse> getAllEventParticipants(Integer eventId);
 
 	ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser);
 

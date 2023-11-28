@@ -28,12 +28,14 @@ public class UserImport {
     private String email;
 
     private String role;
+    private String avatar;
+    private Date dob;
 
     public User createUser(Short status) {
-        return new User(username, password, email, name, rollnumber, UserRole.getRoleValue(role),  status);
+        return new User(username, password, email, name, rollnumber, UserRole.getRoleValue(role), status, avatar, dob);
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         return !StringUtils.isEmpty(username) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(rollnumber) && !StringUtils.isEmpty(email);
     }
 }
