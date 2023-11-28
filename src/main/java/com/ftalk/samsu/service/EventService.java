@@ -21,7 +21,7 @@ public interface EventService {
 	PagedResponse<EventResponse> getAllEventsPublic(int page, int size);
 
 	PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size);
-
+	PagedResponse<EventResponse> getEventBySemester(String semester, int page, int size);
 	Event getEvent(Integer id, UserPrincipal currentUser);
 	List<ParticipantResponse> getAllEventParticipants(Integer eventId);
 

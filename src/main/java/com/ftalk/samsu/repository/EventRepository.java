@@ -24,5 +24,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
 	Page<Event> findByDepartments(List<Department> departments, Pageable pageable);
 	Page<Event> findByParticipantsRollnumber(String rollNumber, Pageable pageable);
+	Page<Event> findBySemesterName(String semesterName, Pageable pageable);
 
 }

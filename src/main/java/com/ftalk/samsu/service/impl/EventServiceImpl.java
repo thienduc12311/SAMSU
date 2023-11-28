@@ -116,6 +116,14 @@ public class EventServiceImpl implements EventService {
         return getEventPagedResponse(events);
     }
 
+    @Override
+    public PagedResponse<EventResponse> getEventBySemester(String semester, int page, int size) {
+        AppUtils.validatePageNumberAndSize(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
+        Page<Event> events = eventRepository.findBySemesterName(semester, pageable);
+        return getEventPagedResponse(events);
+    }
+
     private PagedResponse<EventResponse> getEventPagedResponse(Page<Event> events) {
         if (events.getNumberOfElements() == 0) {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
