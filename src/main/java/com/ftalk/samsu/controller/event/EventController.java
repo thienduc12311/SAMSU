@@ -11,6 +11,7 @@ import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.EventProposalService;
 import com.ftalk.samsu.service.EventService;
+import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class EventController {
 
     @Autowired
     EventService eventService;
+
+    @Autowired
+    MailSenderService mailSenderService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

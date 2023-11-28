@@ -1,4 +1,15 @@
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huytnase150173@fpt.edu.vn
+    password: 'deai gegf rsbv afmh'
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     url: jdbc:mysql://pi.nhalq.dev:2500/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     #    url: jdbc:mysql://localhost:3306/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true

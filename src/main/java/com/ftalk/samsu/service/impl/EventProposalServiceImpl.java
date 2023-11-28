@@ -23,6 +23,7 @@ import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.EventProposalService;
+import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
@@ -49,11 +50,17 @@ import static com.ftalk.samsu.utils.AppConstants.*;
 @Service
 public class EventProposalServiceImpl implements EventProposalService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProposalServiceImpl.class);
+
+    private static final String PROPOSAL_DETAILS_PATH = "/pages/event-proposal/view/";
+
     @Autowired
     private EventProposalRepository eventProposalRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MailSenderService mailSenderService;
 
     @Autowired
     private SemesterRepository semesterRepository;
@@ -143,12 +150,13 @@ public class EventProposalServiceImpl implements EventProposalService {
     @Override
     public ApiResponse updateEventProposalEvaluate(Integer id, EventProposalEvaluateRequest eventProposalEvaluateRequest, UserPrincipal currentUser) {
         if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
-            if (updateEvaluate(id,eventProposalEvaluateRequest,currentUser)){
+            if (updateEvaluate(id, eventProposalEvaluateRequest, currentUser)) {
                 return new ApiResponse(Boolean.TRUE, "You successfully updated eventProposal");
             } else {
-                throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR,"Update event proposal evaluate failed");
+                throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Update event proposal evaluate failed");
             }
         }
+
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update this eventProposal");
         throw new UnauthorizedException(apiResponse);
     }
@@ -164,9 +172,17 @@ public class EventProposalServiceImpl implements EventProposalService {
                 eventProposal.setFeedback(eventProposalEvaluateRequest.getFeedback());
             }
             eventProposalRepository.save(eventProposal);
+            User creator = eventProposal.getCreatorUserId();
+            try {
+                mailSenderService.sendEmail(creator.getEmail(), "Event Proposal Updated Staus", "Dear "
+                        + creator.getUsername() + ",\nYour event proposal was update, please check your event proposal!\n Link proposal: "
+                        + APP_URL + PROPOSAL_DETAILS_PATH + eventProposal.getId());
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
             return true;
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(),ex);
+            LOGGER.error(ex.getMessage(), ex);
         }
         return false;
     }
