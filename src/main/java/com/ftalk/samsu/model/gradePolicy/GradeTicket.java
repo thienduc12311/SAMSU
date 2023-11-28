@@ -44,6 +44,9 @@ public class GradeTicket extends DateAudit implements Serializable {
     @Column(name = "status", insertable = false)
     private Short status;
 
+    @Column(name = "score")
+    private Integer score;
+
     @ManyToOne
     @JoinColumn(name = "creator_users_id")
     private User creatorUser;

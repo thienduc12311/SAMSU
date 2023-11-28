@@ -16,6 +16,8 @@ public class GradeTicketResponse {
     private GradeSubCriteriaResponse gradeSubCriteria;
     private Short status;
 
+    private Integer score;
+
     public GradeTicketResponse(GradeTicket gradeTicket) {
         this.id = gradeTicket.getId();
         this.title = gradeTicket.getTitle();
@@ -24,7 +26,8 @@ public class GradeTicketResponse {
         this.feedback = gradeTicket.getFeedback();
         this.creator = new UserProfileReduce(gradeTicket.getCreatorUser());
         this.accepter = gradeTicket.getAccepterUser() != null ? new UserProfileReduce(gradeTicket.getAccepterUser()) : null;
-        this.gradeSubCriteria = new GradeSubCriteriaResponse(gradeTicket.getGradeSubCriteria());
+        this.gradeSubCriteria = gradeTicket.getGradeSubCriteria() != null ? new GradeSubCriteriaResponse(gradeTicket.getGradeSubCriteria()) : null;
         this.status = gradeTicket.getStatus();
+        this.score = gradeTicket.getScore();
     }
 }
