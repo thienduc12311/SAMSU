@@ -98,6 +98,18 @@ public class User extends DateAudit {
         this.rollnumber = rollnumber;
     }
 
+    public User(String username, String password, String email, String name, String rollnumber, Short role, Short status, String avatar, Date dob) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.status = status;
+        this.name = name;
+        this.rollnumber = rollnumber;
+        this.avatar = avatar;
+        this.dob = dob;
+    }
+
     public User(Integer id) {
         this.id = id;
     }
