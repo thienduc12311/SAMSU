@@ -11,11 +11,14 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.AssigneeRequest;
 import com.ftalk.samsu.payload.event.AssigneeResponse;
 import com.ftalk.samsu.repository.AssigneeRepository;
+import com.ftalk.samsu.repository.TaskRepository;
+import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.AssigneeService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
+import com.ftalk.samsu.utils.event.AssigneeConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,10 @@ public class AssigneeServiceImpl implements AssigneeService {
     private AssigneeRepository assigneeRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     public Boolean updateAssigneeTask(Integer taskId, Set<String> rollnumber, List<AssigneeRequest> assigneeRequestList) {
         Map<String, User> assigneeUser = userService.getMapUserByRollnumber(rollnumber);
@@ -62,12 +70,24 @@ public class AssigneeServiceImpl implements AssigneeService {
     }
 
 
+    @Transactional
     public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal) {
         Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, userPrincipal.getId())).orElseThrow(
                 () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
         );
         assignee.setStatus(status);
         assigneeRepository.save(assignee);
+        if (assignee.getStatus() != AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() == status) {
+            Task task = assignee.getTask();
+            User user = assignee.getAssignee();
+            user.setScore((short) (user.getScore() + task.getScore()));
+            userRepository.save(user);
+        } else if (assignee.getStatus() == AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() != status) {
+            Task task = assignee.getTask();
+            User user = assignee.getAssignee();
+            user.setScore((short) (user.getScore() - task.getScore()));
+            userRepository.save(user);
+        }
         return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
     }
 
