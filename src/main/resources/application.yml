@@ -11,7 +11,7 @@ spring:
           starttls:
             enable: true
   datasource:
-    url: jdbc:mysql://pi.nhalq.dev:2501/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://pi.nhalq.dev:2500/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     #    url: jdbc:mysql://localhost:3306/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: Aa123456
