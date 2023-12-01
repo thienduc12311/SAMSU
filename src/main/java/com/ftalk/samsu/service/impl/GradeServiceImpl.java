@@ -71,9 +71,7 @@ public class GradeServiceImpl implements GradeService {
                     .collect(Collectors.toList());
 
             //task grade
-            Map<Integer, Task> tasks = events.parallelStream().flatMap(event -> event.getTasks().stream())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toMap(Task::getId,  Function.identity()));
+            Map<Integer, Task> tasks = getAllTask(events);
             List<AssigneeId> assigneeIds = tasks.keySet().parallelStream().map(taskId -> new AssigneeId(taskId, creator.getId()))
                     .collect(Collectors.toList());
             List<Assignee> assignees = assigneeRepository.findAllByIdIn(assigneeIds);
@@ -93,5 +91,18 @@ public class GradeServiceImpl implements GradeService {
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get this history");
         throw new UnauthorizedException(apiResponse);
+    }
+
+    @Transactional
+    public Map<Integer, Task> getAllTask(List<Event> events) {
+        Map<Integer, Task> taskMap = new HashMap<>();
+        for (Event event : events) {
+            for (Task task : event.getTasks()) {
+                if (task != null) {
+                    taskMap.put(task.getId(), task);
+                }
+            }
+        }
+        return taskMap;
     }
 }
