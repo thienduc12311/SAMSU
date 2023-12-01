@@ -1,5 +1,6 @@
 package com.ftalk.samsu.payload.event;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.model.event.Task;
@@ -9,14 +10,19 @@ import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.ListConverter;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class EventResponse {
+@NoArgsConstructor
+public class EventResponse implements Serializable {
+    private static final long serialVersionUID = -2792369707368779346L;
     private Integer id;
     private Short status;
     private Integer duration;
@@ -58,6 +64,4 @@ public class EventResponse {
         attendScore = event.getAttendScore();
         tasks = event.getTasks() != null ? ListConverter.listToList(event.getTasks(), TaskResponse::new) : null;
     }
-
-
 }

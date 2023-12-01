@@ -33,6 +33,13 @@ import com.ftalk.samsu.utils.event.EventConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -87,6 +94,7 @@ public class EventServiceImpl implements EventService {
     ParticipantRepository participantRepository;
 
     @Override
+    @Cacheable(value = "eventsCache_test3", key = "#page + '_' + #size")
     public PagedResponse<EventResponse> getAllEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
@@ -94,7 +102,6 @@ public class EventServiceImpl implements EventService {
         Page<Event> events = eventRepository.findAll(pageable);
 
         return getEventPagedResponse(events);
-
     }
 
 
@@ -132,6 +139,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Cacheable(value = "eventCache", key = "#id")
     public Event getEvent(Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
@@ -201,6 +209,9 @@ public class EventServiceImpl implements EventService {
         return event.getPosts();
     }
 
+
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
@@ -232,6 +243,8 @@ public class EventServiceImpl implements EventService {
         return eventRepository.save(event);
     }
 
+
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @Override
     @Transactional
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {

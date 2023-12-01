@@ -2,12 +2,14 @@ package com.ftalk.samsu.payload;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Data
-public class PagedResponse<T> {
+public class PagedResponse<T> implements Serializable {
+	private static final long serialVersionUID = 106320092789500376L;
 	private List<T> content;
 	private int page;
 	private int size;

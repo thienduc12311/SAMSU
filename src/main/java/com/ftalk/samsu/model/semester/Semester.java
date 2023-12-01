@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,10 +19,11 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Table(name = "semesters")
-public class Semester {
+public class Semester implements Serializable {
 
 	private static final long serialVersionUID = -5298707266367331514L;
 
+	@NotBlank
 	@Id
 	@Column(name = "name")
 	private String name;
