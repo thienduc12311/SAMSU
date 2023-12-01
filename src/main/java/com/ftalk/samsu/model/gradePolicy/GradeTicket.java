@@ -2,6 +2,7 @@ package com.ftalk.samsu.model.gradePolicy;
 
 import com.ftalk.samsu.model.audit.DateAudit;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
+import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,7 +46,7 @@ public class GradeTicket extends DateAudit implements Serializable {
     private Short status;
 
     @Column(name = "score")
-    private Integer score;
+    private Short score;
 
     @ManyToOne
     @JoinColumn(name = "creator_users_id")
@@ -54,6 +55,15 @@ public class GradeTicket extends DateAudit implements Serializable {
     @ManyToOne
     @JoinColumn(name = "accepter_users_id")
     private User accepterUser;
+
+    @ManyToOne
+    @JoinColumn(name = "guarantor_users_id")
+    private User guarantor;
+
+    @NotNull
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "semester")
+    private Semester semester;
 
     @ManyToOne
     @JoinColumn(name = "grade_sub_criterias_id")

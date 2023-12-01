@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, ParticipantId> {
     List<Participant> findByParticipantId_EventsId(Integer eventId);
+    List<Participant> findAllByParticipantIdIn(List<ParticipantId> participantIds);
 }
 
