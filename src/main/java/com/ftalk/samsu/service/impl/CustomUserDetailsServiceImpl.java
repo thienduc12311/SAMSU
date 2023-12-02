@@ -22,6 +22,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, CustomU
 	public UserDetails loadUserByUsername(String usernameOrEmail) {
 		User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
 				.orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with this username or email: %s", usernameOrEmail)));
+		if (user.getStatus() != 1) return null;
 		return UserPrincipal.create(user);
 	}
 
@@ -29,6 +30,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, CustomU
 	@Transactional
 	public UserDetails loadUserById(Integer id) {
 		User user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with id: %s", id)));
+		if (user.getStatus() != 1) return null;
 		return UserPrincipal.create(user);
 	}
 }

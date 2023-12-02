@@ -12,4 +12,6 @@ public class GradeTicketCreateRequest {
     private String content;
     private String evidenceUrls;
     private String feedback;
+    private String guarantorRollnumber;
+    private String semesterName;
 }

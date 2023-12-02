@@ -69,6 +69,36 @@ public class AssigneeServiceImpl implements AssigneeService {
         return assigneeRepository.findByIdTasksId(taskId);
     }
 
+    @Override
+    public ApiResponse addAssigneeTaskWithList(Integer taskId, List<AssigneeRequest> assigneeRequestList) {
+        Set<String> rollnumber = assigneeRequestList.parallelStream().map(AssigneeRequest::getRollnumber)
+                .collect(Collectors.toSet());
+        Map<String, User> assigneeUser = userService.getMapUserByRollnumber(rollnumber);
+        for (AssigneeRequest assigneeRequest : assigneeRequestList) {
+            Assignee assignee = new Assignee(new AssigneeId(taskId, assigneeUser.get(assigneeRequest.getRollnumber()).getId()), assigneeRequest.getStatus());
+            assigneeRepository.save(assignee);
+        }
+        return new ApiResponse(Boolean.TRUE, "Add list assignee of task success");
+    }
+
+    @Override
+    public ApiResponse deleteAssigneeTaskWithList(Integer taskId, Set<String> rollnumbers) {
+        Map<String, User> assigneeUser = userService.getMapUserByRollnumber(rollnumbers);
+        List<AssigneeId> assigneeIds = rollnumbers.parallelStream().map(rollnumber ->
+                        new AssigneeId(taskId, assigneeUser.get(rollnumber).getId()))
+                        .collect(Collectors.toList());
+        assigneeRepository.deleteAllByAssigneeId(assigneeIds);
+        return new ApiResponse(Boolean.TRUE, "Delete list assignee of task success");
+    }
+
+    @Override
+    public ApiResponse deleteAssigneeTask(Integer taskId, String rollnumbers) {
+        User user = userRepository.getUserByRollnumber(rollnumbers);
+        assigneeRepository.deleteById(new AssigneeId(taskId, user.getId()));
+        return new ApiResponse(Boolean.TRUE, "Delete Assignee of task success");
+    }
+
+
 
     @Transactional
     public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal) {

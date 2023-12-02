@@ -6,10 +6,12 @@ import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.AssigneeId;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.Task;
+import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.gradePolicy.GradeCriteria;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.PolicyDocument;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.AssigneeRequest;
 import com.ftalk.samsu.payload.event.TaskRequest;
@@ -148,6 +150,13 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(taskRequest.getStatus());
         return taskRepository.save(task);
     }
+
+    public ApiResponse deleteTask(Integer id, UserPrincipal currentUser ){
+        Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", id));
+        taskRepository.delete(task);
+        return new ApiResponse(Boolean.TRUE, "Delete feedback question success");
+    }
+
 
 //    private updateAssignee()
 

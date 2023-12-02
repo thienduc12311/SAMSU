@@ -3,9 +3,11 @@ package com.ftalk.samsu.controller.feedback;
 import com.ftalk.samsu.model.feedback.FeedbackAnswer;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.gradePolicy.GradeCriteria;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeCriteriaRequest;
 import com.ftalk.samsu.payload.gradePolicy.GradeCriteriaResponse;
@@ -77,5 +79,28 @@ public class FeedbackController {
         return new ResponseEntity<>(new FeedbackQuestionResponse(feedbackQuestion), HttpStatus.OK);
     }
 
+    @PostMapping("/questions/event/{eventId}")
+    public ResponseEntity<FeedbackQuestionResponse> createQuestion(@PathVariable(name = "eventId") Integer eventId,
+                                                                   @Valid @RequestBody FeedbackQuestionRequest feedbackQuestionRequest,
+                                                                   @CurrentUser UserPrincipal currentUser) {
+        FeedbackQuestionResponse feedbackQuestionResponse = feedbackService.addFeedbackQuestion(eventId, feedbackQuestionRequest);
+        return new ResponseEntity<>(feedbackQuestionResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/questions/event/{eventId}")
+    public ResponseEntity<FeedbackQuestionResponse> updateQuestion(@PathVariable(name = "eventId") Integer eventId,
+                                                                   @Valid @RequestBody FeedbackQuestionRequest feedbackQuestionRequest,
+                                                                   @CurrentUser UserPrincipal currentUser) {
+        FeedbackQuestionResponse feedbackQuestionResponse = feedbackService.updateFeedbackQuestion(eventId, feedbackQuestionRequest, currentUser);
+        return new ResponseEntity<>(feedbackQuestionResponse, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/questions/{questionId}")
+    public ResponseEntity<ApiResponse> updateQuestion(
+            @PathVariable(name = "questionId") Integer questionId,
+            @CurrentUser UserPrincipal currentUser) {
+        ApiResponse apiResponse = feedbackService.deleteFeedbackQuestion(questionId, currentUser);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
 
 }

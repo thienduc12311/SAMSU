@@ -3,6 +3,7 @@ package com.ftalk.samsu.service;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.EventCreateRequest;
 import com.ftalk.samsu.payload.event.TaskRequest;
@@ -24,4 +25,6 @@ public interface TaskService {
 	Boolean checkPermissionCheckIn(Integer eventId, Integer userId);
 
 	Task updateTask(Integer id, TaskRequest taskRequest, UserPrincipal currentUser);
+
+	ApiResponse deleteTask(Integer id, UserPrincipal currentUser );
 }

@@ -67,7 +67,7 @@ public class Task extends DateAudit implements Serializable {
     private GradeSubCriteria gradeSubCriteria;
 
 
-    @OneToMany(mappedBy = "task")
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "task")
     private List<Assignee> assignees;
 
     public Task(TaskRequest taskRequest) {

@@ -2,6 +2,7 @@ package com.ftalk.samsu.controller.event;
 
 import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.EventProposal;
+import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.event.*;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -36,6 +38,36 @@ public class TaskController {
         ApiResponse apiResponse = assigneeService.updateAssigneeStatus(taskId, status, currentUser);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<TaskResponse> postTask(
+                                                @Valid @RequestBody TaskRequest taskRequest,
+                                                @CurrentUser UserPrincipal currentUser) {
+        Task task = taskService.createTask(taskRequest, currentUser);
+        return new ResponseEntity<>(new TaskResponse(task), HttpStatus.OK);
+    }
+
+    @PutMapping("/{taskId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<TaskResponse> putTask(
+            @PathVariable(value = "taskId") Integer taskId,
+            @Valid @RequestBody TaskRequest taskRequest,
+            @CurrentUser UserPrincipal currentUser) {
+        Task task = taskService.updateTask(taskId, taskRequest, currentUser);
+        return new ResponseEntity<>(new TaskResponse(task), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{taskId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse> deleteTask(
+            @PathVariable(value = "taskId") Integer taskId,
+            @CurrentUser UserPrincipal currentUser) {
+        ApiResponse apiResponse = taskService.deleteTask(taskId, currentUser);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+
 
     @GetMapping("/me")
     public ResponseEntity<PagedResponse<AssigneeResponse>> getAllMyAssignee(
