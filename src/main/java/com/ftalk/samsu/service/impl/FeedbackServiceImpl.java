@@ -142,9 +142,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     public FeedbackQuestionResponse updateFeedbackQuestion(Integer id, FeedbackQuestionRequest feedbackQuestionRequest, UserPrincipal currentUser ){
         FeedbackQuestion feedbackQuestion = feedbackQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("FeedbackQuestions", ID, id));
-        feedbackQuestion.setType(feedbackQuestion.getType());
-        feedbackQuestion.setAnswer(feedbackQuestion.getAnswer());
-        feedbackQuestion.setQuestion(feedbackQuestion.getQuestion());
+        feedbackQuestion.setType(feedbackQuestionRequest.getType());
+        feedbackQuestion.setAnswer(feedbackQuestionRequest.getAnswer());
+        feedbackQuestion.setQuestion(feedbackQuestionRequest.getQuestion());
         return new FeedbackQuestionResponse(feedbackQuestionRepository.save(feedbackQuestion)) ;
     }
 

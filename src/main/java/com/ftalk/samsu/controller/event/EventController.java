@@ -38,6 +38,7 @@ public class EventController {
     public ResponseEntity<PagedResponse<EventAllResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+//        eventService.evictAllEntries();
         PagedResponse<EventAllResponse> response = eventService.getAllEvents(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
