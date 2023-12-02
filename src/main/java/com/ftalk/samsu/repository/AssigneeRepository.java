@@ -19,5 +19,7 @@ public interface AssigneeRepository extends JpaRepository<Assignee, AssigneeId> 
 
     Page<Assignee> findByIdUsersId(Integer taskId, Pageable pageable);
 
+    Boolean deleteAllByAssigneeId(List<AssigneeId> assigneeIds);
+
 }
 

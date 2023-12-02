@@ -26,17 +26,24 @@ public class GradeController {
     @Autowired
     private GradeService gradeService;
 
-    @GetMapping("/history/semester/{semesterName}")
-    public ResponseEntity<List<GradeResponse>> get(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
-        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(currentUser.getRollnumber(), semester, currentUser);
-        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
-    }
+//    @GetMapping("/history/semester/{semesterName}")
+//    public ResponseEntity<List<GradeResponse>> get(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+//        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(currentUser.getRollnumber(), semester, currentUser);
+//        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
+//    }
 
     @GetMapping("/history/semester/{semesterName}/rollnumber/{rollnumber}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')" )
-    public ResponseEntity<List<GradeResponse>> getByRollnumber(@PathVariable(name = "rollnumber") String rollnumber,@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<List<GradeResponse>> getByRollnumber(@PathVariable(name = "rollnumber") String rollnumber, @PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
         List<GradeResponse> gradeResponses = gradeService.getGradeHistory(rollnumber, semester, currentUser);
         return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
     }
+
+//    @GetMapping("/user")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+//    public ResponseEntity<List<GradeResponse>> getAll(@CurrentUser UserPrincipal currentUser) {
+//        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(rollnumber, semester, currentUser);
+//        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
+//    }
 
 }

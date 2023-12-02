@@ -228,14 +228,17 @@ public class EventServiceImpl implements EventService {
         event.setStartTime(eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
-        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
-        feedbackQuestionRepository.saveAll(feedbackQuestions);
-        event.setFeedbackQuestions(feedbackQuestions);
-        if (eventCreateRequest.getTaskRequests() != null) {
-            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
-        }
+//        feedbackQuestionRepository.deleteAllByEventId(event.getId());
+//        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
+//        feedbackQuestionRepository.saveAll(feedbackQuestions);
+//        event.setFeedbackQuestions(feedbackQuestions);
+//        if (eventCreateRequest.getTaskRequests() != null) {
+//            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
+//        }
         return eventRepository.save(event);
     }
+
+
 
     @Override
     @Transactional
