@@ -93,17 +93,22 @@ public class EventServiceImpl implements EventService {
     @Autowired
     ParticipantRepository participantRepository;
 
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    public void evictAllEntries() {
+    }
+
     @Override
-    @Cacheable(value = "eventsCache_test3", key = "#page + '_' + #size")
-    public PagedResponse<EventResponse> getAllEvents(int page, int size) {
+    @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
+    public PagedResponse<EventAllResponse> getAllEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
-
-        return getEventPagedResponse(events);
+        if (events.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventAllResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
     }
-
 
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
@@ -139,7 +144,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Cacheable(value = "eventCache", key = "#id")
     public Event getEvent(Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
@@ -150,6 +154,12 @@ public class EventServiceImpl implements EventService {
             return event;
         }
         throw new UnauthorizedException("You don't have permission");
+    }
+
+    @Override
+    @Cacheable(value = "eventCache", key = "#id")
+    public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
+        return new EventResponse(getEvent(id,currentUser));
     }
 
     @Override

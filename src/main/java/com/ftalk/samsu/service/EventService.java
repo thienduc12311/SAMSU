@@ -7,6 +7,7 @@ import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PhotoRequest;
 import com.ftalk.samsu.payload.PhotoResponse;
+import com.ftalk.samsu.payload.event.EventAllResponse;
 import com.ftalk.samsu.payload.event.EventCreateRequest;
 import com.ftalk.samsu.payload.event.EventResponse;
 import com.ftalk.samsu.payload.event.ParticipantResponse;
@@ -16,13 +17,16 @@ import java.util.List;
 
 public interface EventService {
 
-	PagedResponse<EventResponse> getAllEvents(int page, int size);
+	void evictAllEntries();
+	PagedResponse<EventAllResponse> getAllEvents(int page, int size);
 
 	PagedResponse<EventResponse> getAllEventsPublic(int page, int size);
 
 	PagedResponse<EventResponse> getEventsByRollNumber(String rollNumber, int page, int size);
 	PagedResponse<EventResponse> getEventBySemester(String semester, int page, int size);
 	Event getEvent(Integer id, UserPrincipal currentUser);
+
+	EventResponse getEventResponse(Integer id, UserPrincipal currentUser);
 	List<ParticipantResponse> getAllEventParticipants(Integer eventId);
 
 	ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser);
