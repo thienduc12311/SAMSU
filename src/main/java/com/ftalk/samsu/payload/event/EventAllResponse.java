@@ -23,6 +23,7 @@ public class EventAllResponse implements Serializable {
     private Integer duration;
     private String title;
     private UserProfileReduce creator;
+    private UserProfileReduce eventLeader;
     private Semester semester;
     private String bannerUrl;
     private Date startTime;
@@ -36,6 +37,8 @@ public class EventAllResponse implements Serializable {
         title = event.getTitle();
         creator = new UserProfileReduce(event.getCreatorUser().getName(), event.getCreatorUser().getUsername(),
                 event.getCreatorUser().getAvatar(), event.getCreatorUser().getRollnumber());
+        eventLeader = event.getEventLeaderUser() != null ? new UserProfileReduce(event.getEventLeaderUser().getName(),
+                event.getEventLeaderUser().getUsername(), event.getEventLeaderUser().getAvatar(), event.getEventLeaderUser().getRollnumber()) : null;
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         createAt = event.getCreatedAt();

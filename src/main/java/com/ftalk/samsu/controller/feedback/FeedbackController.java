@@ -87,11 +87,11 @@ public class FeedbackController {
         return new ResponseEntity<>(feedbackQuestionResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/questions/event/{eventId}")
-    public ResponseEntity<FeedbackQuestionResponse> updateQuestion(@PathVariable(name = "eventId") Integer eventId,
+    @PutMapping("/questions/{questionId}")
+    public ResponseEntity<FeedbackQuestionResponse> updateQuestion(@PathVariable(name = "questionId") Integer questionId,
                                                                    @Valid @RequestBody FeedbackQuestionRequest feedbackQuestionRequest,
                                                                    @CurrentUser UserPrincipal currentUser) {
-        FeedbackQuestionResponse feedbackQuestionResponse = feedbackService.updateFeedbackQuestion(eventId, feedbackQuestionRequest, currentUser);
+        FeedbackQuestionResponse feedbackQuestionResponse = feedbackService.updateFeedbackQuestion(questionId, feedbackQuestionRequest, currentUser);
         return new ResponseEntity<>(feedbackQuestionResponse, HttpStatus.OK);
     }
 
