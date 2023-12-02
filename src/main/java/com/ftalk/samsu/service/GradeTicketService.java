@@ -1,11 +1,14 @@
 package com.ftalk.samsu.service;
 
+import com.ftalk.samsu.model.gradePolicy.GradeTicket;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketCreateRequest;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketUpdateRequest;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketResponse;
 import com.ftalk.samsu.security.UserPrincipal;
+
+import java.util.List;
 
 public interface GradeTicketService {
     PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size);
@@ -15,4 +18,5 @@ public interface GradeTicketService {
     GradeTicketResponse updateGradeTicketV2(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser);
     GradeTicketResponse addGradeTicket(GradeTicketCreateRequest gradeTicketRequest, UserPrincipal currentUser);
     ApiResponse deleteGradeTicket(Integer id, UserPrincipal currentUser);
+    List<GradeTicket> finAllGradeTicketApproved(String semester, Integer uid);
 }

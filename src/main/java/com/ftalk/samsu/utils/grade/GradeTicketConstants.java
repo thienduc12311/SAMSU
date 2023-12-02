@@ -7,8 +7,9 @@ import lombok.Getter;
 public enum GradeTicketConstants {
 
     PROCESSING((short) 0),
-    APPROVED((short) 1),
-    REJECTED((short) 2);
+    GUARANTEE((short) 1),
+    APPROVED((short) 2),
+    REJECTED((short) 3);
 
     private short value;
 

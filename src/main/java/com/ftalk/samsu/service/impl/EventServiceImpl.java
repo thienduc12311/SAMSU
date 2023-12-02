@@ -124,6 +124,11 @@ public class EventServiceImpl implements EventService {
         return getEventPagedResponse(events);
     }
 
+    @Override
+    public List<Event> getEventBySemester(String semester) {
+        return eventRepository.findBySemesterName(semester);
+    }
+
     private PagedResponse<EventResponse> getEventPagedResponse(Page<Event> events) {
         if (events.getNumberOfElements() == 0) {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
