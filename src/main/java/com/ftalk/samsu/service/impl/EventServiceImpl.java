@@ -93,7 +93,10 @@ public class EventServiceImpl implements EventService {
     @Autowired
     ParticipantRepository participantRepository;
 
-    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = {"eventsCache"}, allEntries = true),
+            @CacheEvict(value = {"eventCache"}, allEntries = true)
+    })
     public void evictAllEntries() {
     }
 
@@ -228,7 +231,7 @@ public class EventServiceImpl implements EventService {
     @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @CachePut(value = {"eventCache"}, key = "#id")
     @Override
-    public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
+    public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
@@ -256,7 +259,7 @@ public class EventServiceImpl implements EventService {
 //        if (eventCreateRequest.getTaskRequests() != null) {
 //            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
 //        }
-        return eventRepository.save(event);
+        return new EventResponse(eventRepository.save(event));
     }
 
 

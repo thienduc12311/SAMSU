@@ -150,8 +150,8 @@ public class EventController {
     public ResponseEntity<EventResponse> updateEventProposal(@Valid @RequestBody EventCreateRequest eventCreateRequest,
                                                              @PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                              @CurrentUser UserPrincipal currentUser) {
-        Event response = eventService.updateEvent(eventProposalId, eventCreateRequest, currentUser);
-        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
+        EventResponse response = eventService.updateEvent(eventProposalId, eventCreateRequest, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 //    @DeleteMapping("/{eventProposalId}")

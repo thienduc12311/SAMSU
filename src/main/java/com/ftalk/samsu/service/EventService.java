@@ -39,7 +39,7 @@ public interface EventService {
 
 	List<Post> getEventPost(Integer id, UserPrincipal currentUser);
 
-	Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser);
+	EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser);
 
 	Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser);
 
