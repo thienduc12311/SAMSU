@@ -14,6 +14,7 @@ import com.ftalk.samsu.service.EventService;
 import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,10 +35,10 @@ public class EventController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<EventResponse>> getAllEvent(
+    public ResponseEntity<PagedResponse<EventAllResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<EventResponse> response = eventService.getAllEvents(page, size);
+        PagedResponse<EventAllResponse> response = eventService.getAllEvents(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -139,8 +140,8 @@ public class EventController {
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
-        Event response = eventService.getEvent(eventProposalId, currentUser);
-        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
+        EventResponse response = eventService.getEventResponse(eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{eventProposalId}")

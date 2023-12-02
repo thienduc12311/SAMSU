@@ -1,4 +1,9 @@
 spring:
+#  cache:
+#    type: redis
+#    jackson:
+#      serialization:
+#        FAIL_ON_EMPTY_BEANS: false
   mail:
     host: smtp.gmail.com
     port: 587
@@ -10,6 +15,13 @@ spring:
           auth: true
           starttls:
             enable: true
+  redis:
+    host: db-redis-sgp1-04606-do-user-14822369-0.c.db.ondigitalocean.com
+    port: 25061
+    username: default
+    password: AVNS_I5fTlos_XbGeu6IF1w5
+    timeout: 5000
+    ssl: true
   datasource:
     url: jdbc:mysql://pi.nhalq.dev:2500/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     #    url: jdbc:mysql://localhost:3306/samsu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
@@ -23,6 +35,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL5Dialect
+        
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
@@ -50,7 +63,9 @@ cors:
 
 server:
   port: 8081
-
+logging:
+  level:
+    org.springframework.cache: TRACE
 #springdoc:
 #  swagger-ui:
 #    path=/swagger-ui.html:

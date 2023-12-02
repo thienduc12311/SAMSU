@@ -33,6 +33,13 @@ import com.ftalk.samsu.utils.event.EventConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -86,17 +93,22 @@ public class EventServiceImpl implements EventService {
     @Autowired
     ParticipantRepository participantRepository;
 
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    public void evictAllEntries() {
+    }
+
     @Override
-    public PagedResponse<EventResponse> getAllEvents(int page, int size) {
+    @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
+    public PagedResponse<EventAllResponse> getAllEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
-
-        return getEventPagedResponse(events);
-
+        if (events.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventAllResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
     }
-
 
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
@@ -147,6 +159,12 @@ public class EventServiceImpl implements EventService {
             return event;
         }
         throw new UnauthorizedException("You don't have permission");
+    }
+
+    @Override
+    @Cacheable(value = "eventCache", key = "#id")
+    public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
+        return new EventResponse(getEvent(id,currentUser));
     }
 
     @Override
@@ -206,6 +224,9 @@ public class EventServiceImpl implements EventService {
         return event.getPosts();
     }
 
+
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
@@ -239,7 +260,7 @@ public class EventServiceImpl implements EventService {
     }
 
 
-
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @Override
     @Transactional
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {

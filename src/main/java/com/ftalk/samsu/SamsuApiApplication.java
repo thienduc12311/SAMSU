@@ -3,15 +3,11 @@ package com.ftalk.samsu;
 import com.ftalk.samsu.security.JwtAuthenticationFilter;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import javax.annotation.PostConstruct;
 import java.util.Properties;
@@ -21,7 +17,6 @@ import java.util.TimeZone;
 @EntityScan(basePackageClasses = {SamsuApiApplication.class, Jsr310Converters.class})
 @OpenAPIDefinition
 public class SamsuApiApplication {
-
 
     public static void main(String[] args) {
         SpringApplication.run(SamsuApiApplication.class, args);
