@@ -38,8 +38,4 @@ public class Department implements Serializable {
 		this.name = name;
 	}
 
-	@JsonIgnore
-	public Integer getId() {
-		return id;
-	}
 }
