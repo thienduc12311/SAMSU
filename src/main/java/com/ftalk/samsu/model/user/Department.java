@@ -33,7 +33,7 @@ public class Department implements Serializable {
 	@EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "department")
 	private List<User> users;
-
+//test
 	public Department(String name) {
 		this.name = name;
 	}
