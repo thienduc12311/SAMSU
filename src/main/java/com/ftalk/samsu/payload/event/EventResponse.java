@@ -57,9 +57,9 @@ public class EventResponse implements Serializable {
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
-        departments = event.getDepartments().parallelStream().map(Department::getName).collect(Collectors.toList());
-        feedbackQuestions = event.getFeedbackQuestions().parallelStream().map(FeedbackQuestionResponse::new).collect(Collectors.toList());
-        participants = event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList());
+        departments = event.getDepartments() != null ? event.getDepartments().parallelStream().map(Department::getName).collect(Collectors.toList()) : null;
+        feedbackQuestions = event.getFeedbackQuestions() != null ? event.getFeedbackQuestions().parallelStream().map(FeedbackQuestionResponse::new).collect(Collectors.toList()) : null;
+        participants = event.getParticipants() != null ? event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList()) : null;
         createAt = event.getCreatedAt();
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
