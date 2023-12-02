@@ -37,6 +37,7 @@ public class TaskResponse implements Serializable {
     private UserProfileReduce creator;
     private Integer eventId;
     private Short score;
+    private Date deadline;
     private GradeSubCriteriaResponse gradeSubCriteria;
 
     public TaskResponse(Task task) {
@@ -48,6 +49,7 @@ public class TaskResponse implements Serializable {
         assignees = task.getAssignees() != null ? task.getAssignees().stream().map(assignee -> new UserProfileReduce(assignee.getAssignee())).collect(Collectors.toList()) : null;
         eventId = task.getEvent() != null ? task.getEvent().getId() : null;
         score = task.getScore();
+        deadline = task.getDeadline();
         gradeSubCriteria = new GradeSubCriteriaResponse(task.getGradeSubCriteria());
     }
 

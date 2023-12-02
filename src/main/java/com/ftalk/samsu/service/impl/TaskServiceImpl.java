@@ -84,6 +84,10 @@ public class TaskServiceImpl implements TaskService {
         GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
         Event event = eventService.getEvent(taskRequest.getEventId(), currentUser);
         User creator = userRepository.getUser(currentUser);
+        if (taskRequest.getScore() < gradeSubCriteria.getMinScore() || taskRequest.getScore() > gradeSubCriteria.getMaxScore()) {
+            throw new BadRequestException("Your score out of range GradeSubCriteria min-max score ["
+                    + gradeSubCriteria.getMinScore() + ", " + gradeSubCriteria.getMaxScore() + "]");
+        }
         Task task = new Task(taskRequest);
         task.setEvent(event);
         task.setGradeSubCriteria(gradeSubCriteria);
@@ -109,10 +113,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Boolean checkPermissionCheckIn(Integer eventId, Integer userId) {
         Integer taskCheckinId = null;
-        try{
+        try {
             taskCheckinId = getTaskIdByTitle(eventId, "Checkin");
-        } catch (Exception ex){
-            LOGGER.error(ex.getMessage(),ex);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
         }
         return taskCheckinId != null ? isTaskStaff(taskCheckinId, userId) : false;
     }
@@ -151,7 +155,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(task);
     }
 
-    public ApiResponse deleteTask(Integer id, UserPrincipal currentUser ){
+    public ApiResponse deleteTask(Integer id, UserPrincipal currentUser) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", id));
         taskRepository.delete(task);
         return new ApiResponse(Boolean.TRUE, "Delete feedback question success");
