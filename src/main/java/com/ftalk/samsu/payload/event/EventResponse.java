@@ -9,6 +9,7 @@ import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
+import com.ftalk.samsu.payload.user.DepartmentResponse;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.ListConverter;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,7 @@ public class EventResponse implements Serializable {
     private String bannerUrl;
     private String fileUrls;
     private Date startTime;
-    private List<String> departments;
+    private List<DepartmentResponse> departments;
     private List<UserProfileReduce> participants;
     private List<FeedbackQuestionResponse> feedbackQuestions;
     private List<TaskResponse> tasks;
@@ -57,7 +58,7 @@ public class EventResponse implements Serializable {
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
-        departments = event.getDepartments() != null ? event.getDepartments().parallelStream().map(Department::getName).collect(Collectors.toList()) : null;
+        departments = event.getDepartments() != null ? ListConverter.listToList(event.getDepartments(), DepartmentResponse::new) : null;
         feedbackQuestions = event.getFeedbackQuestions() != null ? event.getFeedbackQuestions().parallelStream().map(FeedbackQuestionResponse::new).collect(Collectors.toList()) : null;
         participants = event.getParticipants() != null ? event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList()) : null;
         createAt = event.getCreatedAt();
