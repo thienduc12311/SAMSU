@@ -21,4 +21,6 @@ public interface FeedbackQuestionRepository extends JpaRepository<FeedbackQuesti
 
 	Optional<FeedbackQuestion> findById(Integer id);
 
+	Boolean deleteAllByEventId(Integer id);
+
 }

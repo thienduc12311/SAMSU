@@ -8,6 +8,7 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.security.UserPrincipal;
 
@@ -25,4 +26,10 @@ public interface FeedbackService {
 	FeedbackQuestion getFeedbackQuestion(Integer id, UserPrincipal currentUser);
 
 	List<FeedbackQuestionResponse> getFeedbackQuestions(Integer id, UserPrincipal currentUser);
+
+	ApiResponse deleteFeedbackQuestion(Integer id, UserPrincipal currentUser );
+
+	FeedbackQuestionResponse updateFeedbackQuestion(Integer id, FeedbackQuestionRequest feedbackQuestionRequest, UserPrincipal currentUser );
+
+	FeedbackQuestionResponse addFeedbackQuestion(Integer eventID, FeedbackQuestionRequest feedbackQuestionRequest );
 }
