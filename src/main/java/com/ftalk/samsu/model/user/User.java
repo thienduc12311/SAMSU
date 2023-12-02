@@ -62,7 +62,7 @@ public class User extends DateAudit {
     @EqualsAndHashCode.Exclude
     private Set<Group> groups;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "departments_id")
     private Department department;
 
