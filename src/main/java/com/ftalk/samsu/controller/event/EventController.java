@@ -145,7 +145,7 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{eventId}/isFeedback}")
+    @GetMapping("/{eventId}/isFeedback")
     public ResponseEntity<Boolean> isFeedback(@PathVariable(value = "eventId") Integer eventId,
                                               @CurrentUser UserPrincipal currentUser) {
         Boolean response = eventService.isFeedback(eventId, currentUser);
