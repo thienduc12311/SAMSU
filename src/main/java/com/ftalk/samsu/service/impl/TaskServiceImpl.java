@@ -152,6 +152,13 @@ public class TaskServiceImpl implements TaskService {
         task.setContent(taskRequest.getContent());
         task.setScore(taskRequest.getScore());
         task.setStatus(taskRequest.getStatus());
+        task.setDeadline(taskRequest.getDeadline());
+        if (task.getStatus() != AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() == status) {
+            Task task = assignee.getTask();
+            User user = assignee.getAssignee();
+            user.setScore((short) (user.getScore() + task.getScore()));
+            userRepository.save(user);
+        }
         return taskRepository.save(task);
     }
 

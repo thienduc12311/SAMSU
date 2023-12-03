@@ -9,7 +9,10 @@ public enum AssigneeConstants {
     WAITING((short) 0),
     ACCEPT((short) 1),
     REJECT((short) 2),
-    COMPLETE((short) 3);
+    COMPLETE((short) 3),
+    APPROVED((short) 4),
+    DISAPPROVED((short) 5);
+
 
     private short value;
 
