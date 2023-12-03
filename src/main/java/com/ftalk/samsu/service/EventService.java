@@ -29,6 +29,8 @@ public interface EventService {
 
 	Event getEvent(Integer id, UserPrincipal currentUser);
 
+	Boolean isFeedback(Integer eventId, UserPrincipal currentUser);
+
 	EventResponse getEventResponse(Integer id, UserPrincipal currentUser);
 	List<ParticipantResponse> getAllEventParticipants(Integer eventId);
 

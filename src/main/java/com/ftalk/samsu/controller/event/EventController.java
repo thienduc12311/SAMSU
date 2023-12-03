@@ -145,6 +145,13 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/{eventId}/isFeedback}")
+    public ResponseEntity<Boolean> isFeedback(@PathVariable(value = "eventId") Integer eventId,
+                                              @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.isFeedback(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PutMapping("/{eventProposalId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<EventResponse> updateEventProposal(@Valid @RequestBody EventCreateRequest eventCreateRequest,

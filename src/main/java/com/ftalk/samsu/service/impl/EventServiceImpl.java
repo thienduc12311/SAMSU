@@ -165,9 +165,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Boolean isFeedback(Integer eventId, UserPrincipal currentUser) {
+        Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
+                .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
+        return participant.getCheckout() != null;
+    }
+
+    @Override
     @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
-        return new EventResponse(getEvent(id,currentUser));
+        return new EventResponse(getEvent(id, currentUser));
     }
 
     @Override
@@ -176,9 +183,9 @@ public class EventServiceImpl implements EventService {
         List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsers_id()).collect(Collectors.toList());
         Map<Integer, User> userMap = userService.getMapUserById(ids);
         return participants.parallelStream().map(
-                participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
-                                    new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
-                                    participant.getCheckin(), participant.getCheckout()))
+                        participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
+                                new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
+                                participant.getCheckin(), participant.getCheckout()))
                 .collect(Collectors.toList());
     }
 
