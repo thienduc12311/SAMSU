@@ -33,7 +33,7 @@ public class TaskResponse implements Serializable {
     private String title;
     private String content;
     private Short status;
-    private List<UserProfileReduce> assignees;
+    private List<AssigneeResponseWithoutTask> assignees;
     private UserProfileReduce creator;
     private Integer eventId;
     private Short score;
@@ -45,7 +45,7 @@ public class TaskResponse implements Serializable {
         content = task.getContent();
         status = task.getStatus();
         creator = task.getCreatorUserId() != null ? new UserProfileReduce(task.getCreatorUserId()) : null;
-        assignees = task.getAssignees() != null ? task.getAssignees().stream().map(assignee -> new UserProfileReduce(assignee.getAssignee())).collect(Collectors.toList()) : null;
+        assignees = task.getAssignees() != null ? task.getAssignees().stream().map(AssigneeResponseWithoutTask::new).collect(Collectors.toList()) : null;
         eventId = task.getEvent() != null ? task.getEvent().getId() : null;
         score = task.getScore();
         gradeSubCriteria = new GradeSubCriteriaResponse(task.getGradeSubCriteria());

@@ -65,7 +65,6 @@ public class EventController {
     }
 
 
-
     @GetMapping("/{eventId}/register")
     public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventId") Integer eventId,
                                                 @CurrentUser UserPrincipal currentUser) {
@@ -141,6 +140,7 @@ public class EventController {
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
+//        eventService.evictAllEntries();
         EventResponse response = eventService.getEventResponse(eventProposalId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
