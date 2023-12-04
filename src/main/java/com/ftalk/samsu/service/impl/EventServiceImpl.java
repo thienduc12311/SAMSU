@@ -185,11 +185,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<ParticipantResponse> getAllEventParticipants(Integer eventId) {
         List<Participant> participants = participantRepository.findByParticipantId_EventsId(eventId);
-        List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsers_id()).collect(Collectors.toList());
+        List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toList());
         Map<Integer, User> userMap = userService.getMapUserById(ids);
         return participants.parallelStream().map(
                         participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
-                                new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
+                                new UserProfileReduce(userMap.get(participant.getParticipantId().getUsersId())),
                                 participant.getCheckin(), participant.getCheckout()))
                 .collect(Collectors.toList());
     }

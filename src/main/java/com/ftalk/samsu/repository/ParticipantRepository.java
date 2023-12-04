@@ -12,5 +12,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Partic
     List<Participant> findByParticipantId_EventsId(Integer eventId);
 
     List<Participant> findAllByParticipantIdIn(List<ParticipantId> participantIds);
+    Integer countAllByParticipantIdUsersIdAndCheckinIsNotNullAndCheckoutIsNotNull(Integer id);
 }
 

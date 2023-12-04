@@ -18,4 +18,5 @@ public class UserProfile {
 	private Date dob;
 	private String department;
 	private Short score;
+	private Integer attendedEvent;
 }

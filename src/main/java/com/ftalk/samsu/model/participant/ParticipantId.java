@@ -13,7 +13,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 public class ParticipantId implements Serializable {
-    private Integer users_id;
+    @Column(name = "users_id")
+    private Integer usersId;
     @Column(name = "events_id")
     private Integer eventsId;
 }

@@ -6,15 +6,12 @@ import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.user.*;
 import com.ftalk.samsu.payload.*;
 import com.ftalk.samsu.payload.user.*;
-import com.ftalk.samsu.repository.DepartmentRepository;
+import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.model.role.Role;
 import com.ftalk.samsu.model.role.RoleName;
-import com.ftalk.samsu.repository.PostRepository;
-import com.ftalk.samsu.repository.RoleRepository;
-import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.service.TaskService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
@@ -60,12 +57,14 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private DepartmentRepository departmentRepository;
+    @Autowired
+    private ParticipantRepository participantRepository;
 
     @Override
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
-        return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore());
+        return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()));
     }
 
     @Override
@@ -88,7 +87,7 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.getUserByRollnumber(rollnumber);
             return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(),
                     UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(),
-                    user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore());
+                    user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()));
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile of: " + rollnumber);
         throw new UnauthorizedException(apiResponse);
@@ -293,4 +292,7 @@ public class UserServiceImpl implements UserService {
         return SECRET_CHECK_TOKEN.equals(secret);
     }
 
+    private int getAttendedEvent(Integer userId) {
+        return participantRepository.countAllByParticipantIdUsersIdAndCheckinIsNotNullAndCheckoutIsNotNull(userId);
+    }
 }
