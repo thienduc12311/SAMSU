@@ -170,7 +170,12 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
         return participant.getCheckout() != null;
     }
-
+    @Override
+    public Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser) {
+        Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
+                .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
+        return participant.getCheckin() != null;
+    }
     @Override
     @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {

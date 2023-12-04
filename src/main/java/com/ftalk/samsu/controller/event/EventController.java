@@ -151,6 +151,12 @@ public class EventController {
         Boolean response = eventService.isFeedback(eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @GetMapping("/{eventId}/isCheckedIn")
+    public ResponseEntity<Boolean> isCheckedIn(@PathVariable(value = "eventId") Integer eventId,
+                                              @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.isCheckedIn(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @PutMapping("/{eventProposalId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
