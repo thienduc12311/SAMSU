@@ -13,7 +13,7 @@ public class GradeTicketResponse {
     private String feedback;
     private UserProfileReduce creator;
     private UserProfileReduce accepter;
-    private UserProfileReduce guarantor;
+    private String guarantorEmail;
     private GradeSubCriteriaResponse gradeSubCriteria;
     private Short status;
     private String semester;
@@ -27,7 +27,7 @@ public class GradeTicketResponse {
         this.feedback = gradeTicket.getFeedback();
         this.creator = new UserProfileReduce(gradeTicket.getCreatorUser());
         this.accepter = gradeTicket.getAccepterUser() != null ? new UserProfileReduce(gradeTicket.getAccepterUser()) : null;
-        this.guarantor = gradeTicket.getGuarantor() != null ? new UserProfileReduce(gradeTicket.getGuarantor()) : null;
+        this.guarantorEmail = gradeTicket.getGuarantorMail();
         this.semester = gradeTicket.getSemester() != null ?  gradeTicket.getSemester().getName() : null;
         this.gradeSubCriteria = gradeTicket.getGradeSubCriteria() != null ? new GradeSubCriteriaResponse(gradeTicket.getGradeSubCriteria()) : null;
         this.status = gradeTicket.getStatus();

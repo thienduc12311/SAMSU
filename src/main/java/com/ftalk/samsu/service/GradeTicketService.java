@@ -12,11 +12,23 @@ import java.util.List;
 
 public interface GradeTicketService {
     PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size);
+
     PagedResponse<GradeTicketResponse> getGradeTicketsByGradeSubCriteriaId(int page, int size, Integer gradeSubCriteriaId);
+
     GradeTicketResponse getGradeTicket(Integer id);
+
+    GradeTicketResponse getGradeTicketByCode(String code);
+
     GradeTicketResponse updateGradeTicket(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser);
+
     GradeTicketResponse updateGradeTicketV2(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser);
+
     GradeTicketResponse addGradeTicket(GradeTicketCreateRequest gradeTicketRequest, UserPrincipal currentUser);
+
     ApiResponse deleteGradeTicket(Integer id, UserPrincipal currentUser);
+
     List<GradeTicket> finAllGradeTicketApproved(String semester, Integer uid);
+
+    ApiResponse updateGradeTicketStatusByGuarantor(String code, Short status);
+
 }

@@ -2,6 +2,7 @@ package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
+import com.ftalk.samsu.exception.SamsuApiException;
 import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.GradeTicket;
@@ -17,30 +18,43 @@ import com.ftalk.samsu.repository.GradeSubCriteriaRepository;
 import com.ftalk.samsu.repository.GradeTicketRepository;
 import com.ftalk.samsu.repository.SemesterRepository;
 import com.ftalk.samsu.repository.UserRepository;
+import com.ftalk.samsu.security.JwtAuthenticationFilter;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.GradeTicketService;
+import com.ftalk.samsu.service.MailSenderService;
+import com.ftalk.samsu.utils.AESEncryption;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
 import com.ftalk.samsu.utils.grade.GradeTicketConstants;
+import com.ftalk.samsu.utils.grade.GradeTicketUtils;
+import lombok.extern.log4j.Log4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class GradeTicketServiceImpl implements GradeTicketService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GradeTicketServiceImpl.class);
+    private static final Long expiredTime = 172800000L;
+
     @Autowired
     private GradeTicketRepository gradeTicketRepository;
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    MailSenderService mailSenderService;
     @Autowired
     private SemesterRepository semesterRepository;
     @Autowired
@@ -78,11 +92,16 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         return new GradeTicketResponse(ticket);
     }
 
+    @Override
+    public GradeTicketResponse getGradeTicketByCode(String code) {
+        GradeTicket ticket = getGradeTicket(code);
+        return new GradeTicketResponse(ticket);
+    }
+
     @Transactional
     @Override
     public GradeTicketResponse updateGradeTicket(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser) {
         User user = userRepository.getUser(currentUser);
-        User guarantor = userRepository.findByRollnumber(gradeTicketRequest.getGuarantorRollnumber()).orElseThrow(() -> new ResourceNotFoundException("User", "Guarantor", gradeTicketRequest.getGuarantorRollnumber()));
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         GradeTicket gradeTicket = gradeTicketRepository.findById(id).orElseThrow(() -> new BadRequestException("GradeTicket not found with id " + id));
         boolean isAdminOrManager = currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())) || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()));
@@ -90,11 +109,11 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             gradeTicket.setTitle(gradeTicketRequest.getTitle());
         if (gradeTicketRequest.getSemesterName() != null)
             gradeTicket.setSemester(semester);
-        if (gradeTicketRequest.getGuarantorRollnumber() != null) {
-            if (!isAdminOrManager && gradeTicket.getGuarantor() != null && guarantor != gradeTicket.getGuarantor()) {
+        if (gradeTicketRequest.getGuarantorEmail() != null) {
+            if (!isAdminOrManager && gradeTicket.getGuarantorMail() != null && !gradeTicketRequest.getGuarantorEmail().equals(gradeTicket.getGuarantorMail())) {
                 gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
             }
-            gradeTicket.setGuarantor(guarantor);
+            gradeTicket.setGuarantorMail(gradeTicketRequest.getGuarantorEmail());
         }
         if (gradeTicketRequest.getContent() != null)
             gradeTicket.setContent(gradeTicketRequest.getContent());
@@ -153,7 +172,6 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     @Override
     public GradeTicketResponse updateGradeTicketV2(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser) {
         User user = userRepository.getUser(currentUser);
-        User guarantor = userRepository.findByRollnumber(gradeTicketRequest.getGuarantorRollnumber()).orElseThrow(() -> new ResourceNotFoundException("User", "Guarantor", gradeTicketRequest.getGuarantorRollnumber()));
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         GradeTicket gradeTicket = gradeTicketRepository.findById(id).orElseThrow(() -> new BadRequestException("GradeTicket not found with id " + id));
         boolean isAdminOrManager = currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())) || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()));
@@ -212,11 +230,11 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             gradeTicket.setEvidenceUrls(gradeTicketRequest.getEvidenceUrls());
         if (gradeTicketRequest.getSemesterName() != null)
             gradeTicket.setSemester(semester);
-        if (gradeTicketRequest.getGuarantorRollnumber() != null) {
-            if (!isAdminOrManager && gradeTicket.getGuarantor() != null && guarantor != gradeTicket.getGuarantor()) {
+        if (gradeTicketRequest.getGuarantorEmail() != null) {
+            if (!isAdminOrManager && gradeTicket.getGuarantorMail() != null && gradeTicketRequest.getGuarantorEmail() != gradeTicket.getGuarantorMail()) {
                 gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
             }
-            gradeTicket.setGuarantor(guarantor);
+            gradeTicket.setGuarantorMail(gradeTicketRequest.getGuarantorEmail());
         }
         gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
         gradeTicket.setAccepterUser(null);
@@ -227,15 +245,59 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     @Override
     @Transactional
     public GradeTicketResponse addGradeTicket(GradeTicketCreateRequest gradeTicketRequest, UserPrincipal currentUser) {
+        if (AppUtils.checkEmailStaffFPT(gradeTicketRequest.getGuarantorEmail())) {
+            throw new BadRequestException("Your guarantor email is invalid!");
+        }
         User creator = userRepository.getUser(currentUser);
-        User guarantor = userRepository.findByRollnumber(gradeTicketRequest.getGuarantorRollnumber()).orElseThrow(() -> new ResourceNotFoundException("User", "Guarantor", gradeTicketRequest.getGuarantorRollnumber()));
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         GradeTicket gradeTicket = new GradeTicket(gradeTicketRequest.getTitle(), gradeTicketRequest.getContent(), gradeTicketRequest.getEvidenceUrls(), gradeTicketRequest.getFeedback(), creator);
         gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
-        gradeTicket.setGuarantor(guarantor);
+        gradeTicket.setGuarantorMail(gradeTicketRequest.getGuarantorEmail());
         gradeTicket.setSemester(semester);
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
+        String code = "";
+        try {
+            code = AESEncryption.encrypt(gradeTicketRequest.getGuarantorEmail() + "#*#" + gradeTicket.getId() + "#*#" + System.currentTimeMillis());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception when encrypt");
+        }
+        mailSenderService.sendEmail(gradeTicketRequest.getGuarantorEmail(), "Access Your Grade Ticket",
+                GradeTicketUtils.genInfoSenderEmail(gradeTicketRequest.getGuarantorEmail(), code));
         return new GradeTicketResponse(savedGradeTicket);
+    }
+
+    private GradeTicket getGradeTicket(String code) {
+        String codeDecrypt = "";
+        try {
+            codeDecrypt = AESEncryption.decrypt(code);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw new BadRequestException("Code is not valid");
+        }
+
+        String[] codeValue = codeDecrypt.split("#*#");
+        if (codeValue.length != 3) {
+            throw new BadRequestException("Request is not valid");
+        }
+        Integer id = Integer.parseInt(codeValue[1]);
+        return gradeTicketRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
+    }
+
+    @Override
+    public ApiResponse updateGradeTicketStatusByGuarantor(String code, Short status) {
+        GradeTicket gradeTicket = getGradeTicket(code);
+        if (System.currentTimeMillis() - gradeTicket.getCreatedAt().getTime() > expiredTime) {
+            throw new BadRequestException("This gradeTicket is expired");
+        }
+        if (status.equals(GradeTicketConstants.GUARANTEE_ACCEPT.getValue()) || status.equals(GradeTicketConstants.GUARANTEE_REJECT.getValue())) {
+            gradeTicket.setStatus(status);
+            gradeTicketRepository.save(gradeTicket);
+            return new ApiResponse(Boolean.TRUE, "You successfully updated gradeTicket status");
+        }
+
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update this gradeTicket status");
+        throw new UnauthorizedException(apiResponse);
     }
 
     @Override
@@ -251,8 +313,8 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     }
 
     @Override
-    public List<GradeTicket> finAllGradeTicketApproved(String semester, Integer uid){
-        return gradeTicketRepository.findAllByCreatorUser_IdAndSemester_NameAndStatus(uid,semester,GradeTicketConstants.APPROVED.getValue());
+    public List<GradeTicket> finAllGradeTicketApproved(String semester, Integer uid) {
+        return gradeTicketRepository.findAllByCreatorUser_IdAndSemester_NameAndStatus(uid, semester, GradeTicketConstants.APPROVED.getValue());
     }
 
     private PagedResponse<GradeTicketResponse> getGradeTicketResponse(Page<GradeTicket> gradeTickets) {

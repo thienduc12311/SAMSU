@@ -56,9 +56,8 @@ public class GradeTicket extends DateAudit implements Serializable {
     @JoinColumn(name = "accepter_users_id")
     private User accepterUser;
 
-    @ManyToOne
-    @JoinColumn(name = "guarantor_users_id")
-    private User guarantor;
+    @JoinColumn(name = "guarantor_mail")
+    private String guarantorMail;
 
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
