@@ -2,6 +2,7 @@ package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
+import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.AssigneeId;
 import com.ftalk.samsu.model.event.Event;
@@ -10,6 +11,7 @@ import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.gradePolicy.GradeCriteria;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.PolicyDocument;
+import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
@@ -27,6 +29,7 @@ import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.event.AssigneeConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
+import com.ftalk.samsu.utils.event.TaskConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +37,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,26 +145,58 @@ public class TaskServiceImpl implements TaskService {
     public Task updateTask(Integer id, TaskRequest taskRequest, UserPrincipal currentUser) {
         taskValidate(taskRequest);
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", id));
-        if (!taskRequest.getGradeSubCriteriaId().equals(task.getGradeSubCriteria().getId())) {
-            GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
-            task.setGradeSubCriteria(gradeSubCriteria);
+        if (task.getEvent().getEventLeaderUser().getId().equals(currentUser.getId())
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            if (!taskRequest.getGradeSubCriteriaId().equals(task.getGradeSubCriteria().getId())) {
+                GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(taskRequest.getGradeSubCriteriaId(), currentUser);
+                task.setGradeSubCriteria(gradeSubCriteria);
+            }
+            if (!taskRequest.getEventId().equals(task.getEvent().getId())) {
+                Event event = eventService.getEvent(taskRequest.getEventId(), currentUser);
+                task.setEvent(event);
+            }
+            task.setTitle(taskRequest.getTitle());
+            task.setContent(taskRequest.getContent());
+            task.setScore(taskRequest.getScore());
+            task.setDeadline(taskRequest.getDeadline());
+            return taskRepository.save(task);
         }
-        if (!taskRequest.getEventId().equals(task.getEvent().getId())) {
-            Event event = eventService.getEvent(taskRequest.getEventId(), currentUser);
-            task.setEvent(event);
+        throw new UnauthorizedException("You don't have permission update this task!");
+    }
+
+    @Override
+    @Transactional
+    public Boolean updateTaskStatus(Integer id, Short status, UserPrincipal currentUser) {
+        Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task", "Id", id));
+        if (task.getEvent().getEventLeaderUser().getId().equals(currentUser.getId())
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            if (Objects.equals(task.getStatus(), status)) {
+                return Boolean.TRUE;
+            }
+//        boolean rollbackTaskStatus = task.getStatus() == TaskConstants.REVIEWED.getValue();
+            task.setStatus(status);
+            List<Assignee> assignees = task.getAssignees();
+            if (task.getStatus() == TaskConstants.REVIEWED.getValue()) {
+                updateScoreAssignee(assignees, task.getScore(), true);
+            } else if (task.getStatus() == TaskConstants.WAITING.getValue()) {
+                updateScoreAssignee(assignees, task.getScore(), false);
+            }
+            return Boolean.TRUE;
         }
-        task.setTitle(taskRequest.getTitle());
-        task.setContent(taskRequest.getContent());
-        task.setScore(taskRequest.getScore());
-        task.setStatus(taskRequest.getStatus());
-        task.setDeadline(taskRequest.getDeadline());
-        if (task.getStatus() != AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() == status) {
-            Task task = assignee.getTask();
-            User user = assignee.getAssignee();
-            user.setScore((short) (user.getScore() + task.getScore()));
-            userRepository.save(user);
+        throw new UnauthorizedException("You don't have permission update this task!");
+    }
+
+    private void updateScoreAssignee(List<Assignee> assignees, Short score, boolean isPlus) {
+        short tmp = isPlus ? (short) 1 : (short) -1;
+        for (Assignee assignee : assignees) {
+            if (assignee.getStatus() == AssigneeConstants.APPROVED.getValue()) {
+                User user = assignee.getAssignee();
+                user.setScore((short) (user.getScore() + score * tmp));
+                userRepository.save(user);
+            }
         }
-        return taskRepository.save(task);
     }
 
     public ApiResponse deleteTask(Integer id, UserPrincipal currentUser) {

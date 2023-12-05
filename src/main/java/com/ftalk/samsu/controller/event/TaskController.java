@@ -42,14 +42,13 @@ public class TaskController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<TaskResponse> postTask(
-                                                @Valid @RequestBody TaskRequest taskRequest,
-                                                @CurrentUser UserPrincipal currentUser) {
+            @Valid @RequestBody TaskRequest taskRequest,
+            @CurrentUser UserPrincipal currentUser) {
         Task task = taskService.createTask(taskRequest, currentUser);
         return new ResponseEntity<>(new TaskResponse(task), HttpStatus.OK);
     }
 
     @PutMapping("/{taskId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<TaskResponse> putTask(
             @PathVariable(value = "taskId") Integer taskId,
             @Valid @RequestBody TaskRequest taskRequest,
@@ -57,6 +56,16 @@ public class TaskController {
         Task task = taskService.updateTask(taskId, taskRequest, currentUser);
         return new ResponseEntity<>(new TaskResponse(task), HttpStatus.OK);
     }
+
+    @PutMapping("/{taskId}/status/{status}")
+    public ResponseEntity<Boolean> putTask(
+            @PathVariable(value = "taskId") Integer taskId,
+            @PathVariable(value = "status") Short status,
+            @CurrentUser UserPrincipal currentUser) {
+        Boolean updateTaskStatus = taskService.updateTaskStatus(taskId, status, currentUser);
+        return new ResponseEntity<>(updateTaskStatus, HttpStatus.OK);
+    }
+
 
     @DeleteMapping("/{taskId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
@@ -66,7 +75,6 @@ public class TaskController {
         ApiResponse apiResponse = taskService.deleteTask(taskId, currentUser);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
-
 
 
     @GetMapping("/me")

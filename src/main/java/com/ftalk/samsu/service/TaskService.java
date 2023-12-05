@@ -26,5 +26,7 @@ public interface TaskService {
 
 	Task updateTask(Integer id, TaskRequest taskRequest, UserPrincipal currentUser);
 
+	Boolean updateTaskStatus(Integer id, Short status, UserPrincipal currentUser);
+
 	ApiResponse deleteTask(Integer id, UserPrincipal currentUser );
 }
