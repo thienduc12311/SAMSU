@@ -12,6 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class TaskRequest {
     /// <summary>Not need when create event</summary>
     private Integer eventId;
     private List<AssigneeRequest> assignees;
+    private Date deadline;
 
     public Set<String> getAssigneeRollnumber() {
         return assignees.parallelStream().map(AssigneeRequest::getRollnumber).collect(Collectors.toSet());

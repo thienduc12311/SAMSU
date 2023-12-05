@@ -77,7 +77,7 @@ public class GradeServiceImpl implements GradeService {
             List<Assignee> assignees = assigneeRepository.findAllByIdIn(assigneeIds);
             gradeResponses.addAll(assignees.parallelStream()
                     .filter(assignee -> assignee.getStatus() != null
-                            && AssigneeConstants.COMPLETE.getValue() == assignee.getStatus())
+                            && AssigneeConstants.APPROVED.getValue() == assignee.getStatus())
                     .map(assignee -> new GradeResponse(tasks.get(assignee.getId().getTasksId()),
                             assignee.getCreatedAt())).collect(Collectors.toList()));
 

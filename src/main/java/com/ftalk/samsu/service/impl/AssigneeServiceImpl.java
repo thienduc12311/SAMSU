@@ -107,17 +107,6 @@ public class AssigneeServiceImpl implements AssigneeService {
         );
         assignee.setStatus(status);
         assigneeRepository.save(assignee);
-        if (assignee.getStatus() != AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() == status) {
-            Task task = assignee.getTask();
-            User user = assignee.getAssignee();
-            user.setScore((short) (user.getScore() + task.getScore()));
-            userRepository.save(user);
-        } else if (assignee.getStatus() == AssigneeConstants.COMPLETE.getValue() && AssigneeConstants.COMPLETE.getValue() != status) {
-            Task task = assignee.getTask();
-            User user = assignee.getAssignee();
-            user.setScore((short) (user.getScore() - task.getScore()));
-            userRepository.save(user);
-        }
         return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
     }
 

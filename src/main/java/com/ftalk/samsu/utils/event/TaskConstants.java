@@ -4,24 +4,20 @@ import com.ftalk.samsu.exception.BadRequestException;
 import lombok.Getter;
 
 @Getter
-public enum AssigneeConstants {
+public enum TaskConstants {
 
     WAITING((short) 0),
-    ACCEPT((short) 1),
-    REJECT((short) 2),
-    COMPLETE((short) 3),
-    APPROVED((short) 4),
-    DISAPPROVED((short) 5);
+    REVIEWED((short) 1);
 
 
     private short value;
 
-    AssigneeConstants(short value) {
+    TaskConstants(short value) {
         this.value = value;
     }
 
-    public static AssigneeConstants findByValue(Short value) {
-        for (AssigneeConstants v : values()) {
+    public static TaskConstants findByValue(Short value) {
+        for (TaskConstants v : values()) {
             if (v.getValue() == value) {
                 return v;
             }
@@ -30,7 +26,7 @@ public enum AssigneeConstants {
     }
 
     public static Short findValue(String value) {
-        for (AssigneeConstants v : values()) {
+        for (TaskConstants v : values()) {
             if (v.name().equals(value)) {
                 return v.getValue();
             }
