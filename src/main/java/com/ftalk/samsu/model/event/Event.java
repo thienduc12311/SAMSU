@@ -5,6 +5,7 @@ import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.audit.DateAudit;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.participant.Participant;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
@@ -76,6 +77,10 @@ public class Event extends DateAudit implements Serializable {
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "semesters_name")
 	private Semester semester;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "attend_sub_criteria")
+	private GradeSubCriteria attendGradeSubCriteria;
 
 	@NotBlank
 	@Column(name = "banner_url")

@@ -164,7 +164,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
-        return new EventResponse(getEvent(id,currentUser));
+        return new EventResponse(getEvent(id, currentUser));
     }
 
     @Override
@@ -173,9 +173,9 @@ public class EventServiceImpl implements EventService {
         List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsers_id()).collect(Collectors.toList());
         Map<Integer, User> userMap = userService.getMapUserById(ids);
         return participants.parallelStream().map(
-                participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
-                                    new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
-                                    participant.getCheckin(), participant.getCheckout()))
+                        participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
+                                new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
+                                participant.getCheckin(), participant.getCheckout()))
                 .collect(Collectors.toList());
     }
 
@@ -230,6 +230,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
+        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
         Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
@@ -237,6 +238,7 @@ public class EventServiceImpl implements EventService {
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         event.setStatus(eventCreateRequest.getStatus());
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         event.setDuration(eventCreateRequest.getDuration());
         event.setTitle(eventCreateRequest.getTitle());
         event.setContent(eventCreateRequest.getContent());
@@ -268,6 +270,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
+        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
@@ -277,6 +280,7 @@ public class EventServiceImpl implements EventService {
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventCreateRequest.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         Event eventSaved = eventRepository.save(event);
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
         feedbackQuestionRepository.saveAll(feedbackQuestions);
