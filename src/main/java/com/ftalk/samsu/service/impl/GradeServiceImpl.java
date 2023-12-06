@@ -107,7 +107,7 @@ public class GradeServiceImpl implements GradeService {
 
         if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
-            ConcurrentMap<Integer, GradeAllEntryResponse> students = userRepository.findAllByRoleAndStatus(UserRole.ROLE_STUDENT, (short) 0)
+            ConcurrentMap<Integer, GradeAllEntryResponse> students = userRepository.findAllByRoleAndStatus(UserRole.ROLE_STUDENT, (short) 1)
                     .parallelStream().collect(Collectors.toConcurrentMap(User::getId, GradeAllEntryResponse::new));
 //            ConcurrentHashMap<Integer,Short>
             List<Event> events = eventService.getEventBySemester(semester);
@@ -120,7 +120,8 @@ public class GradeServiceImpl implements GradeService {
                                 List<Assignee> assignees = task.getAssignees();
                                 if (assignees != null) {
                                     assignees.forEach(assignee -> {
-                                        if (assignee.getStatus().equals(AssigneeConstants.APPROVED.getValue())) {
+                                        if (students.get(assignee.getId().getUsersId()) != null &&
+                                                assignee.getStatus().equals(AssigneeConstants.APPROVED.getValue())) {
                                             students.get(assignee.getId().getUsersId()).addScoreWithSubCriteriaId(task.getGradeSubCriteria().getId(), task.getScore());
                                         }
                                     });
@@ -132,7 +133,8 @@ public class GradeServiceImpl implements GradeService {
                     if (participants != null) {
                         participants.forEach(participant -> {
                             if (participant.getCheckin() != null && participant.getCheckout() != null) {
-                                students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getAttendGradeSubCriteria().getId(), event.getAttendScore());
+                                if (students.get(participant.getParticipantId().getUsersId()) != null)
+                                    students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getAttendGradeSubCriteria().getId(), event.getAttendScore());
                             }
                         });
                     }
@@ -141,17 +143,19 @@ public class GradeServiceImpl implements GradeService {
 
 
             List<GradeTicket> gradeTickets = gradeTicketService.finAllGradeTicketApproved(semester);
-            if (gradeTickets != null){
+            if (gradeTickets != null) {
                 gradeTickets.forEach(gradeTicket -> {
-                    students.get(gradeTicket.getCreatorUser().getId()).addScoreWithSubCriteriaId(gradeTicket.getGradeSubCriteria().getId(), gradeTicket.getScore());
+                    if (students.get(gradeTicket.getCreatorUser().getId()) != null)
+                        students.get(gradeTicket.getCreatorUser().getId()).addScoreWithSubCriteriaId(gradeTicket.getGradeSubCriteria().getId(), gradeTicket.getScore());
                 });
             }
             List<GradeCriteria> gradeCriteriaList = gradePolicyService.getAllGradeCriteria();
             List<GradeSubCriteria> gradeSubCriteriaList = new ArrayList<>();
-            for (GradeCriteria gradeCriteria: gradeCriteriaList) {
-                if (gradeCriteria.getGradeSubCriteriaList() != null){
+            for (GradeCriteria gradeCriteria : gradeCriteriaList) {
+                if (gradeCriteria.getGradeSubCriteriaList() != null) {
                     gradeSubCriteriaList.addAll(gradeCriteria.getGradeSubCriteriaList());
-                };
+                }
+                ;
             }
             gradeAllResponse.setGradeSubCriteriaResponses(ListConverter.listToList(gradeSubCriteriaList, GradeSubCriteriaResponse::new));
             gradeAllResponse.setGradeCriteriaResponses(ListConverter.listToList(gradeCriteriaList, GradeCriteriaResponse::new));
