@@ -5,11 +5,13 @@ import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.payload.user.DepartmentResponse;
+import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaResponse;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.ListConverter;
 import lombok.AllArgsConstructor;
@@ -41,6 +43,7 @@ public class EventResponse implements Serializable {
     private List<UserProfileReduce> participants;
     private List<FeedbackQuestionResponse> feedbackQuestions;
     private List<TaskResponse> tasks;
+    private GradeSubCriteriaResponse gradeSubCriteriaResponse;
     private Date createAt;
     private Short attendScore;
 
@@ -58,6 +61,8 @@ public class EventResponse implements Serializable {
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
+        gradeSubCriteriaResponse = event.getAttendGradeSubCriteria() != null ?
+                new GradeSubCriteriaResponse(event.getAttendGradeSubCriteria()) : null;
         departments = event.getDepartments() != null ? ListConverter.listToList(event.getDepartments(), DepartmentResponse::new) : null;
         feedbackQuestions = event.getFeedbackQuestions() != null ? event.getFeedbackQuestions().parallelStream().map(FeedbackQuestionResponse::new).collect(Collectors.toList()) : null;
         participants = event.getParticipants() != null ? event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList()) : null;

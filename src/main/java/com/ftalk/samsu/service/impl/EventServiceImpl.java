@@ -245,6 +245,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
+        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
         Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
@@ -252,6 +253,7 @@ public class EventServiceImpl implements EventService {
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         event.setStatus(eventCreateRequest.getStatus());
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         event.setDuration(eventCreateRequest.getDuration());
         event.setTitle(eventCreateRequest.getTitle());
         event.setContent(eventCreateRequest.getContent());
@@ -283,6 +285,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
+        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
@@ -292,6 +295,7 @@ public class EventServiceImpl implements EventService {
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventCreateRequest.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         Event eventSaved = eventRepository.save(event);
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
         feedbackQuestionRepository.saveAll(feedbackQuestions);
