@@ -19,7 +19,8 @@ public class GradeTicketUtils {
                 "    <p>Dear " + email + ",</p>\n" +
                 "    <p>We hope this email finds you well. You have been granted access to review a Grade Ticket submitted by a user. Please use the following link to access the Grade Ticket and provide your valuable feedback:</p>\n" +
                 "\n" +
-                "    <a href=\"+" + link + "\" target=\"_blank\">Access Grade Ticket</a>\n" +
+//                "    <a href=\"+" + link + "\" target=\"_blank\">Access Grade Ticket</a>\n" +
+                "Access Grade Ticket: " + link + "\n"+
                 "\n" +
                 "    <p>This link is unique to you and should not be shared with others. If you encounter any issues or have questions, please do not hesitate to contact us.</p>\n" +
                 "\n" +
