@@ -117,7 +117,7 @@ public class Event extends DateAudit implements Serializable {
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "events_id")
 	private List<Participant> participantRaws;
 

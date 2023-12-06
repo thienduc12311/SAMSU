@@ -101,71 +101,72 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeAllEntryResponse> getAllGrade(String semester, UserPrincipal currentUser) {
-        GradeAllResponse gradeAllResponse = new GradeAllResponse();
-        List<GradeAllEntryResponse> grades = new ArrayList<>();
-
-        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
-            ConcurrentMap<Integer, GradeAllEntryResponse> students = userRepository.findAllByRoleAndStatus(UserRole.ROLE_STUDENT, (short) 0)
-                    .parallelStream().collect(Collectors.toConcurrentMap(User::getId, GradeAllEntryResponse::new));
-//            ConcurrentHashMap<Integer,Short>
-            List<Event> events = eventService.getEventBySemester(semester);
-            events.parallelStream().forEach(event -> {
-                List<Task> tasks = event.getTasks();
-                if (tasks != null) {
-                    tasks.parallelStream().forEach(task -> {
-                        if (task.getStatus().equals(TaskConstants.REVIEWED.getValue())) {
-                            List<Assignee> assignees = task.getAssignees();
-                            if (assignees != null) {
-                                assignees.parallelStream().forEach(assignee -> {
-                                    if (assignee.getStatus().equals(AssigneeConstants.APPROVED.getValue())) {
-                                        students.get(assignee.getId().getUsersId()).addScoreWithSubCriteriaId(task.getGradeSubCriteria().getId(), task.getScore());
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-                List<Participant> participants = event.getParticipantRaws();
-                if (participants != null){
-                    participants.parallelStream().forEach(participant -> {
-                        if (participant.getCheckin() != null && participant.getCheckout() != null){
-                            students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getGradeSubCriteria().getId(), task.getScore());
-                        }
-                    });
-                }
-            });
-
-            Map<Integer, Event> participantEvent = events.parallelStream().collect(Collectors.toMap(Event::getId, Function.identity()));
-            List<ParticipantId> participantIds = events.parallelStream().map((e) ->
-                    new ParticipantId(creator.getId(), e.getId())).collect(Collectors.toList());
-            List<Participant> participants = participantRepository.findAllByParticipantIdIn(participantIds);
-            List<GradeResponse> gradeResponses = participants.parallelStream()
-                    .filter(participant -> participant.getCheckin() != null && participant.getCheckout() != null)
-                    .map(participant -> new GradeResponse(participantEvent.get(participant.getParticipantId().getEventsId()), participant.getCheckout()))
-                    .collect(Collectors.toList());
-
-            //task grade
-            Map<Integer, Task> tasks = getAllTask(events);
-            List<AssigneeId> assigneeIds = tasks.keySet().parallelStream().map(taskId -> new AssigneeId(taskId, creator.getId()))
-                    .collect(Collectors.toList());
-            List<Assignee> assignees = assigneeRepository.findAllByIdIn(assigneeIds);
-            gradeResponses.addAll(assignees.parallelStream()
-                    .filter(assignee -> assignee.getStatus() != null
-                            && AssigneeConstants.APPROVED.getValue() == assignee.getStatus())
-                    .map(assignee -> new GradeResponse(tasks.get(assignee.getId().getTasksId()),
-                            assignee.getCreatedAt())).collect(Collectors.toList()));
-
-            //ticket grade
-            List<GradeTicket> gradeTickets = gradeTicketService.finAllGradeTicketApproved(semester, creator.getId());
-            gradeResponses.addAll(gradeTickets.parallelStream().map(gradeTicket ->
-                    new GradeResponse(gradeTicket, gradeTicket.getCreatedAt())).collect(Collectors.toList()));
-
-            gradeResponses.sort((o1, o2) -> o2.getTime().after(o1.getTime()) ? -1 : 1);
-            return gradeResponses;
-        }
-        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get this score");
-        throw new UnauthorizedException(apiResponse);
+//        GradeAllResponse gradeAllResponse = new GradeAllResponse();
+//        List<GradeAllEntryResponse> grades = new ArrayList<>();
+//
+//        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+//                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+//            ConcurrentMap<Integer, GradeAllEntryResponse> students = userRepository.findAllByRoleAndStatus(UserRole.ROLE_STUDENT, (short) 0)
+//                    .parallelStream().collect(Collectors.toConcurrentMap(User::getId, GradeAllEntryResponse::new));
+////            ConcurrentHashMap<Integer,Short>
+//            List<Event> events = eventService.getEventBySemester(semester);
+//            events.parallelStream().forEach(event -> {
+//                List<Task> tasks = event.getTasks();
+//                if (tasks != null) {
+//                    tasks.parallelStream().forEach(task -> {
+//                        if (task.getStatus().equals(TaskConstants.REVIEWED.getValue())) {
+//                            List<Assignee> assignees = task.getAssignees();
+//                            if (assignees != null) {
+//                                assignees.parallelStream().forEach(assignee -> {
+//                                    if (assignee.getStatus().equals(AssigneeConstants.APPROVED.getValue())) {
+//                                        students.get(assignee.getId().getUsersId()).addScoreWithSubCriteriaId(task.getGradeSubCriteria().getId(), task.getScore());
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    });
+//                }
+//                List<Participant> participants = event.getParticipantRaws();
+//                if (participants != null){
+//                    participants.parallelStream().forEach(participant -> {
+//                        if (participant.getCheckin() != null && participant.getCheckout() != null){
+//                            students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getGradeSubCriteria().getId(), task.getScore());
+//                        }
+//                    });
+//                }
+//            });
+//
+//            Map<Integer, Event> participantEvent = events.parallelStream().collect(Collectors.toMap(Event::getId, Function.identity()));
+//            List<ParticipantId> participantIds = events.parallelStream().map((e) ->
+//                    new ParticipantId(creator.getId(), e.getId())).collect(Collectors.toList());
+//            List<Participant> participants = participantRepository.findAllByParticipantIdIn(participantIds);
+//            List<GradeResponse> gradeResponses = participants.parallelStream()
+//                    .filter(participant -> participant.getCheckin() != null && participant.getCheckout() != null)
+//                    .map(participant -> new GradeResponse(participantEvent.get(participant.getParticipantId().getEventsId()), participant.getCheckout()))
+//                    .collect(Collectors.toList());
+//
+//            //task grade
+//            Map<Integer, Task> tasks = getAllTask(events);
+//            List<AssigneeId> assigneeIds = tasks.keySet().parallelStream().map(taskId -> new AssigneeId(taskId, creator.getId()))
+//                    .collect(Collectors.toList());
+//            List<Assignee> assignees = assigneeRepository.findAllByIdIn(assigneeIds);
+//            gradeResponses.addAll(assignees.parallelStream()
+//                    .filter(assignee -> assignee.getStatus() != null
+//                            && AssigneeConstants.APPROVED.getValue() == assignee.getStatus())
+//                    .map(assignee -> new GradeResponse(tasks.get(assignee.getId().getTasksId()),
+//                            assignee.getCreatedAt())).collect(Collectors.toList()));
+//
+//            //ticket grade
+//            List<GradeTicket> gradeTickets = gradeTicketService.finAllGradeTicketApproved(semester, creator.getId());
+//            gradeResponses.addAll(gradeTickets.parallelStream().map(gradeTicket ->
+//                    new GradeResponse(gradeTicket, gradeTicket.getCreatedAt())).collect(Collectors.toList()));
+//
+//            gradeResponses.sort((o1, o2) -> o2.getTime().after(o1.getTime()) ? -1 : 1);
+//            return gradeResponses;
+//        }
+//        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get this score");
+//        throw new UnauthorizedException(apiResponse);
+        return null;
     }
 
 
