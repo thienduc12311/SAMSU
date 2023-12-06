@@ -9,6 +9,7 @@ import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.GradeTicketService;
 import com.ftalk.samsu.utils.AppConstants;
+import io.swagger.v3.oas.annotations.headers.Header;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +21,16 @@ import org.springframework.web.bind.annotation.*;
 public class GradeTicketCodeController {
     @Autowired
     private GradeTicketService gradeTicketService;
-    @GetMapping("/{code}")
-    public ResponseEntity<GradeTicketResponse> get( @PathVariable(name = "code") String code) {
+
+    @GetMapping
+    public ResponseEntity<GradeTicketResponse> get(@RequestHeader(name = "CodeTicket") String code) {
         GradeTicketResponse gradeTicket = gradeTicketService.getGradeTicketByCode(code);
         return new ResponseEntity<>(gradeTicket, HttpStatus.OK);
     }
 
     @PostMapping("/status/{status}/{code}")
     public ResponseEntity<ApiResponse> create(@PathVariable(name = "status") Short status,
-                                                      @PathVariable(name = "code") String code) {
+                                              @RequestHeader(name = "CodeTicket") String code) {
         ApiResponse apiResponse = gradeTicketService.updateGradeTicketStatusByGuarantor(code, status);
         return new ResponseEntity<>(apiResponse, HttpStatus.CREATED);
     }

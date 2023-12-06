@@ -257,7 +257,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
         String code = "";
         try {
-            code = AESEncryption.encrypt(gradeTicketRequest.getGuarantorEmail() + "#*#" + gradeTicket.getId() + "#*#" + System.currentTimeMillis());
+            code = AESEncryption.encrypt(gradeTicketRequest.getGuarantorEmail() + "###" + gradeTicket.getId() + "###" + System.currentTimeMillis());
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception when encrypt");
@@ -276,7 +276,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             throw new BadRequestException("Code is not valid");
         }
 
-        String[] codeValue = codeDecrypt.split("#*#");
+        String[] codeValue = codeDecrypt.split("###");
         if (codeValue.length != 3) {
             throw new BadRequestException("Request is not valid");
         }
