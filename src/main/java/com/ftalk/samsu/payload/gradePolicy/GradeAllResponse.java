@@ -13,7 +13,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GradeAllResponse {
-    private List<GradeAllEntryResponse> gradeAllEntryResponses;
-    private List<GradeSubCriteriaResponse> grade;
-    private Map<Integer, GradeCriteriaResponse> mapGradeCriteriaResponse;
+    private List<GradeAllEntryResponse> studentGrade;
+    private List<GradeSubCriteriaResponse> gradeSubCriteriaResponses;
+    private List<GradeCriteriaResponse> gradeCriteriaResponses;
 }

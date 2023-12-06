@@ -317,6 +317,11 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         return gradeTicketRepository.findAllByCreatorUser_IdAndSemester_NameAndStatus(uid, semester, GradeTicketConstants.APPROVED.getValue());
     }
 
+    @Override
+    public List<GradeTicket> finAllGradeTicketApproved(String semester) {
+        return gradeTicketRepository.findAllBySemester_NameAndStatus(semester, GradeTicketConstants.APPROVED.getValue());
+    }
+
     private PagedResponse<GradeTicketResponse> getGradeTicketResponse(Page<GradeTicket> gradeTickets) {
         if (gradeTickets.getNumberOfElements() == 0) {
             return new PagedResponse<>(Collections.emptyList(), gradeTickets.getNumber(), gradeTickets.getSize(), gradeTickets.getTotalElements(), gradeTickets.getTotalPages(), gradeTickets.isLast());

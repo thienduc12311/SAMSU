@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 @EqualsAndHashCode
 @Entity
@@ -30,6 +31,11 @@ public class GradeCriteria implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_document_id")
     private PolicyDocument policyDocument;
+
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "gradeCriteria", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GradeSubCriteria> gradeSubCriteriaList;
 
     public GradeCriteria(String content, PolicyDocument policyDocument) {
         this.content = content;

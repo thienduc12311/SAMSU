@@ -2,10 +2,7 @@ package com.ftalk.samsu.controller.gradePolicy;
 
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.gradePolicy.GradeResponse;
-import com.ftalk.samsu.payload.gradePolicy.GradeTicketCreateRequest;
-import com.ftalk.samsu.payload.gradePolicy.GradeTicketResponse;
-import com.ftalk.samsu.payload.gradePolicy.GradeTicketUpdateRequest;
+import com.ftalk.samsu.payload.gradePolicy.*;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.GradeService;
@@ -39,11 +36,11 @@ public class GradeController {
         return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
     }
 
-//    @GetMapping("/user")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-//    public ResponseEntity<List<GradeResponse>> getAll(@CurrentUser UserPrincipal currentUser) {
-//        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(rollnumber, semester, currentUser);
-//        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
-//    }
+    @GetMapping("/all/semester/{semesterName}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<GradeAllResponse> getAll(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+        GradeAllResponse gradeResponses = gradeService.getAllGrade(semester, currentUser);
+        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
+    }
 
 }
