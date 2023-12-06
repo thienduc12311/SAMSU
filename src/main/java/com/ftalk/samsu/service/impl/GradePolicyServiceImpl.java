@@ -43,7 +43,6 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     private GradeCriteriaRepository gradeCriteriaRepository;
     @Autowired
     private GradeSubCriteriaRepository gradeSubCriteriaRepository;
-
     @Autowired
     private PolicyDocumentRepository policyDocumentRepository;
 
@@ -90,6 +89,11 @@ public class GradePolicyServiceImpl implements GradePolicyService {
         }
         return new PagedResponse<>(ListConverter.listToList(events.getContent(), GradeSubCriteriaResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(),
                 events.getTotalPages(), events.isLast());
+    }
+
+    @Override
+    public List<GradeCriteria> getAllGradeCriteria(){
+        return gradeCriteriaRepository.findAll();
     }
 
     @Override

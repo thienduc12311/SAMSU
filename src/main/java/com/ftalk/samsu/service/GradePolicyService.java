@@ -9,6 +9,8 @@ import com.ftalk.samsu.payload.event.EventCreateRequest;
 import com.ftalk.samsu.payload.gradePolicy.*;
 import com.ftalk.samsu.security.UserPrincipal;
 
+import java.util.List;
+
 public interface GradePolicyService {
 
     PagedResponse<PolicyDocument> getAllPolicyDocuments(int page, int size);
@@ -32,6 +34,8 @@ public interface GradePolicyService {
     PolicyDocument addPolicyDocument(PolicyDocumentRequest policyDocumentRequest, UserPrincipal currentUser);
 
     GradeCriteria addGradeCriteria(GradeCriteriaRequest gradeCriteriaRequest, UserPrincipal currentUser);
+
+    List<GradeCriteria> getAllGradeCriteria();
 
     GradeSubCriteria addGradeSubCriteria(GradeSubCriteriaRequest gradeSubCriteriaRequest, UserPrincipal currentUser);
 

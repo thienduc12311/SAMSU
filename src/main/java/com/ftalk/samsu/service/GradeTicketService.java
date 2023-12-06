@@ -29,6 +29,8 @@ public interface GradeTicketService {
 
     List<GradeTicket> finAllGradeTicketApproved(String semester, Integer uid);
 
+    List<GradeTicket> finAllGradeTicketApproved(String semester);
+
     ApiResponse updateGradeTicketStatusByGuarantor(String code, Short status);
 
 }

@@ -28,7 +28,7 @@ public class GradeTicketCodeController {
         return new ResponseEntity<>(gradeTicket, HttpStatus.OK);
     }
 
-    @PostMapping("/status/{status}/{code}")
+    @PostMapping("/status/{status}")
     public ResponseEntity<ApiResponse> create(@PathVariable(name = "status") Short status,
                                               @RequestHeader(name = "CodeTicket") String code) {
         ApiResponse apiResponse = gradeTicketService.updateGradeTicketStatusByGuarantor(code, status);

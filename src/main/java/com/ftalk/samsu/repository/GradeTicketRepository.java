@@ -13,4 +13,6 @@ public interface GradeTicketRepository extends JpaRepository<GradeTicket, Intege
     Page<GradeTicket> findByGradeSubCriteriaId(Integer gradeSubCriteriaId, Pageable pageable);
 
     List<GradeTicket> findAllByCreatorUser_IdAndSemester_NameAndStatus(Integer uid, String semester, Short status);
+
+    List<GradeTicket> findAllBySemester_NameAndStatus(String semester, Short status);
 }
