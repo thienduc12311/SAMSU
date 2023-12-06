@@ -5,6 +5,7 @@ import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.audit.DateAudit;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.participant.Participant;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
@@ -108,6 +109,12 @@ public class Event extends DateAudit implements Serializable {
 			joinColumns = {@JoinColumn(name = "events_id")},
 			inverseJoinColumns = {@JoinColumn(name = "users_id")})
 	private Set<User> participants;
+
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "events_id")
+	private List<Participant> participantRaws;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude

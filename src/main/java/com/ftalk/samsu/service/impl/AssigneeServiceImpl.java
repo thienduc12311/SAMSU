@@ -1,10 +1,12 @@
 package com.ftalk.samsu.service.impl;
 
 import com.ftalk.samsu.exception.ResourceNotFoundException;
+import com.ftalk.samsu.exception.UnauthorizedException;
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.AssigneeId;
 import com.ftalk.samsu.model.event.Task;
+import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -86,7 +89,7 @@ public class AssigneeServiceImpl implements AssigneeService {
         Map<String, User> assigneeUser = userService.getMapUserByRollnumber(rollnumbers);
         List<AssigneeId> assigneeIds = rollnumbers.parallelStream().map(rollnumber ->
                         new AssigneeId(taskId, assigneeUser.get(rollnumber).getId()))
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
         assigneeRepository.deleteAllByAssigneeId(assigneeIds);
         return new ApiResponse(Boolean.TRUE, "Delete list assignee of task success");
     }
@@ -99,15 +102,23 @@ public class AssigneeServiceImpl implements AssigneeService {
     }
 
 
-
     @Transactional
-    public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal) {
-        Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, userPrincipal.getId())).orElseThrow(
+    public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal currentUser) {
+        Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, currentUser.getId())).orElseThrow(
                 () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
         );
-        assignee.setStatus(status);
-        assigneeRepository.save(assignee);
-        return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
+        if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString()))) {
+            assignee.setStatus(status);
+            assigneeRepository.save(assignee);
+            return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
+        } else if (AssigneeConstants.ACCEPT.getValue() == assignee.getStatus()
+                || AssigneeConstants.REJECT.getValue() == assignee.getStatus()
+                || AssigneeConstants.COMPLETE.getValue() == assignee.getStatus()) {
+            assignee.setStatus(status);
+            assigneeRepository.save(assignee);
+            return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
+        }
+        throw new UnauthorizedException("You don't have permission to update this");
     }
 
     @Override
