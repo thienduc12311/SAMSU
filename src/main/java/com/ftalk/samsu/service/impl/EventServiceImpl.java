@@ -285,7 +285,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
-        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
+        GradeSubCriteria gradeSubCriteria =eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
