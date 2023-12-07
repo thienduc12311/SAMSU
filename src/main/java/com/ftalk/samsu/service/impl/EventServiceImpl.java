@@ -94,8 +94,8 @@ public class EventServiceImpl implements EventService {
     ParticipantRepository participantRepository;
 
     @Caching(evict = {
-            @CacheEvict(value = {"eventsCache"}, allEntries = true),
-            @CacheEvict(value = {"eventCache"}, allEntries = true)
+            @CacheEvict(value = {"eventCache"}, allEntries = true),
+            @CacheEvict(value = {"eventsCache"}, allEntries = true)
     })
     public void evictAllEntries() {
     }
