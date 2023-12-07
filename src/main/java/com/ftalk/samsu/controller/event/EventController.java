@@ -119,7 +119,7 @@ public class EventController {
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
-        eventService.evictAllEntries();
+//        eventService.evictAllEntries();
         EventResponse response = eventService.getEventResponse(eventProposalId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
