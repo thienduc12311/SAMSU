@@ -74,5 +74,9 @@ public class EventCreateRequest {
         if (!StringUtils.isEmpty(bannerUrl) && !EventUtils.validateUrlS3(bannerUrl)) {
             throw new BadRequestException("FileUrls not valid");
         }
+
+        if (startTime.before(new Date())){
+            throw new BadRequestException("StartTime not valid");
+        }
     }
 }
