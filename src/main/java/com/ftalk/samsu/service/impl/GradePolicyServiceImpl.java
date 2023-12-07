@@ -92,7 +92,7 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     }
 
     @Override
-    public List<GradeCriteria> getAllGradeCriteria(){
+    public List<GradeCriteria> getAllGradeCriteria() {
         return gradeCriteriaRepository.findAll();
     }
 
@@ -126,6 +126,8 @@ public class GradePolicyServiceImpl implements GradePolicyService {
         PolicyDocument policyDocument = getPolicyDocument(gradeCriteriaRequest.getPolicyDocumentId(), currentUser);
         gradeCriteria.setContent(gradeCriteriaRequest.getContent());
         gradeCriteria.setPolicyDocument(policyDocument);
+        gradeCriteria.setDefaultScore(gradeCriteriaRequest.getDefaultScore());
+        gradeCriteria.setMaxScore(gradeCriteria.getMaxScore());
         return gradeCriteriaRepository.save(gradeCriteria);
     }
 
@@ -150,7 +152,8 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     @Override
     public GradeCriteria addGradeCriteria(GradeCriteriaRequest gradeCriteriaRequest, UserPrincipal currentUser) {
         PolicyDocument policyDocument = getPolicyDocument(gradeCriteriaRequest.getPolicyDocumentId(), currentUser);
-        GradeCriteria gradeCriteria = new GradeCriteria(gradeCriteriaRequest.getContent(),policyDocument);
+        GradeCriteria gradeCriteria = new GradeCriteria(gradeCriteriaRequest.getContent(), policyDocument,
+                gradeCriteriaRequest.getDefaultScore(), gradeCriteriaRequest.getMaxScore());
         return gradeCriteriaRepository.save(gradeCriteria);
     }
 

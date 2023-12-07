@@ -23,10 +23,14 @@ public class GradeCriteriaResponse implements Serializable {
     private Integer id;
     private String content;
     private Integer policyDocumentId;
+    private Short defaultScore;
+    private Short maxScore;
 
     public GradeCriteriaResponse(GradeCriteria gradeCriteria) {
         this.id = gradeCriteria.getId();
         this.content = gradeCriteria.getContent();
         this.policyDocumentId = gradeCriteria.getPolicyDocument() != null ? gradeCriteria.getPolicyDocument().getId() : null;
+        this.defaultScore = gradeCriteria.getDefaultScore();
+        this.maxScore = gradeCriteria.getMaxScore();
     }
 }

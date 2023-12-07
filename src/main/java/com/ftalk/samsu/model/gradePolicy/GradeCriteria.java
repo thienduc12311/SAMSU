@@ -27,6 +27,14 @@ public class GradeCriteria implements Serializable {
     @Column(name = "content")
     private String content;
 
+    @NotNull
+    @Column(name = "default_score")
+    private Short defaultScore;
+
+    @NotNull
+    @Column(name = "max_score")
+    private Short maxScore;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_document_id")
@@ -37,8 +45,10 @@ public class GradeCriteria implements Serializable {
     @OneToMany(mappedBy = "gradeCriteria", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GradeSubCriteria> gradeSubCriteriaList;
 
-    public GradeCriteria(String content, PolicyDocument policyDocument) {
+    public GradeCriteria(String content, PolicyDocument policyDocument, Short defaultScore, Short maxScore) {
         this.content = content;
         this.policyDocument = policyDocument;
+        this.defaultScore = defaultScore;
+        this.maxScore = maxScore;
     }
 }
