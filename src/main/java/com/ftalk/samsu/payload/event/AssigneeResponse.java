@@ -6,12 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AssigneeResponse {
+public class AssigneeResponse implements Serializable {
+    private static final long serialVersionUID = 26L;
+
     private UserProfileReduce user;
     private TaskResponse task;
     private Short status;

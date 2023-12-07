@@ -54,10 +54,12 @@ public class SecutiryConfig extends WebSecurityConfigurerAdapter {
 				.oauth2Login()
 				.and()
 				.authorizeRequests()
-				.antMatchers(HttpMethod.GET, "/api/**").permitAll()
+				.antMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
 				.antMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
 				.antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/api/gradeTicketCode/status/**").permitAll()
+				.antMatchers(HttpMethod.GET, "/api/gradeTicketCode/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/api/users/checkUsernameAvailability", "/api/users/checkEmailAvailability").permitAll()
 				.anyRequest().authenticated();
 

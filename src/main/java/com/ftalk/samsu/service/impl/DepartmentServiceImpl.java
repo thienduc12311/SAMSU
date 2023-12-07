@@ -12,6 +12,7 @@ import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.PostResponse;
+import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.repository.CategoryRepository;
 import com.ftalk.samsu.repository.DepartmentRepository;
 import com.ftalk.samsu.repository.PostRepository;
@@ -20,6 +21,7 @@ import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.DepartmentService;
 import com.ftalk.samsu.service.PostService;
 import com.ftalk.samsu.utils.AppUtils;
+import com.ftalk.samsu.utils.ListConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -77,5 +79,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public Department getDepartment(Integer id) {
         return departmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", ID, id));
+    }
+
+    @Override
+    public List<UserProfileReduce> getDepartmentStaff(Integer id) {
+        Department department = departmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", ID, id));
+        return ListConverter.listToList(department.getUsers(), UserProfileReduce::new);
     }
 }

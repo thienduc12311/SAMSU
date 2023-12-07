@@ -23,4 +23,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
 				.allowedHeaders("*")
 				.maxAge(MAX_AGE_SECS);
 	}
+
+//	@Bean
+//	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+//		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+//		converter.setObjectMapper(new HibernateAwareObjectMapper());
+//		return converter;
+//	}
+//
+//	@Override
+//	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+//		converters.add(mappingJackson2HttpMessageConverter());
+//		WebMvcConfigurer.super.configureMessageConverters(converters);
+//	}
 }

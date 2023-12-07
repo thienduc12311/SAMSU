@@ -41,6 +41,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 	Page<User> findAll(Pageable pageable);
 
+	Set<User> findAllByRoleAndStatus(Short role,Short status);
+
 	@Modifying
 	@Query("UPDATE User u SET u.password = :newPassword WHERE u.id = :userId AND u.password = :oldPassword")
 	int updatePasswordById(String oldPassword, String newPassword, Integer userId);

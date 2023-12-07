@@ -46,6 +46,9 @@ public class Task extends DateAudit implements Serializable {
     @Column(name = "status")
     private Short status;
 
+    @Column(name = "deadline")
+    private Date deadline;
+
     @NotNull
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "creator_users_id")
@@ -67,7 +70,7 @@ public class Task extends DateAudit implements Serializable {
     private GradeSubCriteria gradeSubCriteria;
 
 
-    @OneToMany(mappedBy = "task")
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "task")
     private List<Assignee> assignees;
 
     public Task(TaskRequest taskRequest) {
@@ -75,6 +78,7 @@ public class Task extends DateAudit implements Serializable {
         this.content = taskRequest.getContent();
         this.status = taskRequest.getStatus();
         this.score = taskRequest.getScore();
+        this.deadline = taskRequest.getDeadline();
         this.setCreatedAt(new Date());
     }
 

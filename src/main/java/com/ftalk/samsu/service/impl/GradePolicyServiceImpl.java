@@ -43,7 +43,6 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     private GradeCriteriaRepository gradeCriteriaRepository;
     @Autowired
     private GradeSubCriteriaRepository gradeSubCriteriaRepository;
-
     @Autowired
     private PolicyDocumentRepository policyDocumentRepository;
 
@@ -93,6 +92,11 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     }
 
     @Override
+    public List<GradeCriteria> getAllGradeCriteria() {
+        return gradeCriteriaRepository.findAll();
+    }
+
+    @Override
     public PolicyDocument getPolicyDocument(Integer id, UserPrincipal currentUser) {
         return policyDocumentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("PolicyDocument", ID, id));
     }
@@ -122,6 +126,8 @@ public class GradePolicyServiceImpl implements GradePolicyService {
         PolicyDocument policyDocument = getPolicyDocument(gradeCriteriaRequest.getPolicyDocumentId(), currentUser);
         gradeCriteria.setContent(gradeCriteriaRequest.getContent());
         gradeCriteria.setPolicyDocument(policyDocument);
+        gradeCriteria.setDefaultScore(gradeCriteriaRequest.getDefaultScore());
+        gradeCriteria.setMaxScore(gradeCriteria.getMaxScore());
         return gradeCriteriaRepository.save(gradeCriteria);
     }
 
@@ -146,7 +152,8 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     @Override
     public GradeCriteria addGradeCriteria(GradeCriteriaRequest gradeCriteriaRequest, UserPrincipal currentUser) {
         PolicyDocument policyDocument = getPolicyDocument(gradeCriteriaRequest.getPolicyDocumentId(), currentUser);
-        GradeCriteria gradeCriteria = new GradeCriteria(gradeCriteriaRequest.getContent(),policyDocument);
+        GradeCriteria gradeCriteria = new GradeCriteria(gradeCriteriaRequest.getContent(), policyDocument,
+                gradeCriteriaRequest.getDefaultScore(), gradeCriteriaRequest.getMaxScore());
         return gradeCriteriaRepository.save(gradeCriteria);
     }
 

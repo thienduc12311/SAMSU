@@ -14,6 +14,7 @@ import com.ftalk.samsu.service.EventService;
 import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,10 +35,11 @@ public class EventController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PagedResponse<EventResponse>> getAllEvent(
+    public ResponseEntity<PagedResponse<EventAllResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<EventResponse> response = eventService.getAllEvents(page, size);
+//        eventService.evictAllEntries();
+        PagedResponse<EventAllResponse> response = eventService.getAllEvents(page, size);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -63,7 +65,6 @@ public class EventController {
     }
 
 
-
     @GetMapping("/{eventId}/register")
     public ResponseEntity<ApiResponse> register(@PathVariable(value = "eventId") Integer eventId,
                                                 @CurrentUser UserPrincipal currentUser) {
@@ -77,27 +78,6 @@ public class EventController {
         ApiResponse response = eventService.register(false, eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-//    @GetMapping("/me")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-//    public ResponseEntity<PagedResponse<EventProposalResponse>> getMyEventProposal(
-//            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-//            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
-//            @CurrentUser UserPrincipal currentUser) {
-//        PagedResponse<EventProposalResponse> response = eventProposalService.getAllMyEventProposals(page, size, currentUser);
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/user/{rollnumber}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<PagedResponse<EventProposalResponse>> getEventProposalByCreator(
-//            @PathVariable(value = "rollnumber") String rollnumber,
-//            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-//            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
-//            @CurrentUser UserPrincipal currentUser) {
-//        PagedResponse<EventProposalResponse> response = eventProposalService.getEventProposalsByCreatedBy(rollnumber, page, size);
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
 
     @GetMapping("user/{rollnumber}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -139,8 +119,22 @@ public class EventController {
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
-        Event response = eventService.getEvent(eventProposalId, currentUser);
-        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
+//        eventService.evictAllEntries();
+        EventResponse response = eventService.getEventResponse(eventProposalId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventId}/isFeedback")
+    public ResponseEntity<Boolean> isFeedback(@PathVariable(value = "eventId") Integer eventId,
+                                              @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.isFeedback(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @GetMapping("/{eventId}/isCheckedIn")
+    public ResponseEntity<Boolean> isCheckedIn(@PathVariable(value = "eventId") Integer eventId,
+                                              @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.isCheckedIn(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{eventProposalId}")
@@ -148,26 +142,8 @@ public class EventController {
     public ResponseEntity<EventResponse> updateEventProposal(@Valid @RequestBody EventCreateRequest eventCreateRequest,
                                                              @PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                              @CurrentUser UserPrincipal currentUser) {
-        Event response = eventService.updateEvent(eventProposalId, eventCreateRequest, currentUser);
-        return new ResponseEntity<>(new EventResponse(response), HttpStatus.OK);
+        EventResponse response = eventService.updateEvent(eventProposalId, eventCreateRequest, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-//    @DeleteMapping("/{eventProposalId}")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-//    public ResponseEntity<ApiResponse> deleteEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
-//                                                           @CurrentUser UserPrincipal currentUser) {
-//        ApiResponse apiResponse = eventProposalService.deleteEventProposal(eventProposalId, currentUser);
-//        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-//    }
-
-//    @PutMapping("/evaluate/{eventProposalId}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<ApiResponse> updateEventProposalEvaluate(
-//            @Valid @RequestBody EventProposalEvaluateRequest eventProposalEvaluateRequest,
-//            @PathVariable(value = "eventProposalId") Integer eventProposalId,
-//            @CurrentUser UserPrincipal currentUser) {
-//        ApiResponse apiResponse = eventProposalService.updateEventProposalEvaluate(eventProposalId, eventProposalEvaluateRequest, currentUser);
-//        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-//    }
 
 }

@@ -32,6 +32,8 @@ public class EventCreateRequest {
     @NotNull
     private Short attendScore;
 
+    private Integer subGradeCriteriaId;
+
     @NotNull
     @Size(max = 1000)
     private String title;
@@ -64,13 +66,17 @@ public class EventCreateRequest {
 
     private Set<TaskRequest> taskRequests;
 
-    public void validate(){
-        if (!StringUtils.isEmpty(fileUrls) && !EventUtils.validateFileUrlsS3(fileUrls)){
+    public void validate() {
+        if (!StringUtils.isEmpty(fileUrls) && !EventUtils.validateFileUrlsS3(fileUrls)) {
             throw new BadRequestException("FileUrls not valid");
         }
 
-        if (!StringUtils.isEmpty(bannerUrl) && !EventUtils.validateUrlS3(bannerUrl)){
+        if (!StringUtils.isEmpty(bannerUrl) && !EventUtils.validateUrlS3(bannerUrl)) {
             throw new BadRequestException("FileUrls not valid");
+        }
+
+        if (startTime.before(new Date())){
+            throw new BadRequestException("StartTime not valid");
         }
     }
 }

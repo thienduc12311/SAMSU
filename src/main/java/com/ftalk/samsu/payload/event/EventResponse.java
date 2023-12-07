@@ -1,22 +1,32 @@
 package com.ftalk.samsu.payload.event;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
+import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
+import com.ftalk.samsu.payload.user.DepartmentResponse;
+import com.ftalk.samsu.payload.gradePolicy.GradeSubCriteriaResponse;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.utils.ListConverter;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class EventResponse {
+@NoArgsConstructor
+public class EventResponse implements Serializable {
+    private static final long serialVersionUID = -2792369707368779346L;
     private Integer id;
     private Short status;
     private Integer duration;
@@ -29,10 +39,11 @@ public class EventResponse {
     private String bannerUrl;
     private String fileUrls;
     private Date startTime;
-    private List<Department> departments;
+    private List<DepartmentResponse> departments;
     private List<UserProfileReduce> participants;
-    private List<FeedbackQuestion> feedbackQuestions;
+    private List<FeedbackQuestionResponse> feedbackQuestions;
     private List<TaskResponse> tasks;
+    private GradeSubCriteriaResponse gradeSubCriteriaResponse;
     private Date createAt;
     private Short attendScore;
 
@@ -50,14 +61,14 @@ public class EventResponse {
         semester = event.getSemester();
         bannerUrl = event.getBannerUrl();
         fileUrls = event.getFileUrls();
-        departments = event.getDepartments();
-        feedbackQuestions = event.getFeedbackQuestions();
-        participants = event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList());
+        gradeSubCriteriaResponse = event.getAttendGradeSubCriteria() != null ?
+                new GradeSubCriteriaResponse(event.getAttendGradeSubCriteria()) : null;
+        departments = event.getDepartments() != null ? ListConverter.listToList(event.getDepartments(), DepartmentResponse::new) : null;
+        feedbackQuestions = event.getFeedbackQuestions() != null ? event.getFeedbackQuestions().parallelStream().map(FeedbackQuestionResponse::new).collect(Collectors.toList()) : null;
+        participants = event.getParticipants() != null ? event.getParticipants().parallelStream().map(UserProfileReduce::new).collect(Collectors.toList()) : null;
         createAt = event.getCreatedAt();
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
         tasks = event.getTasks() != null ? ListConverter.listToList(event.getTasks(), TaskResponse::new) : null;
     }
-
-
 }

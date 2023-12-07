@@ -17,13 +17,16 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 
 @EqualsAndHashCode
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FeedbackQuestionResponse {
+public class FeedbackQuestionResponse implements Serializable {
+    private static final long serialVersionUID = -2792369707368779346L;
+
     private Integer id;
     private Short type;
     private String question;

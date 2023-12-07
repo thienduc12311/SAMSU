@@ -15,6 +15,11 @@ import java.util.List;
 public interface AssigneeRepository extends JpaRepository<Assignee, AssigneeId> {
     List<Assignee> findByIdTasksId(Integer taskId);
 
+    List<Assignee> findAllByIdIn(List<AssigneeId> assigneeIds);
+
     Page<Assignee> findByIdUsersId(Integer taskId, Pageable pageable);
+
+    Boolean deleteAllByAssigneeId(List<AssigneeId> assigneeIds);
+
 }
 

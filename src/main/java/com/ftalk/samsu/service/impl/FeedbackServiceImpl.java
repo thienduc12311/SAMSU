@@ -16,6 +16,7 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackAnswerResponse;
+import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionResponse;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
@@ -81,6 +82,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackAnswerRepository.save(feedbackAnswer);
     }
 
+
+
     @Transactional
     @Override
     public List<FeedbackAnswerResponse> submitFeedbackAnswer(Integer eventId, List<FeedbackAnswerRequest> feedbackAnswerRequests, UserPrincipal currentUser) {
@@ -128,6 +131,27 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public FeedbackQuestion getFeedbackQuestion(Integer id, UserPrincipal currentUser) {
         return feedbackQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("FeedbackQuestions", ID, id));
+    }
+
+    public FeedbackQuestionResponse addFeedbackQuestion(Integer eventID, FeedbackQuestionRequest feedbackQuestionRequest ){
+        Event event = eventRepository.findById(eventID).orElseThrow(() -> new ResourceNotFoundException("EventId", ID, eventID));
+        FeedbackQuestion feedbackQuestion = new FeedbackQuestion(feedbackQuestionRequest.getType(), feedbackQuestionRequest.getQuestion(), feedbackQuestionRequest.getAnswer());
+        feedbackQuestion.setEvent(event);
+        return new FeedbackQuestionResponse(feedbackQuestionRepository.save(feedbackQuestion)) ;
+    }
+
+    public FeedbackQuestionResponse updateFeedbackQuestion(Integer id, FeedbackQuestionRequest feedbackQuestionRequest, UserPrincipal currentUser ){
+        FeedbackQuestion feedbackQuestion = feedbackQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("FeedbackQuestions", ID, id));
+        feedbackQuestion.setType(feedbackQuestionRequest.getType());
+        feedbackQuestion.setAnswer(feedbackQuestionRequest.getAnswer());
+        feedbackQuestion.setQuestion(feedbackQuestionRequest.getQuestion());
+        return new FeedbackQuestionResponse(feedbackQuestionRepository.save(feedbackQuestion)) ;
+    }
+
+    public ApiResponse deleteFeedbackQuestion(Integer id, UserPrincipal currentUser ){
+        FeedbackQuestion feedbackQuestion = feedbackQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("FeedbackQuestions", ID, id));
+        feedbackQuestionRepository.delete(feedbackQuestion);
+        return new ApiResponse(Boolean.TRUE, "Delete feedback question success");
     }
 
     @Override

@@ -33,6 +33,13 @@ import com.ftalk.samsu.utils.event.EventConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -86,17 +93,25 @@ public class EventServiceImpl implements EventService {
     @Autowired
     ParticipantRepository participantRepository;
 
+    @Caching(evict = {
+            @CacheEvict(value = {"eventCache"}, allEntries = true),
+            @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    })
+    public void evictAllEntries() {
+    }
+
     @Override
-    public PagedResponse<EventResponse> getAllEvents(int page, int size) {
+    @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
+    public PagedResponse<EventAllResponse> getAllEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
-
-        return getEventPagedResponse(events);
-
+        if (events.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventAllResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
     }
-
 
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
@@ -124,6 +139,11 @@ public class EventServiceImpl implements EventService {
         return getEventPagedResponse(events);
     }
 
+    @Override
+    public List<Event> getEventBySemester(String semester) {
+        return eventRepository.findBySemesterName(semester);
+    }
+
     private PagedResponse<EventResponse> getEventPagedResponse(Page<Event> events) {
         if (events.getNumberOfElements() == 0) {
             return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
@@ -145,14 +165,32 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Boolean isFeedback(Integer eventId, UserPrincipal currentUser) {
+        Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
+                .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
+        return participant.getCheckout() != null;
+    }
+    @Override
+    public Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser) {
+        Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
+                .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
+        return participant.getCheckin() != null;
+    }
+    @Override
+    @Cacheable(value = "eventCache", key = "#id")
+    public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
+        return new EventResponse(getEvent(id, currentUser));
+    }
+
+    @Override
     public List<ParticipantResponse> getAllEventParticipants(Integer eventId) {
         List<Participant> participants = participantRepository.findByParticipantId_EventsId(eventId);
-        List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsers_id()).collect(Collectors.toList());
+        List<Integer> ids = participants.parallelStream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toList());
         Map<Integer, User> userMap = userService.getMapUserById(ids);
         return participants.parallelStream().map(
-                participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
-                                    new UserProfileReduce(userMap.get(participant.getParticipantId().getUsers_id())),
-                                    participant.getCheckin(), participant.getCheckout()))
+                        participant -> new ParticipantResponse(participant.getParticipantId().getEventsId(),
+                                new UserProfileReduce(userMap.get(participant.getParticipantId().getUsersId())),
+                                participant.getCheckin(), participant.getCheckout()))
                 .collect(Collectors.toList());
     }
 
@@ -201,9 +239,13 @@ public class EventServiceImpl implements EventService {
         return event.getPosts();
     }
 
+
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
-    public Event updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
+    public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
+        GradeSubCriteria gradeSubCriteria = gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser);
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User eventLeaderUser = userRepository.getUserByRollnumber(eventCreateRequest.getEventLeaderRollnumber());
         Set<User> participants = userRepository.findAllByRollnumberIn(eventCreateRequest.getRollnumbers());
@@ -211,6 +253,7 @@ public class EventServiceImpl implements EventService {
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         event.setStatus(eventCreateRequest.getStatus());
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         event.setDuration(eventCreateRequest.getDuration());
         event.setTitle(eventCreateRequest.getTitle());
         event.setContent(eventCreateRequest.getContent());
@@ -223,15 +266,18 @@ public class EventServiceImpl implements EventService {
         event.setStartTime(eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
-        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
-        feedbackQuestionRepository.saveAll(feedbackQuestions);
-        event.setFeedbackQuestions(feedbackQuestions);
-        if (eventCreateRequest.getTaskRequests() != null) {
-            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
-        }
-        return eventRepository.save(event);
+//        feedbackQuestionRepository.deleteAllByEventId(event.getId());
+//        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
+//        feedbackQuestionRepository.saveAll(feedbackQuestions);
+//        event.setFeedbackQuestions(feedbackQuestions);
+//        if (eventCreateRequest.getTaskRequests() != null) {
+//            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
+//        }
+        return new EventResponse(eventRepository.save(event));
     }
 
+
+    @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @Override
     @Transactional
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
@@ -239,6 +285,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
+        GradeSubCriteria gradeSubCriteria =eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
@@ -248,6 +295,7 @@ public class EventServiceImpl implements EventService {
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventCreateRequest.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
+        event.setAttendGradeSubCriteria(gradeSubCriteria);
         Event eventSaved = eventRepository.save(event);
         List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, eventSaved);
         feedbackQuestionRepository.saveAll(feedbackQuestions);

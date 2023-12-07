@@ -14,6 +14,8 @@ public class GradeTicketUpdateRequest {
     private String evidenceUrls;
     private String feedback;
     private Integer gradeSubCriteriaId;
-    private Integer score;
+    private Short score;
     private Short status;
+    private String guarantorEmail;
+    private String semesterName;
 }

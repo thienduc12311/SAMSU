@@ -2,10 +2,12 @@ package com.ftalk.samsu.controller.department;
 
 import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.user.Department;
+import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.PostRequest;
 import com.ftalk.samsu.payload.PostResponse;
+import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.DepartmentService;
@@ -19,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/departments")
@@ -50,12 +53,18 @@ public class DepartmentController {
 		return new ResponseEntity< >(department, HttpStatus.OK);
 	}
 
+	@GetMapping("/{id}/staff")
+	public ResponseEntity<List<UserProfileReduce>> getDepartmentStaff(@PathVariable(name = "id") Integer id) {
+		List<UserProfileReduce> users = departmentService.getDepartmentStaff(id);
+		return new ResponseEntity<>(users, HttpStatus.OK);
+	}
+
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
 	public ResponseEntity<Department> update(@PathVariable(name = "id") Integer id,
 			@Valid @RequestBody String departmentName, @CurrentUser UserPrincipal currentUser) {
 		Department department = departmentService.updateDepartment(id, departmentName, currentUser);
-		return new ResponseEntity< >(department, HttpStatus.OK);
+		return new ResponseEntity<>(department, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
