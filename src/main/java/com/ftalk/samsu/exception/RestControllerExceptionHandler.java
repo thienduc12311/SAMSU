@@ -115,4 +115,13 @@ public class RestControllerExceptionHandler {
 		return new ResponseEntity<>(new ExceptionResponse(messages, HttpStatus.BAD_REQUEST.getReasonPhrase(),
 				HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
 	}
+	@ExceptionHandler({ Exception.class })
+	@ResponseBody
+	public ResponseEntity<ExceptionResponse> resolveException(Exception ex) {
+		String message = ex.getMessage();
+		List<String> messages = new ArrayList<>(1);
+		messages.add(message);
+		return new ResponseEntity<>(new ExceptionResponse(messages, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+				HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 }
