@@ -66,6 +66,9 @@ server:
 logging:
   level:
     org.springframework.cache: TRACE
+
+firebase:
+  googleCredentials: firebase-service-account.json
 #springdoc:
 #  swagger-ui:
 #    path=/swagger-ui.html:

@@ -1,13 +1,12 @@
 package com.ftalk.samsu.controller.notification;
 
-import com.ftalk.samsu.model.announcement.Announcement;
-import com.ftalk.samsu.payload.notification.NotificationCreateRequest;
-import com.ftalk.samsu.payload.notification.NotificationResponse;
-import com.ftalk.samsu.payload.notification.NotificationUpdateRequest;
+import com.ftalk.samsu.payload.PagedResponse;
+import com.ftalk.samsu.payload.notification.*;
 import com.ftalk.samsu.security.CurrentUser;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.NotificationService;
 import com.ftalk.samsu.service.UserService;
+import com.ftalk.samsu.utils.AppConstants;
 import com.google.firebase.messaging.BatchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,21 +24,32 @@ public class NotificationController {
     @Autowired
     private UserService userService;
 
+
     @GetMapping
-    public ResponseEntity<BatchResponse> pushNotification(@RequestParam(name = "announcementId") Integer announcementId) throws ExecutionException, InterruptedException {
-        BatchResponse result = notificationService.pushNotification(announcementId);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<PagedResponse<NotificationResponse>> getAll(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<NotificationResponse> response = notificationService.getAllNotifications(page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<PagedResponse<NotificationResponse>> getNotificationByUser(
+            @PathVariable(name = "id") Integer id,
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<NotificationResponse> response = notificationService.getNotificationByUser(id, page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
-
-//    @GetMapping
-//    public ResponseEntity<PagedResponse<NotificationResponse>> getAll(
-//            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-//            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-//        PagedResponse<NotificationResponse> response = notificationService.getAllNotifications(page, size);
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<PagedResponse<NotificationResponse>> getNotificationByUser(
+            @CurrentUser UserPrincipal currentUser,
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<NotificationResponse> response = notificationService.getNotificationByUser(currentUser.getId(), page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<NotificationResponse> get(@PathVariable(name = "id") Integer id) {
@@ -55,8 +65,8 @@ public class NotificationController {
     }
 
     @PostMapping("token")
-    public ResponseEntity<Boolean> addFcmToken(@RequestBody String fcmToken, @CurrentUser UserPrincipal currentUser) throws ExecutionException, InterruptedException {
-        Boolean result = notificationService.addFcmToken(fcmToken, currentUser);
+    public ResponseEntity<TokenResponse> addFcmToken(@RequestBody TokenAddRequest fcmToken, @CurrentUser UserPrincipal currentUser) throws ExecutionException, InterruptedException {
+        TokenResponse result = notificationService.addFcmToken(fcmToken.getToken(), currentUser);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

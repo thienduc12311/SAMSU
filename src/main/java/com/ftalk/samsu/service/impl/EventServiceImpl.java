@@ -1,5 +1,7 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.NotificationEvent;
+import com.ftalk.samsu.event.TaskAssignmentEvent;
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
@@ -31,6 +33,7 @@ import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
 import com.ftalk.samsu.utils.event.EventConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
+import com.ftalk.samsu.utils.notification.NotificationConstant;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -38,17 +41,21 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,6 +99,11 @@ public class EventServiceImpl implements EventService {
 
     @Autowired
     ParticipantRepository participantRepository;
+
+    @Autowired
+    ApplicationEventMulticaster eventPublisher;
+    @Autowired
+    ThreadPoolTaskScheduler taskScheduler;
 
     @Caching(evict = {
             @CacheEvict(value = {"eventCache"}, allEntries = true),
@@ -303,6 +315,21 @@ public class EventServiceImpl implements EventService {
         if (eventCreateRequest.getTaskRequests() != null) {
             eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
         }
+        long startDateTime = eventSaved.getStartTime().getTime() - 7 * 3600 * 1000;
+
+        eventPublisher.multicastEvent(new NotificationEvent(this, new HashSet<>(), "Thông báo", NotificationConstant.genEventNotificationContent(eventSaved.getTitle())));
+        if (startDateTime - 5 * 60 * 1000 <= System.currentTimeMillis()) {
+            eventPublisher.multicastEvent(new NotificationEvent(this, participants.stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(eventSaved.getTitle())));
+        } else {
+            taskScheduler.schedule(() -> {
+                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(eventSaved.getId());
+                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(eventSaved.getTitle())));
+            }, new Date(startDateTime - 5 * 60 * 1000));
+        }
+        taskScheduler.schedule(() -> {
+            List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(eventSaved.getId());
+            eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(eventSaved.getTitle())));
+        }, new Date(startDateTime + (long) (eventSaved.getDuration() - 5) * 60 * 1000));
         return eventSaved;
     }
 
@@ -326,10 +353,13 @@ public class EventServiceImpl implements EventService {
             task.setCreatorUserId(creator);
             Task taskSaved = taskRepository.save(task);
             Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
+            Set<Integer> assigneeIds = new HashSet<>();
             for (AssigneeRequest assigneeRequest : taskRequest.getAssignees()) {
                 Assignee assignee = new Assignee(new AssigneeId(taskSaved.getId(), assigneeUser.get(assigneeRequest.getRollnumber()).getId()), assigneeRequest.getStatus());
                 assigneeRepository.save(assignee);
+                assigneeIds.add(assigneeUser.get(assigneeRequest.getRollnumber()).getId());
             }
+            eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(task.getTitle(), event.getTitle(), task.getDeadline())));
             tasks.add(taskSaved);
         }
         return tasks;

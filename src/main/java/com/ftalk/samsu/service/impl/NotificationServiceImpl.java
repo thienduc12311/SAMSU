@@ -1,14 +1,18 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.NotificationCreateEvent;
+import com.ftalk.samsu.event.NotificationEvent;
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.model.announcement.Announcement;
 import com.ftalk.samsu.model.announcement.UserNotification;
 import com.ftalk.samsu.model.announcement.UserNotificationId;
+import com.ftalk.samsu.model.announcement.UserToken;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.notification.NotificationCreateRequest;
 import com.ftalk.samsu.payload.notification.NotificationResponse;
 import com.ftalk.samsu.payload.notification.NotificationUpdateRequest;
+import com.ftalk.samsu.payload.notification.TokenResponse;
 import com.ftalk.samsu.repository.AnnouncementRepository;
 import com.ftalk.samsu.repository.UserNotificationRepository;
 import com.ftalk.samsu.repository.UserRepository;
@@ -20,15 +24,15 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.messaging.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -42,6 +46,8 @@ public class NotificationServiceImpl implements NotificationService {
     private FirebaseMessaging firebaseMessaging;
     @Autowired
     private Firestore firestore;
+    @Autowired
+    private ApplicationEventMulticaster eventpublisher;
 
     @Override
     public PagedResponse<NotificationResponse> getAllNotifications(int page, int size) {
@@ -53,6 +59,19 @@ public class NotificationServiceImpl implements NotificationService {
 
         List<Announcement> content = announcements.getNumberOfElements() == 0 ? Collections.emptyList() : announcements.getContent();
 
+        return getNotificationResponse(announcements);
+    }
+
+    @Override
+    public PagedResponse<NotificationResponse> getNotificationByUser(Integer id, int page, int size) {
+        AppUtils.validatePageNumberAndSize(page, size);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+
+        Page<UserNotification> userNotifications = userNotificationRepository.findByIdReceivedUserId(id, pageable);
+
+        List<Announcement> content = userNotifications.getNumberOfElements() == 0 ? Collections.emptyList() : userNotifications.getContent().stream().map(UserNotification::getAnnouncement).collect(Collectors.toList());
+        Page<Announcement> announcements = new PageImpl<>(content);
         return getNotificationResponse(announcements);
     }
 
@@ -81,7 +100,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse updateNotification(Integer id, NotificationUpdateRequest notificationUpdateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
         Announcement announcement = announcementRepository.findById(id).orElseThrow(() -> new BadRequestException("Announcement not found with id " + id));
-        if (notificationUpdateRequest.getTitle() != null )
+        if (notificationUpdateRequest.getTitle() != null)
             announcement.setTitle(notificationUpdateRequest.getTitle());
         if (notificationUpdateRequest.getContent() != null)
             announcement.setContent(notificationUpdateRequest.getContent());
@@ -100,7 +119,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public BatchResponse pushNotification(Integer announcementId) throws ExecutionException, InterruptedException {
-        List<String> registrationTokens= new ArrayList<>();
+        List<String> registrationTokens = new ArrayList<>();
         Announcement announcement = announcementRepository.findById(announcementId).orElseThrow(() -> new BadRequestException("Announcement not found with id " + announcementId));
         ApiFuture<QuerySnapshot> future = firestore.collection("users").get();
 // future.get() blocks on response
@@ -128,14 +147,14 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             batchResponse = firebaseMessaging.sendEachForMulticast(message);
         } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
+            System.out.println("Firebase error");
         }
 
         return batchResponse;
     }
 
     @Override
-    public boolean addFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException {
+    public TokenResponse addFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
 // ...
@@ -146,7 +165,7 @@ public class NotificationServiceImpl implements NotificationService {
         Map<String, List<String>> data = new HashMap<>();
         data.put("tokens", listFcmToken);
         ApiFuture<WriteResult> result = docRef.set(data);
-        return true;
+        return new TokenResponse(user.getId(), fcmToken);
     }
 
     private List<String> getListFcmToken(DocumentReference docRef) throws ExecutionException, InterruptedException {
@@ -154,11 +173,72 @@ public class NotificationServiceImpl implements NotificationService {
         DocumentSnapshot document = documentSnapshot.get();
         List<String> listFcmToken = new ArrayList<>();
         if (document.exists()) {
-            Object tokens = document.get("tokens");
+            UserToken tokens = document.toObject(UserToken.class);
             if (tokens != null) {
-                listFcmToken = (List<String>) tokens ;
+                listFcmToken = tokens.getTokens();
             }
         }
         return listFcmToken;
+    }
+
+    @EventListener
+    private void handleNotificationEvent(NotificationEvent event) throws ExecutionException, InterruptedException {
+        List<String> registrationTokens = new ArrayList<>();
+        Set<Integer> assigneeIds = event.getAssigneeIds();
+        String title = event.getTitle();
+        String content = event.getContent();
+        Notification notification = Notification.builder()
+                .setTitle(title)
+                .setBody(content)
+                .build();
+        if (assigneeIds.isEmpty()) {
+            ApiFuture<QuerySnapshot> future = firestore.collection("users").get();
+            future.get().getDocuments().forEach(document -> {
+                List<String> tokens = new ArrayList<>();
+                try {
+                    tokens = getListFcmToken(document.getReference());
+                } catch (ExecutionException | InterruptedException e) {
+                    System.out.println("Firebase error");
+                }
+                registrationTokens.addAll(tokens);
+            });
+        }
+        else {
+            for (Integer assigneeId : assigneeIds) {
+                User user = userRepository.findById(assigneeId).orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with id: %s", assigneeId)));
+                DocumentReference docRef = firestore.collection("users").document(user.getId().toString());
+                List<String> listFcmToken = getListFcmToken(docRef);
+                registrationTokens.addAll(listFcmToken);
+            }
+        }
+        if (registrationTokens.isEmpty()) return;
+        MulticastMessage message = MulticastMessage.builder()
+                .setNotification(notification)
+                .addAllTokens(registrationTokens)
+                .build();
+        try {
+            firebaseMessaging.sendEachForMulticast(message);
+            NotificationCreateRequest notificationCreateRequest = new NotificationCreateRequest((short) 1, title, content);
+
+            eventpublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
+        } catch (Exception e) {
+            System.out.println("Firebase error");
+        }
+
+    }
+
+    @EventListener
+    private void handleCreateNotificationEvent(NotificationCreateEvent event) {
+        NotificationCreateRequest notificationCreateRequest = event.getNotificationCreateRequest();
+        User user = userRepository.findById(6).orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with id: %s", 6)));
+        Announcement newAnnouncement = new Announcement(notificationCreateRequest.getType(), notificationCreateRequest.getTitle(), notificationCreateRequest.getContent(), user);
+        Announcement savedAnnouncement = announcementRepository.save(newAnnouncement);
+        Set<Integer> assigneeIds = event.getReceiverIds();
+        List<UserNotification> userNotifications = new ArrayList<>();
+        for (Integer assigneeId : assigneeIds) {
+            UserNotification userNotification = new UserNotification(new UserNotificationId(savedAnnouncement.getId(), assigneeId), ( short)1);
+            userNotifications.add(userNotification);
+        }
+        userNotificationRepository.saveAll(userNotifications);
     }
 }
