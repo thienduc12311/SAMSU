@@ -40,6 +40,7 @@ public interface EventService {
 
 	ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser);
 
+	void removeEventCache(Integer eventId);
 
 	List<Post> getEventPost(Integer id, UserPrincipal currentUser);
 

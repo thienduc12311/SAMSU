@@ -180,7 +180,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Cacheable(value = "eventCache", key = "#id")
+//    @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
         return new EventResponse(getEvent(id, currentUser));
     }
@@ -264,7 +264,7 @@ public class EventServiceImpl implements EventService {
 
 
     @CacheEvict(value = {"eventsCache"}, allEntries = true)
-    @CachePut(value = {"eventCache"}, key = "#id")
+//    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
@@ -301,6 +301,10 @@ public class EventServiceImpl implements EventService {
         return new EventResponse(eventRepository.save(event));
     }
 
+
+    @CacheEvict(value = {"eventCache"}, key = "#eventId")
+    public void removeEventCache(Integer eventId){
+    }
 
     @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @Override
