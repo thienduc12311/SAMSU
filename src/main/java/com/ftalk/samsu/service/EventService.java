@@ -31,6 +31,7 @@ public interface EventService {
 
 	Boolean isFeedback(Integer eventId, UserPrincipal currentUser);
 	Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser);
+	ApiResponse updateProcessing(Short status, Integer id, UserPrincipal currentUser);
 
 	EventResponse getEventResponse(Integer id, UserPrincipal currentUser);
 	List<ParticipantResponse> getAllEventParticipants(Integer eventId);

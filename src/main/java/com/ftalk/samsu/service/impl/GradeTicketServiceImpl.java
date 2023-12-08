@@ -262,6 +262,9 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         if (AppUtils.checkEmailStaffFPT(gradeTicketRequest.getGuarantorEmail())) {
             throw new BadRequestException("Your guarantor email is invalid!");
         }
+        if (gradeTicketRequest.getGuarantorEmail() == null && gradeTicketRequest.getEventId() == null){
+            throw new BadRequestException("Your ticket is not valid!");
+        }
         User creator = userRepository.getUser(currentUser);
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         Event event = gradeTicketRequest.getEventId() != null ? eventService.getEvent(gradeTicketRequest.getEventId(), currentUser) : null;

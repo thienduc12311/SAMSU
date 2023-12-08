@@ -119,7 +119,7 @@ public class TaskServiceImpl implements TaskService {
     public Boolean checkPermissionCheckIn(Integer eventId, Integer userId) {
         Integer taskCheckinId = null;
         try {
-            taskCheckinId = getTaskIdByTitle(eventId, "Checkin");
+            taskCheckinId = getTaskIdByTitle(eventId, "Check In");
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
