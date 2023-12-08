@@ -18,4 +18,5 @@ public class GradeTicketUpdateRequest {
     private Short status;
     private String guarantorEmail;
     private String semesterName;
+    private Integer eventId;
 }

@@ -1,6 +1,7 @@
 package com.ftalk.samsu.model.gradePolicy;
 
 import com.ftalk.samsu.model.audit.DateAudit;
+import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.User;
@@ -55,6 +56,10 @@ public class GradeTicket extends DateAudit implements Serializable {
     @ManyToOne
     @JoinColumn(name = "accepter_users_id")
     private User accepterUser;
+
+    @ManyToOne
+    @JoinColumn(name = "event_report_id")
+    private Event eventReport;
 
     @JoinColumn(name = "guarantor_mail")
     private String guarantorMail;

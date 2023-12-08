@@ -18,6 +18,7 @@ public class GradeTicketResponse {
     private Short status;
     private String semester;
     private Short score;
+    private Integer eventId;
 
     public GradeTicketResponse(GradeTicket gradeTicket) {
         this.id = gradeTicket.getId();
@@ -28,9 +29,10 @@ public class GradeTicketResponse {
         this.creator = new UserProfileReduce(gradeTicket.getCreatorUser());
         this.accepter = gradeTicket.getAccepterUser() != null ? new UserProfileReduce(gradeTicket.getAccepterUser()) : null;
         this.guarantorEmail = gradeTicket.getGuarantorMail();
-        this.semester = gradeTicket.getSemester() != null ?  gradeTicket.getSemester().getName() : null;
+        this.semester = gradeTicket.getSemester() != null ? gradeTicket.getSemester().getName() : null;
         this.gradeSubCriteria = gradeTicket.getGradeSubCriteria() != null ? new GradeSubCriteriaResponse(gradeTicket.getGradeSubCriteria()) : null;
         this.status = gradeTicket.getStatus();
         this.score = gradeTicket.getScore();
+        this.eventId = gradeTicket.getEventReport() != null ? gradeTicket.getEventReport().getId() : null;
     }
 }

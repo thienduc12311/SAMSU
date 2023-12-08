@@ -4,6 +4,7 @@ import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.SamsuApiException;
 import com.ftalk.samsu.exception.UnauthorizedException;
+import com.ftalk.samsu.model.event.Event;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
 import com.ftalk.samsu.model.gradePolicy.GradeTicket;
 import com.ftalk.samsu.model.role.RoleName;
@@ -14,12 +15,10 @@ import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketCreateRequest;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketUpdateRequest;
 import com.ftalk.samsu.payload.gradePolicy.GradeTicketResponse;
-import com.ftalk.samsu.repository.GradeSubCriteriaRepository;
-import com.ftalk.samsu.repository.GradeTicketRepository;
-import com.ftalk.samsu.repository.SemesterRepository;
-import com.ftalk.samsu.repository.UserRepository;
+import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.JwtAuthenticationFilter;
 import com.ftalk.samsu.security.UserPrincipal;
+import com.ftalk.samsu.service.EventService;
 import com.ftalk.samsu.service.GradeTicketService;
 import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AESEncryption;
@@ -55,6 +54,8 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     private UserRepository userRepository;
     @Autowired
     MailSenderService mailSenderService;
+    @Autowired
+    EventService eventService;
     @Autowired
     private SemesterRepository semesterRepository;
     @Autowired
@@ -174,6 +175,8 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         User user = userRepository.getUser(currentUser);
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         GradeTicket gradeTicket = gradeTicketRepository.findById(id).orElseThrow(() -> new BadRequestException("GradeTicket not found with id " + id));
+        Event event = gradeTicketRequest.getEventId() != null ? eventService.getEvent(gradeTicketRequest.getEventId(), currentUser) : null;
+
         boolean isAdminOrManager = currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())) || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()));
         if (gradeTicketRequest.getStatus() != null) {
             if (isAdminOrManager) {
@@ -236,9 +239,20 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             }
             gradeTicket.setGuarantorMail(gradeTicketRequest.getGuarantorEmail());
         }
+        gradeTicket.setEventReport(event);
         gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
         gradeTicket.setAccepterUser(null);
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
+        String code = "";
+        try {
+            code = AESEncryption.encrypt(gradeTicketRequest.getGuarantorEmail() + "###" + gradeTicket.getId() + "###" + System.currentTimeMillis());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception when encrypt");
+        }
+        if (gradeTicketRequest.getGuarantorEmail() != null)
+            mailSenderService.sendEmail(gradeTicketRequest.getGuarantorEmail(), "Access Your Grade Ticket",
+                    GradeTicketUtils.genInfoSenderEmail(gradeTicketRequest.getGuarantorEmail(), code));
         return new GradeTicketResponse(savedGradeTicket);
     }
 
@@ -250,10 +264,12 @@ public class GradeTicketServiceImpl implements GradeTicketService {
         }
         User creator = userRepository.getUser(currentUser);
         Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
+        Event event = gradeTicketRequest.getEventId() != null ? eventService.getEvent(gradeTicketRequest.getEventId(), currentUser) : null;
         GradeTicket gradeTicket = new GradeTicket(gradeTicketRequest.getTitle(), gradeTicketRequest.getContent(), gradeTicketRequest.getEvidenceUrls(), gradeTicketRequest.getFeedback(), creator);
         gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
         gradeTicket.setGuarantorMail(gradeTicketRequest.getGuarantorEmail());
         gradeTicket.setSemester(semester);
+        gradeTicket.setEventReport(event);
         GradeTicket savedGradeTicket = gradeTicketRepository.save(gradeTicket);
         String code = "";
         try {
@@ -262,8 +278,9 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             LOGGER.error(ex.getMessage(), ex);
             throw new SamsuApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception when encrypt");
         }
-        mailSenderService.sendEmail(gradeTicketRequest.getGuarantorEmail(), "Access Your Grade Ticket",
-                GradeTicketUtils.genInfoSenderEmail(gradeTicketRequest.getGuarantorEmail(), code));
+        if (gradeTicketRequest.getGuarantorEmail() != null)
+            mailSenderService.sendEmail(gradeTicketRequest.getGuarantorEmail(), "Access Your Grade Ticket",
+                    GradeTicketUtils.genInfoSenderEmail(gradeTicketRequest.getGuarantorEmail(), code));
         return new GradeTicketResponse(savedGradeTicket);
     }
 

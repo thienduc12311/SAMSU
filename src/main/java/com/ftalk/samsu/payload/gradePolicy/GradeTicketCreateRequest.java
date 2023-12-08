@@ -14,4 +14,5 @@ public class GradeTicketCreateRequest {
     private String feedback;
     private String guarantorEmail;
     private String semesterName;
+    private Integer eventId;
 }
