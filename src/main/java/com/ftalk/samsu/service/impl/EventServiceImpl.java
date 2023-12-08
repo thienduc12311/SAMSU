@@ -32,6 +32,7 @@ import com.ftalk.samsu.utils.AppConstants;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
 import com.ftalk.samsu.utils.event.EventConstants;
+import com.ftalk.samsu.utils.event.EventProcessingConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import com.ftalk.samsu.utils.notification.NotificationConstant;
 import org.jetbrains.annotations.NotNull;
@@ -182,14 +183,16 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
         return participant.getCheckout() != null;
     }
+
     @Override
     public Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser) {
         Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
                 .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
         return participant.getCheckin() != null;
     }
+
     @Override
-    @Cacheable(value = "eventCache", key = "#id")
+//    @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
         return new EventResponse(getEvent(id, currentUser));
     }
@@ -223,9 +226,29 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public ApiResponse updateProcessing(Short status, Integer id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        User user = userRepository.getUser(currentUser);
+        boolean isEventLeader = event.getEventLeaderUser() != null && Objects.equals(currentUser.getId(), event.getEventLeaderUser().getId());
+        if (user == null) throw new BadRequestException("Your not found!!");
+        if (isEventLeader || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            event.setProcessStatus(status);
+            eventRepository.save(event);
+            return new ApiResponse(Boolean.TRUE, "Update success");
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update event status");
+        throw new UnauthorizedException(apiResponse);
+    }
+
+    @Override
     public ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser) {
         boolean havePermission = taskService.checkPermissionCheckIn(eventId, currentUser.getId());
         User user = userRepository.getUserByRollnumber(rollnumber);
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        if (EventProcessingConstants.CHECK_IN.getValue() != event.getProcessStatus()){
+            throw new BadRequestException("Not in check-in time");
+        }
         if (havePermission
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
@@ -253,7 +276,7 @@ public class EventServiceImpl implements EventService {
 
 
     @CacheEvict(value = {"eventsCache"}, allEntries = true)
-    @CachePut(value = {"eventCache"}, key = "#id")
+//    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
@@ -278,6 +301,8 @@ public class EventServiceImpl implements EventService {
         event.setStartTime(eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
+        if (eventCreateRequest.getProcessStatus() != null)
+            event.setProcessStatus(eventCreateRequest.getProcessStatus());
 //        feedbackQuestionRepository.deleteAllByEventId(event.getId());
 //        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
 //        feedbackQuestionRepository.saveAll(feedbackQuestions);
@@ -289,6 +314,10 @@ public class EventServiceImpl implements EventService {
     }
 
 
+    @CacheEvict(value = {"eventCache"}, key = "#eventId")
+    public void removeEventCache(Integer eventId){
+    }
+
     @CacheEvict(value = {"eventsCache"}, allEntries = true)
     @Override
     @Transactional
@@ -297,7 +326,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
-        GradeSubCriteria gradeSubCriteria =eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
+        GradeSubCriteria gradeSubCriteria = eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }
@@ -306,6 +335,7 @@ public class EventServiceImpl implements EventService {
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventCreateRequest.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
+        event.setProcessStatus(EventProcessingConstants.COMING.getValue());
         event.setDepartments(departments);
         event.setAttendGradeSubCriteria(gradeSubCriteria);
         Event eventSaved = eventRepository.save(event);

@@ -127,7 +127,7 @@ public class GradePolicyServiceImpl implements GradePolicyService {
         gradeCriteria.setContent(gradeCriteriaRequest.getContent());
         gradeCriteria.setPolicyDocument(policyDocument);
         gradeCriteria.setDefaultScore(gradeCriteriaRequest.getDefaultScore());
-        gradeCriteria.setMaxScore(gradeCriteria.getMaxScore());
+        gradeCriteria.setMaxScore(gradeCriteriaRequest.getMaxScore());
         return gradeCriteriaRepository.save(gradeCriteria);
     }
 

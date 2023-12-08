@@ -41,6 +41,10 @@ public class Event extends DateAudit implements Serializable {
 	private Short status;
 
 	@NotNull
+	@Column(name = "process_status")
+	private Short processStatus;
+
+	@NotNull
 	@Column(name = "duration")
 	private Integer duration;
 

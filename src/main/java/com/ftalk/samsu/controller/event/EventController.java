@@ -72,6 +72,14 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PutMapping("/{eventId}/processStatus/{status}")
+    public ResponseEntity<ApiResponse> updateProcessStatus(@PathVariable(value = "eventId") Integer eventId,
+                                                           @PathVariable(value = "status") Short status,
+                                                           @CurrentUser UserPrincipal currentUser) {
+        ApiResponse response = eventService.updateProcessing(status, eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{eventId}/unregister")
     public ResponseEntity<ApiResponse> unregister(@PathVariable(value = "eventId") Integer eventId,
                                                   @CurrentUser UserPrincipal currentUser) {
@@ -130,9 +138,10 @@ public class EventController {
         Boolean response = eventService.isFeedback(eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/{eventId}/isCheckedIn")
     public ResponseEntity<Boolean> isCheckedIn(@PathVariable(value = "eventId") Integer eventId,
-                                              @CurrentUser UserPrincipal currentUser) {
+                                               @CurrentUser UserPrincipal currentUser) {
         Boolean response = eventService.isCheckedIn(eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
