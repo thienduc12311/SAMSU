@@ -133,7 +133,7 @@ public class GradeServiceImpl implements GradeService {
                     if (participants != null) {
                         participants.forEach(participant -> {
                             if (participant.getCheckin() != null && participant.getCheckout() != null) {
-                                if (students.get(participant.getParticipantId().getUsersId()) != null)
+                                if (students.get(participant.getParticipantId().getUsersId()) != null && event.getAttendGradeSubCriteria() != null)
                                     students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getAttendGradeSubCriteria().getId(), event.getAttendScore());
                             }
                         });
