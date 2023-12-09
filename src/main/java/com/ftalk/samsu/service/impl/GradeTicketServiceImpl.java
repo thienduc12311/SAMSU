@@ -173,7 +173,6 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     @Override
     public GradeTicketResponse updateGradeTicketV2(Integer id, GradeTicketUpdateRequest gradeTicketRequest, UserPrincipal currentUser) {
         User user = userRepository.getUser(currentUser);
-        Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
         GradeTicket gradeTicket = gradeTicketRepository.findById(id).orElseThrow(() -> new BadRequestException("GradeTicket not found with id " + id));
         Event event = gradeTicketRequest.getEventId() != null ? eventService.getEvent(gradeTicketRequest.getEventId(), currentUser) : null;
 
@@ -231,8 +230,10 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             gradeTicket.setContent(gradeTicketRequest.getContent());
         if (gradeTicketRequest.getEvidenceUrls() != null)
             gradeTicket.setEvidenceUrls(gradeTicketRequest.getEvidenceUrls());
-        if (gradeTicketRequest.getSemesterName() != null)
+        if (gradeTicketRequest.getSemesterName() != null){
+            Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
             gradeTicket.setSemester(semester);
+        }
         if (gradeTicketRequest.getGuarantorEmail() != null) {
             if (!isAdminOrManager && gradeTicket.getGuarantorMail() != null && gradeTicketRequest.getGuarantorEmail() != gradeTicket.getGuarantorMail()) {
                 gradeTicket.setStatus(GradeTicketConstants.PROCESSING.getValue());
