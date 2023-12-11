@@ -24,4 +24,6 @@ public interface NotificationService {
     BatchResponse pushNotification(Integer announcementId) throws ExecutionException, InterruptedException;
 
     TokenResponse addFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException;
+
+    TokenResponse deleteFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException;
 }

@@ -4,24 +4,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class NotificationConstant {
-    public static final String NOTIFICATION_TASK_TITLE = "Bạn có một công việc mới";
+    public static final String NOTIFICATION_TASK_TITLE = "You have a new task";
     static final String pattern = "HH:mm dd-MM-yyyy";
     static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     public static  String genTaskAssignmentNotificationContent(String task, String event, Date deadline) {
-        return "Bạn vừa được giao công việc " + task + " cho sự kiện " + event + "\nThời hạn hoàn thành: " + simpleDateFormat.format(deadline);
+        return "You have been assigned" + task + " for event " + event + "\nDeadline: " + simpleDateFormat.format(deadline);
     }
 
-    public static final String NOTIFICATION_EVENT_TITLE = "Nhắc bạn";
+    public static final String NOTIFICATION_EVENT_TITLE = "Reminding";
     public static String genEventNotificationCheckinContent(String event) {
-        return "Sự kiện " + event + " sẽ diễn ra trong vài phút nữa. Đừng bỏ lỡ bạn nhé!";
+        return "Event " + event + " will start in a few minutes. Don't miss it!";
     }
 
     public static String genEventNotificationCheckoutContent(String event) {
-        return "Sự kiện " + event + " đã sắp kết thúc. Đừng quên checkout bạn nhé!";
+        return "Event " + event + " will finish soon. Don't forget to check out!";
     }
 
     public static String genEventNotificationContent(String event) {
-        return "Sự kiện " + event + " sắp diễn ra. Đăng ký ngay để cùng nhau trải nghiệm bạn nhé!";
+        return "Event " + event + " is coming. Register now and explore it!";
     }
 
 }

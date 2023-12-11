@@ -157,11 +157,26 @@ public class NotificationServiceImpl implements NotificationService {
     public TokenResponse addFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
+        if (fcmToken == null) throw new BadRequestException("Token is null");
 // ...
 // query.get() blocks on response
         DocumentReference docRef = firestore.collection("users").document(user.getId().toString());
         List<String> listFcmToken = getListFcmToken(docRef);
         if (!listFcmToken.contains(fcmToken)) listFcmToken.add(fcmToken);
+        Map<String, List<String>> data = new HashMap<>();
+        data.put("tokens", listFcmToken);
+        ApiFuture<WriteResult> result = docRef.set(data);
+        return new TokenResponse(user.getId(), fcmToken);
+    }
+
+    @Override
+    public TokenResponse deleteFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
+        if (fcmToken == null) throw new BadRequestException("Token is null");
+        DocumentReference docRef = firestore.collection("users").document(user.getId().toString());
+        List<String> listFcmToken = getListFcmToken(docRef);
+        listFcmToken.remove(fcmToken);
         Map<String, List<String>> data = new HashMap<>();
         data.put("tokens", listFcmToken);
         ApiFuture<WriteResult> result = docRef.set(data);
@@ -192,16 +207,17 @@ public class NotificationServiceImpl implements NotificationService {
                 .setBody(content)
                 .build();
         if (assigneeIds.isEmpty()) {
-            ApiFuture<QuerySnapshot> future = firestore.collection("users").get();
-            future.get().getDocuments().forEach(document -> {
-                List<String> tokens = new ArrayList<>();
-                try {
-                    tokens = getListFcmToken(document.getReference());
-                } catch (ExecutionException | InterruptedException e) {
-                    System.out.println("Firebase error");
-                }
-                registrationTokens.addAll(tokens);
-            });
+            Message message = Message.builder()
+                    .setNotification(notification)
+                    .setTopic("all")
+                    .build();
+            try {
+                firebaseMessaging.send(message);
+                NotificationCreateRequest notificationCreateRequest = new NotificationCreateRequest((short) 0, title, content);
+                eventpublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
+            } catch (Exception e) {
+                System.out.println("Firebase error");
+            }
         }
         else {
             for (Integer assigneeId : assigneeIds) {

@@ -70,6 +70,12 @@ public class NotificationController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @DeleteMapping("token")
+    public ResponseEntity<TokenResponse> deleteFcmToken(@RequestBody TokenAddRequest fcmToken, @CurrentUser UserPrincipal currentUser) throws ExecutionException, InterruptedException {
+        TokenResponse result = notificationService.deleteFcmToken(fcmToken.getToken(), currentUser);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponse> update(@PathVariable(name = "id") Integer id,
                                                       @RequestBody NotificationUpdateRequest notificationUpdateRequest, @CurrentUser UserPrincipal currentUser) {
