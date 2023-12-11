@@ -43,4 +43,12 @@ public class GradeController {
         return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
     }
 
+
+    @GetMapping("/history/semester/{semesterName}/me")
+    public ResponseEntity<List<GradeResponse>> getByRollnumber(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(currentUser.getRollnumber(), semester, currentUser);
+        return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
+    }
+
+
 }
