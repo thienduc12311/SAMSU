@@ -97,9 +97,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
         User user = userRepository.getUser(currentUser);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
-        if (EventProcessingConstants.CHECK_OUT.getValue() != event.getProcessStatus()){
-            throw new BadRequestException("Not in check-out time");
-        }
+//        if (EventProcessingConstants.CHECK_OUT.getValue() != event.getProcessStatus()){
+//            throw new BadRequestException("Not in check-out time");
+//        }
 
 //        Date time = event.getStartTime();
 //        long now = time.getTime() + event.getDuration();
