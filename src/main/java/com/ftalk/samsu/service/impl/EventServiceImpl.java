@@ -287,6 +287,7 @@ public class EventServiceImpl implements EventService {
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
+        boolean isPublicStatus = (eventCreateRequest.getStatus() != null) && (eventCreateRequest.getStatus().equals(EventConstants.PUBLIC.getValue())) && (event.getStatus() != EventConstants.PUBLIC.getValue());
         event.setStatus(eventCreateRequest.getStatus());
         event.setAttendGradeSubCriteria(gradeSubCriteria);
         event.setDuration(eventCreateRequest.getDuration());
@@ -310,7 +311,11 @@ public class EventServiceImpl implements EventService {
 //        if (eventCreateRequest.getTaskRequests() != null) {
 //            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
 //        }
-        return new EventResponse(eventRepository.save(event));
+        Event eventSaved = eventRepository.save(event);
+        if (isPublicStatus) {
+            pushEventNotification(eventSaved);
+        }
+        return new EventResponse(eventSaved);
     }
 
 
@@ -345,21 +350,8 @@ public class EventServiceImpl implements EventService {
         if (eventCreateRequest.getTaskRequests() != null) {
             eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
         }
-        long startDateTime = eventSaved.getStartTime().getTime() - 7 * 3600 * 1000;
-
-        eventPublisher.multicastEvent(new NotificationEvent(this, new HashSet<>(), "Thông báo", NotificationConstant.genEventNotificationContent(eventSaved.getTitle())));
-        if (startDateTime - 5 * 60 * 1000 <= System.currentTimeMillis()) {
-            eventPublisher.multicastEvent(new NotificationEvent(this, participants.stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(eventSaved.getTitle())));
-        } else {
-            taskScheduler.schedule(() -> {
-                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(eventSaved.getId());
-                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(eventSaved.getTitle())));
-            }, new Date(startDateTime - 5 * 60 * 1000));
-        }
-        taskScheduler.schedule(() -> {
-            List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(eventSaved.getId());
-            eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(eventSaved.getTitle())));
-        }, new Date(startDateTime + (long) (eventSaved.getDuration() - 5) * 60 * 1000));
+        if (eventSaved.getStatus().equals(EventConstants.PUBLIC.getValue()))
+            pushEventNotification(eventSaved, eventCreateRequest);
         return eventSaved;
     }
 
@@ -382,17 +374,70 @@ public class EventServiceImpl implements EventService {
             task.setGradeSubCriteria(gradeSubCriteria);
             task.setCreatorUserId(creator);
             Task taskSaved = taskRepository.save(task);
+
             Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
-            Set<Integer> assigneeIds = new HashSet<>();
             for (AssigneeRequest assigneeRequest : taskRequest.getAssignees()) {
                 Assignee assignee = new Assignee(new AssigneeId(taskSaved.getId(), assigneeUser.get(assigneeRequest.getRollnumber()).getId()), assigneeRequest.getStatus());
                 assigneeRepository.save(assignee);
-                assigneeIds.add(assigneeUser.get(assigneeRequest.getRollnumber()).getId());
             }
-            eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(task.getTitle(), event.getTitle(), task.getDeadline())));
             tasks.add(taskSaved);
         }
         return tasks;
     }
+
+    private void pushEventNotification(Event event) {
+        List<Task> tasks = event.getTasks();
+        if (tasks != null) {
+            tasks.forEach(task -> {
+                Set<Integer> assigneeIds = new HashSet<>();
+                if (task.getAssignees() == null) return;
+                task.getAssignees().forEach(assignee -> {
+                    assigneeIds.add(assignee.getId().getUsersId());
+                });
+                taskScheduler.schedule(() -> {
+                    eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(task.getTitle(), event.getTitle(), task.getDeadline())));
+                }, new Date(System.currentTimeMillis() + 20 * 1000));
+            });
+        }
+
+        pushEvent(event);
+    }
+
+    private void pushEvent(Event event) {
+        long startDateTime = event.getStartTime().getTime() - 7 * 3600 * 1000;
+        eventPublisher.multicastEvent(new NotificationEvent(this, null, NotificationConstant.NOTIFICATION_NEW_EVENT_TITLE, NotificationConstant.genEventNotificationContent(event.getTitle())));
+
+        if (startDateTime - 15 * 60 * 1000 <= System.currentTimeMillis()) {
+            eventPublisher.multicastEvent(new NotificationEvent(this, event.getParticipants().stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle())));
+        } else {
+            taskScheduler.schedule(() -> {
+                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle())));
+            }, new Date(startDateTime - 15 * 60 * 1000));
+        }
+        taskScheduler.schedule(() -> {
+            List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+            eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(event.getTitle())));
+        }, new Date(startDateTime + (long) (event.getDuration() - 15) * 60 * 1000));
+    }
+
+    private void pushEventNotification(Event event, EventCreateRequest eventCreateRequest) {
+        for (TaskRequest taskRequest : eventCreateRequest.getTaskRequests()) {
+            Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
+            if (assigneeUser != null) {
+                Set<Integer> assigneeIds = new HashSet<>();
+                assigneeUser.forEach((rollnumber, user) -> {
+                    assigneeIds.add(user.getId());
+                });
+                taskScheduler.schedule(() -> {
+                    eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(taskRequest.getTitle(), event.getTitle(), taskRequest.getDeadline())));
+                }, new Date(System.currentTimeMillis() + 20 * 1000));
+            }
+        }
+        pushEvent(event);
+    }
+
+
+
 
 }

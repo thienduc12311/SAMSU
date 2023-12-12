@@ -206,7 +206,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .setTitle(title)
                 .setBody(content)
                 .build();
-        if (assigneeIds.isEmpty()) {
+        if (assigneeIds == null) {
             Message message = Message.builder()
                     .setNotification(notification)
                     .setTopic("all")
