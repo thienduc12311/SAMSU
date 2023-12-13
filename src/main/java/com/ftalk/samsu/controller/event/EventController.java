@@ -37,9 +37,10 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<EventAllResponse>> getAllEvent(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
+            @CurrentUser UserPrincipal currentUser) {
 //        eventService.evictAllEntries();
-        PagedResponse<EventAllResponse> response = eventService.getAllEvents(page, size);
+        PagedResponse<EventAllResponse> response = eventService.getAllEvents(page, size, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -51,8 +52,8 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{eventProposalId}/posts")
-    public ResponseEntity<List<Post>> getEventProposalPosts(@PathVariable(value = "eventProposalId") Integer eventProposalId,
+    @GetMapping("/{eventId}/posts")
+    public ResponseEntity<List<Post>> getEventProposalPosts(@PathVariable(value = "eventId") Integer eventProposalId,
                                                             @CurrentUser UserPrincipal currentUser) {
         List<Post> response = eventService.getEventPost(eventProposalId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -130,9 +131,10 @@ public class EventController {
         Boolean response = eventService.isFeedback(eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/{eventId}/isCheckedIn")
     public ResponseEntity<Boolean> isCheckedIn(@PathVariable(value = "eventId") Integer eventId,
-                                              @CurrentUser UserPrincipal currentUser) {
+                                               @CurrentUser UserPrincipal currentUser) {
         Boolean response = eventService.isCheckedIn(eventId, currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -107,9 +107,9 @@ public class GradeServiceImpl implements GradeService {
 
         if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            System.out.println(System.currentTimeMillis()); //time
             ConcurrentMap<Integer, GradeAllEntryResponse> students = userRepository.findAllByRoleAndStatus(UserRole.ROLE_STUDENT, (short) 1)
                     .parallelStream().collect(Collectors.toConcurrentMap(User::getId, GradeAllEntryResponse::new));
-//            ConcurrentHashMap<Integer,Short>
             List<Event> events = eventService.getEventBySemester(semester);
             if (events != null) {
                 events.forEach(event -> {
@@ -133,15 +133,13 @@ public class GradeServiceImpl implements GradeService {
                     if (participants != null) {
                         participants.forEach(participant -> {
                             if (participant.getCheckin() != null && participant.getCheckout() != null) {
-                                if (students.get(participant.getParticipantId().getUsersId()) != null)
+                                if (students.get(participant.getParticipantId().getUsersId()) != null && event.getAttendGradeSubCriteria() != null)
                                     students.get(participant.getParticipantId().getUsersId()).addScoreWithSubCriteriaId(event.getAttendGradeSubCriteria().getId(), event.getAttendScore());
                             }
                         });
                     }
                 });
             }
-
-
             List<GradeTicket> gradeTickets = gradeTicketService.finAllGradeTicketApproved(semester);
             if (gradeTickets != null) {
                 gradeTickets.forEach(gradeTicket -> {
@@ -149,14 +147,15 @@ public class GradeServiceImpl implements GradeService {
                         students.get(gradeTicket.getCreatorUser().getId()).addScoreWithSubCriteriaId(gradeTicket.getGradeSubCriteria().getId(), gradeTicket.getScore());
                 });
             }
+            System.out.println(System.currentTimeMillis()); //time
             List<GradeCriteria> gradeCriteriaList = gradePolicyService.getAllGradeCriteria();
             List<GradeSubCriteria> gradeSubCriteriaList = new ArrayList<>();
             for (GradeCriteria gradeCriteria : gradeCriteriaList) {
                 if (gradeCriteria.getGradeSubCriteriaList() != null) {
                     gradeSubCriteriaList.addAll(gradeCriteria.getGradeSubCriteriaList());
                 }
-                ;
             }
+            System.out.println(System.currentTimeMillis()); //time
             gradeAllResponse.setGradeSubCriteriaResponses(ListConverter.listToList(gradeSubCriteriaList, GradeSubCriteriaResponse::new));
             gradeAllResponse.setGradeCriteriaResponses(ListConverter.listToList(gradeCriteriaList, GradeCriteriaResponse::new));
             gradeAllResponse.setStudentGrade(new ArrayList<>(students.values()));

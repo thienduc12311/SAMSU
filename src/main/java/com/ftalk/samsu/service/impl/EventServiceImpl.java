@@ -101,10 +101,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
-    public PagedResponse<EventAllResponse> getAllEvents(int page, int size) {
-        AppUtils.validatePageNumberAndSize(page, size);
+    public PagedResponse<EventAllResponse> getAllEvents(int page, int size, UserPrincipal currentUser) {
+        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+            return getAllAdminEvents(page, size);
+        } else {
+            return getAllManagerEvents(page, size, currentUser);
+        }
+    }
 
+    @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
+    public PagedResponse<EventAllResponse> getAllAdminEvents(int page, int size) {
+        AppUtils.validatePageNumberAndSize(page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
         if (events.getNumberOfElements() == 0) {
@@ -112,6 +119,18 @@ public class EventServiceImpl implements EventService {
         }
         return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventAllResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
     }
+
+    @Cacheable(value = "eventsManagerCache", key = "#page + '_' + #size")
+    public PagedResponse<EventAllResponse> getAllManagerEvents(int page, int size, UserPrincipal currentUser) {
+        AppUtils.validatePageNumberAndSize(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
+        Page<Event> events = eventRepository.findAllByCreatorUserId(currentUser.getId(), pageable);
+        if (events.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(events.getContent(), EventAllResponse::new), events.getNumber(), events.getSize(), events.getTotalElements(), events.getTotalPages(), events.isLast());
+    }
+
 
     @Override
     public PagedResponse<EventResponse> getAllEventsPublic(int page, int size) {
@@ -170,12 +189,14 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
         return participant.getCheckout() != null;
     }
+
     @Override
     public Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser) {
         Participant participant = participantRepository.findById(new ParticipantId(currentUser.getId(), eventId))
                 .orElseThrow(() -> new ResourceNotFoundException("Participant", "ID", eventId + " " + currentUser.getId()));
         return participant.getCheckin() != null;
     }
+
     @Override
     @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
@@ -240,7 +261,7 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
     @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
@@ -277,7 +298,7 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    @CacheEvict(value = {"eventsCache"}, allEntries = true)
+    @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
     @Override
     @Transactional
     public Event addEvent(EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
@@ -285,7 +306,7 @@ public class EventServiceImpl implements EventService {
         User creator = userRepository.getUser(currentUser);
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
-        GradeSubCriteria gradeSubCriteria =eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
+        GradeSubCriteria gradeSubCriteria = eventCreateRequest.getSubGradeCriteriaId() != null ? gradePolicyService.getGradeSubCriteria(eventCreateRequest.getSubGradeCriteriaId(), currentUser) : null;
         if (eventProposal.getStatus() != EventProposalConstants.APPROVED.getValue()) {
             throw new BadRequestException("EventProposal not approved");
         }

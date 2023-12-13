@@ -18,6 +18,9 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
 	Page<Event> findAll(Pageable pageable);
 
+	Page<Event> findAllByCreatorUserId(Integer id, Pageable pageable);
+
+
 	Page<Event> findByCreatorUser(User user, Pageable pageable);
 
 	Page<Event> findByStatus(Short status, Pageable pageable);

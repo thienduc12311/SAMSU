@@ -18,7 +18,7 @@ import java.util.List;
 public interface EventService {
 
 	void evictAllEntries();
-	PagedResponse<EventAllResponse> getAllEvents(int page, int size);
+	PagedResponse<EventAllResponse> getAllEvents(int page, int size, UserPrincipal currentUser);
 
 	PagedResponse<EventResponse> getAllEventsPublic(int page, int size);
 
