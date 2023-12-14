@@ -33,19 +33,23 @@ public class GradeIndividualResponse {
             mapScore.put(gradeCriteria.getId(), gradeCriteria.getDefaultScore());
             maxScore.put(gradeCriteria.getId(), gradeCriteria.getMaxScore());
         }
-        for (Map.Entry<Integer, Short> entry : gradeAllResponse.getStudentGrade().get(0).getScoreWithSubCriteria().entrySet()) {
-            mapSubScore.put(entry.getKey(), (short) (mapSubScore.get(entry.getKey()) + entry.getValue()));
+        if (gradeAllResponse.getStudentGrade().get(0).getScoreWithSubCriteria() != null) {
+            for (Map.Entry<Integer, Short> entry : gradeAllResponse.getStudentGrade().get(0).getScoreWithSubCriteria().entrySet()) {
+                mapSubScore.merge(entry.getKey(), entry.getValue(), (a, b) -> (short) (a + b));
+            }
         }
-
         gradeAllResponse.getGradeSubCriteriaResponses().forEach(gradeSubCriteriaResponse -> {
-            mapScore.put(gradeSubCriteriaResponse.getGradeCriteriaId(),
-                    min((short) (mapScore.get(gradeSubCriteriaResponse.getGradeCriteriaId()) + mapSubScore.get(gradeSubCriteriaResponse.getId())),
-                            maxScore.get(gradeSubCriteriaResponse.getGradeCriteriaId())));
+            if (mapSubScore.get(gradeSubCriteriaResponse.getId()) != null) {
+                mapScore.put(gradeSubCriteriaResponse.getGradeCriteriaId(),
+                        min((short) (mapScore.get(gradeSubCriteriaResponse.getGradeCriteriaId()) + mapSubScore.get(gradeSubCriteriaResponse.getId())),
+                                maxScore.get(gradeSubCriteriaResponse.getGradeCriteriaId())));
+            }
         });
         AtomicInteger score = new AtomicInteger(0);
         mapScore.entrySet().forEach(integerShortEntry -> {
             score.addAndGet(integerShortEntry.getValue());
         });
+        this.score = score.get();
     }
 
     private Short min(Short a, Short b) {

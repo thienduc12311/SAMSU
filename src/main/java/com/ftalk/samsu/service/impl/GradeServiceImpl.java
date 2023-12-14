@@ -95,7 +95,7 @@ public class GradeServiceImpl implements GradeService {
             List<GradeTicket> gradeTickets = gradeTicketService.finAllGradeTicketApproved(semester, creator.getId());
             gradeResponses.addAll(gradeTickets.parallelStream().map(gradeTicket ->
                     new GradeResponse(gradeTicket, gradeTicket.getCreatedAt())).collect(Collectors.toList()));
-
+            gradeResponses = gradeResponses.parallelStream().filter(gradeResponse -> gradeResponse.getGradeSubCriteriaId() != null && gradeResponse.getScore() != null).collect(Collectors.toList());
             gradeResponses.sort((o1, o2) -> o2.getTime().after(o1.getTime()) ? -1 : 1);
 
             GradeAllResponse gradeAllResponse = new GradeAllResponse();
