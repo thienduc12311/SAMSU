@@ -1,13 +1,16 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.MailEvent;
 import com.ftalk.samsu.service.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Set;
 
 @Service
 public class MailSenderServiceImpl implements MailSenderService {
@@ -29,6 +32,19 @@ public class MailSenderServiceImpl implements MailSenderService {
         }
         javaMailSender.send(message);
         return true;
+    }
+
+    @EventListener
+    public void handleMailEvent(MailEvent mailEvent) {
+        Set<String> to = mailEvent.getTo();
+        if (to == null || to.isEmpty()) {
+            return;
+        }
+        String subject = mailEvent.getSubject();
+        String body = mailEvent.getBody();
+        for (String email : to) {
+            sendEmail(email, subject, body);
+        }
     }
 }
 

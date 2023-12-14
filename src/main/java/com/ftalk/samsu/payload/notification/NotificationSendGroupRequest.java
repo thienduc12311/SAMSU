@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotificationCreateRequest {
-    private Short type;
+public class NotificationSendGroupRequest {
     private String title;
     private String content;
+    private String image;
+    private Boolean isSendNotification;
+    private Boolean isSendEmail;
 }

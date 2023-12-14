@@ -1,11 +1,8 @@
 package com.ftalk.samsu.service;
 
-import com.ftalk.samsu.model.announcement.Announcement;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.notification.NotificationCreateRequest;
-import com.ftalk.samsu.payload.notification.NotificationResponse;
-import com.ftalk.samsu.payload.notification.NotificationUpdateRequest;
-import com.ftalk.samsu.payload.notification.TokenResponse;
+import com.ftalk.samsu.payload.notification.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.google.firebase.messaging.BatchResponse;
 
@@ -26,4 +23,8 @@ public interface NotificationService {
     TokenResponse addFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException;
 
     TokenResponse deleteFcmToken(String fcmToken, UserPrincipal currentUser) throws ExecutionException, InterruptedException;
+
+    ApiResponse sendNotificationToGroup(Integer id, NotificationSendGroupRequest notificationSendRequest) throws ExecutionException, InterruptedException;
+
+    ApiResponse sendNotification(NotificationSendRequest notificationSendRequest) throws ExecutionException, InterruptedException;
 }

@@ -1,5 +1,6 @@
 package com.ftalk.samsu.controller.notification;
 
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
 import com.ftalk.samsu.payload.notification.*;
 import com.ftalk.samsu.security.CurrentUser;
@@ -7,7 +8,6 @@ import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.NotificationService;
 import com.ftalk.samsu.service.UserService;
 import com.ftalk.samsu.utils.AppConstants;
-import com.google.firebase.messaging.BatchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +70,19 @@ public class NotificationController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PostMapping("group/{id}")
+    public ResponseEntity<ApiResponse> sendNotificationToGroup(@PathVariable(name = "id") Integer id,
+                                                               @RequestBody NotificationSendGroupRequest notificationSendGroupRequest) throws ExecutionException, InterruptedException {
+        ApiResponse result = notificationService.sendNotificationToGroup(id, notificationSendGroupRequest);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    @PostMapping("users")
+    public ResponseEntity<ApiResponse> sendNotificationToUsers(@RequestBody NotificationSendRequest notificationSendUsersRequest) throws ExecutionException, InterruptedException {
+        ApiResponse result = notificationService.sendNotification(notificationSendUsersRequest);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+
     @DeleteMapping("token")
     public ResponseEntity<TokenResponse> deleteFcmToken(@RequestBody TokenAddRequest fcmToken, @CurrentUser UserPrincipal currentUser) throws ExecutionException, InterruptedException {
         TokenResponse result = notificationService.deleteFcmToken(fcmToken.getToken(), currentUser);
@@ -82,7 +95,6 @@ public class NotificationController {
         NotificationResponse notification = notificationService.updateNotification(id, notificationUpdateRequest, currentUser);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
-
 
 
 }

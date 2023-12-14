@@ -13,10 +13,12 @@ public class NotificationEvent extends ApplicationEvent {
     private Set<Integer> assigneeIds;
     private String title;
     private String content;
-    public NotificationEvent(Object source, Set<Integer> assigneeIds, String title, String content) {
+    private String image;
+    public NotificationEvent(Object source, Set<Integer> assigneeIds, String title, String content, String image) {
         super(source);
         this.assigneeIds = assigneeIds;
         this.title = title;
         this.content = content;
+        this.image = image;
     }
 }
