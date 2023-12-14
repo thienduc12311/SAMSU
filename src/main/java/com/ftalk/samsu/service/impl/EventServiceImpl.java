@@ -262,7 +262,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public String getProcessStatus(Integer id, UserPrincipal currentUser) {
+    public String getProcessStatus(Integer id) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         return Objects.requireNonNull(EventProcessingConstants.findByValue(event.getProcessStatus())).name();
     }
