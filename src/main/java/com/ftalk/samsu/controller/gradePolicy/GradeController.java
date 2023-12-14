@@ -31,8 +31,8 @@ public class GradeController {
 
     @GetMapping("/history/semester/{semesterName}/rollnumber/{rollnumber}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<List<GradeResponse>> getByRollnumber(@PathVariable(name = "rollnumber") String rollnumber, @PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
-        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(rollnumber, semester, currentUser);
+    public ResponseEntity<GradeIndividualResponse> getByRollnumber(@PathVariable(name = "rollnumber") String rollnumber, @PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+        GradeIndividualResponse gradeResponses = gradeService.getGradeHistory(rollnumber, semester, currentUser);
         return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
     }
 
@@ -45,8 +45,8 @@ public class GradeController {
 
 
     @GetMapping("/history/semester/{semesterName}/me")
-    public ResponseEntity<List<GradeResponse>> getByRollnumber(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
-        List<GradeResponse> gradeResponses = gradeService.getGradeHistory(currentUser.getRollnumber(), semester, currentUser);
+    public ResponseEntity<GradeIndividualResponse> getByRollnumber(@PathVariable(name = "semesterName") String semester, @CurrentUser UserPrincipal currentUser) {
+        GradeIndividualResponse gradeResponses = gradeService.getGradeHistory(currentUser.getRollnumber(), semester, currentUser);
         return new ResponseEntity<>(gradeResponses, HttpStatus.OK);
     }
 

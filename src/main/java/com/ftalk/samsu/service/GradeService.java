@@ -5,6 +5,7 @@ import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeAllEntryResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeAllResponse;
+import com.ftalk.samsu.payload.gradePolicy.GradeIndividualResponse;
 import com.ftalk.samsu.payload.gradePolicy.GradeResponse;
 import com.ftalk.samsu.payload.group.GroupImportMemberResponse;
 import com.ftalk.samsu.payload.group.GroupRequest;
@@ -15,7 +16,7 @@ import java.util.Set;
 
 public interface GradeService {
 
-    List<GradeResponse> getGradeHistory(String rollnumber, String semester, UserPrincipal current);
+    GradeIndividualResponse getGradeHistory(String rollnumber, String semester, UserPrincipal current);
 
     GradeAllResponse getAllGrade(String semester, UserPrincipal currentUser);
 

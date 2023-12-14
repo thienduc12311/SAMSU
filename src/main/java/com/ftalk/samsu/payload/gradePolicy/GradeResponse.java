@@ -21,13 +21,15 @@ public class GradeResponse {
     private String title;
     private Integer id;
     private Date time;
+    private Integer gradeSubCriteriaId;
 
     public GradeResponse(Event event, Date time){
-        this.score = event.getAttendScore();
+        this.score = event.getAttendScore() != null ? event.getAttendScore() : 0;
         this.type = (short) 1;
         this.title = event.getTitle();
         this.id = event.getId();
         this.time = time;
+        this.gradeSubCriteriaId =event.getAttendGradeSubCriteria() != null ? event.getAttendGradeSubCriteria().getId() : null;
     }
 
     public GradeResponse(Task task, Date time){
@@ -36,6 +38,7 @@ public class GradeResponse {
         this.title = task.getTitle();
         this.id = task.getId();
         this.time = time;
+        this.gradeSubCriteriaId = task.getGradeSubCriteria().getId();
     }
 
     public GradeResponse(GradeTicket gradeTicket, Date time){
@@ -44,6 +47,7 @@ public class GradeResponse {
         this.title = gradeTicket.getTitle();
         this.id = gradeTicket.getId();
         this.time = time;
+        this.gradeSubCriteriaId = gradeTicket.getGradeSubCriteria().getId();
     }
 
 }

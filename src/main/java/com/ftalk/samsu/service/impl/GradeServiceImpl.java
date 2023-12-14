@@ -63,11 +63,12 @@ public class GradeServiceImpl implements GradeService {
     private GradePolicyService gradePolicyService;
 
     @Override
-    public List<GradeResponse> getGradeHistory(String rollnumber, String semester, UserPrincipal currentUser) {
+    public GradeIndividualResponse getGradeHistory(String rollnumber, String semester, UserPrincipal currentUser) {
         if (currentUser.getRollnumber().equals(rollnumber)
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
             User creator = userRepository.getUserByRollnumber(rollnumber);
+
             List<Event> events = eventService.getEventBySemester(semester);
             Map<Integer, Event> participantEvent = events.parallelStream().collect(Collectors.toMap(Event::getId, Function.identity()));
             List<ParticipantId> participantIds = events.parallelStream().map((e) ->
@@ -77,6 +78,7 @@ public class GradeServiceImpl implements GradeService {
                     .filter(participant -> participant.getCheckin() != null && participant.getCheckout() != null)
                     .map(participant -> new GradeResponse(participantEvent.get(participant.getParticipantId().getEventsId()), participant.getCheckout()))
                     .collect(Collectors.toList());
+
 
             //task grade
             Map<Integer, Task> tasks = getAllTask(events);
@@ -95,7 +97,22 @@ public class GradeServiceImpl implements GradeService {
                     new GradeResponse(gradeTicket, gradeTicket.getCreatedAt())).collect(Collectors.toList()));
 
             gradeResponses.sort((o1, o2) -> o2.getTime().after(o1.getTime()) ? -1 : 1);
-            return gradeResponses;
+
+            GradeAllResponse gradeAllResponse = new GradeAllResponse();
+            List<GradeCriteria> gradeCriteriaList = gradePolicyService.getAllGradeCriteria();
+            List<GradeSubCriteria> gradeSubCriteriaList = new ArrayList<>();
+            for (GradeCriteria gradeCriteria : gradeCriteriaList) {
+                if (gradeCriteria.getGradeSubCriteriaList() != null) {
+                    gradeSubCriteriaList.addAll(gradeCriteria.getGradeSubCriteriaList());
+                }
+            }
+            gradeAllResponse.setGradeSubCriteriaResponses(ListConverter.listToList(gradeSubCriteriaList, GradeSubCriteriaResponse::new));
+            gradeAllResponse.setGradeCriteriaResponses(ListConverter.listToList(gradeCriteriaList, GradeCriteriaResponse::new));
+            GradeAllEntryResponse studentScore = new GradeAllEntryResponse(creator);
+            gradeResponses.parallelStream().forEach(gradeResponse ->
+                    studentScore.addScoreWithSubCriteriaId(gradeResponse.getGradeSubCriteriaId(), gradeResponse.getScore()));
+            gradeAllResponse.setStudentGrade(Collections.singletonList(studentScore));
+            return new GradeIndividualResponse(gradeResponses, gradeAllResponse);
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get this history");
         throw new UnauthorizedException(apiResponse);
