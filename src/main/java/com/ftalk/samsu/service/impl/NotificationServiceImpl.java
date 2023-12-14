@@ -1,5 +1,6 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.MailEvent;
 import com.ftalk.samsu.event.NotificationCreateEvent;
 import com.ftalk.samsu.event.NotificationEvent;
 import com.ftalk.samsu.exception.BadRequestException;
@@ -7,13 +8,13 @@ import com.ftalk.samsu.model.announcement.Announcement;
 import com.ftalk.samsu.model.announcement.UserNotification;
 import com.ftalk.samsu.model.announcement.UserNotificationId;
 import com.ftalk.samsu.model.announcement.UserToken;
+import com.ftalk.samsu.model.group.Group;
 import com.ftalk.samsu.model.user.User;
+import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.notification.NotificationCreateRequest;
-import com.ftalk.samsu.payload.notification.NotificationResponse;
-import com.ftalk.samsu.payload.notification.NotificationUpdateRequest;
-import com.ftalk.samsu.payload.notification.TokenResponse;
+import com.ftalk.samsu.payload.notification.*;
 import com.ftalk.samsu.repository.AnnouncementRepository;
+import com.ftalk.samsu.repository.GroupRepository;
 import com.ftalk.samsu.repository.UserNotificationRepository;
 import com.ftalk.samsu.repository.UserRepository;
 import com.ftalk.samsu.security.UserPrincipal;
@@ -23,6 +24,7 @@ import com.ftalk.samsu.utils.ListConverter;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.messaging.*;
+import org.bouncycastle.tsp.TSPUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.EventListener;
@@ -43,11 +45,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private UserNotificationRepository userNotificationRepository;
     @Autowired
+    private GroupRepository groupRepository;
+    @Autowired
     private FirebaseMessaging firebaseMessaging;
     @Autowired
     private Firestore firestore;
     @Autowired
-    private ApplicationEventMulticaster eventpublisher;
+    private ApplicationEventMulticaster eventPublisher;
 
     @Override
     public PagedResponse<NotificationResponse> getAllNotifications(int page, int size) {
@@ -183,6 +187,47 @@ public class NotificationServiceImpl implements NotificationService {
         return new TokenResponse(user.getId(), fcmToken);
     }
 
+    @Override
+    public ApiResponse sendNotificationToGroup(Integer id, NotificationSendGroupRequest notificationSendRequest) throws ExecutionException, InterruptedException {
+        if (notificationSendRequest.getIsSendNotification() == null) notificationSendRequest.setIsSendNotification(false);
+        if (notificationSendRequest.getIsSendEmail() == null) notificationSendRequest.setIsSendEmail(false);
+        boolean isSendNotification = notificationSendRequest.getIsSendNotification();
+        boolean isSendEmail = notificationSendRequest.getIsSendEmail();
+        if (!isSendNotification && !isSendEmail) return new ApiResponse(false, "Please choose at least one way to send notification");
+        Group group = groupRepository.findById(id).orElseThrow(() -> new BadRequestException("Group not found with id " + id));
+        if (isSendNotification) {
+            Set<Integer> userIds = group.getUsers().stream().map(User::getId).collect(Collectors.toSet());
+            System.out.println("Binhhhh");
+            System.out.println(userIds);
+            eventPublisher.multicastEvent(new NotificationEvent(this, userIds, notificationSendRequest.getTitle(), notificationSendRequest.getContent(), notificationSendRequest.getImage()));
+        }
+        if (isSendEmail) {
+            Set<String> emails = group.getUsers().stream().map(User::getEmail).collect(Collectors.toSet());
+            eventPublisher.multicastEvent(new MailEvent(this, emails, notificationSendRequest.getTitle(), notificationSendRequest.getContent()));
+        }
+
+        return new ApiResponse(true, "Notification sent");
+    }
+
+    @Override
+    public ApiResponse sendNotification(NotificationSendRequest notificationSendRequest) throws ExecutionException, InterruptedException {
+        if (notificationSendRequest.getIsSendNotification() == null) notificationSendRequest.setIsSendNotification(false);
+        if (notificationSendRequest.getIsSendEmail() == null) notificationSendRequest.setIsSendEmail(false);
+        boolean isSendNotification = notificationSendRequest.getIsSendNotification();
+        boolean isSendEmail = notificationSendRequest.getIsSendEmail();
+        if (!isSendNotification && !isSendEmail) return new ApiResponse(false, "Please choose at least one way to send notification");
+        Set<User> users = userRepository.findAllByRollnumberIn(notificationSendRequest.getRollnumbers());
+        if (isSendNotification) {
+            Set<Integer> userIds = users.stream().map(User::getId).collect(Collectors.toSet());
+            eventPublisher.multicastEvent(new NotificationEvent(this, userIds, notificationSendRequest.getTitle(), notificationSendRequest.getContent(), notificationSendRequest.getImage()));
+        }
+        if (isSendEmail) {
+            Set<String> emails = users.stream().map(User::getEmail).collect(Collectors.toSet());
+            eventPublisher.multicastEvent(new MailEvent(this, emails, notificationSendRequest.getTitle(), notificationSendRequest.getContent()));
+        }
+        return new ApiResponse(true, "Notification sent");
+    }
+
     private List<String> getListFcmToken(DocumentReference docRef) throws ExecutionException, InterruptedException {
         ApiFuture<DocumentSnapshot> documentSnapshot = docRef.get();
         DocumentSnapshot document = documentSnapshot.get();
@@ -202,9 +247,18 @@ public class NotificationServiceImpl implements NotificationService {
         Set<Integer> assigneeIds = event.getAssigneeIds();
         String title = event.getTitle();
         String content = event.getContent();
-        Notification notification = Notification.builder()
+        String image = event.getImage();
+        Notification notification;
+        if (image == null || image.isEmpty())
+            notification = Notification.builder()
                 .setTitle(title)
                 .setBody(content)
+                .build();
+        else
+            notification = Notification.builder()
+                .setTitle(title)
+                .setBody(content)
+                .setImage(image)
                 .build();
         if (assigneeIds == null) {
             Message message = Message.builder()
@@ -213,8 +267,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .build();
             try {
                 firebaseMessaging.send(message);
-                NotificationCreateRequest notificationCreateRequest = new NotificationCreateRequest((short) 0, title, content);
-                eventpublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
+//                NotificationCreateRequest notificationCreateRequest = new NotificationCreateRequest((short) 0, title, content);
+//                eventPublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
             } catch (Exception e) {
                 System.out.println("Firebase error");
             }
@@ -236,7 +290,7 @@ public class NotificationServiceImpl implements NotificationService {
             firebaseMessaging.sendEachForMulticast(message);
             NotificationCreateRequest notificationCreateRequest = new NotificationCreateRequest((short) 1, title, content);
 
-            eventpublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
+            eventPublisher.multicastEvent(new NotificationCreateEvent(this, notificationCreateRequest, assigneeIds));
         } catch (Exception e) {
             System.out.println("Firebase error");
         }
@@ -251,6 +305,7 @@ public class NotificationServiceImpl implements NotificationService {
         Announcement savedAnnouncement = announcementRepository.save(newAnnouncement);
         Set<Integer> assigneeIds = event.getReceiverIds();
         List<UserNotification> userNotifications = new ArrayList<>();
+        if (assigneeIds == null) return;
         for (Integer assigneeId : assigneeIds) {
             UserNotification userNotification = new UserNotification(new UserNotificationId(savedAnnouncement.getId(), assigneeId), ( short)1);
             userNotifications.add(userNotification);
