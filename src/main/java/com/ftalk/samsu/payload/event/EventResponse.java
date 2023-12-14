@@ -46,6 +46,7 @@ public class EventResponse implements Serializable {
     private GradeSubCriteriaResponse gradeSubCriteriaResponse;
     private Date createAt;
     private Short attendScore;
+    private Short processStatus;
 
     public EventResponse(Event event) {
         id = event.getId();
@@ -70,5 +71,6 @@ public class EventResponse implements Serializable {
         startTime = event.getStartTime();
         attendScore = event.getAttendScore();
         tasks = event.getTasks() != null ? ListConverter.listToList(event.getTasks(), TaskResponse::new) : null;
+        processStatus = event.getProcessStatus();
     }
 }

@@ -65,6 +65,7 @@ public class EventCreateRequest {
     private Set<String> rollnumbers;
 
     private Set<TaskRequest> taskRequests;
+    private Short processStatus;
 
     public void validate() {
         if (!StringUtils.isEmpty(fileUrls) && !EventUtils.validateFileUrlsS3(fileUrls)) {
@@ -73,6 +74,10 @@ public class EventCreateRequest {
 
         if (!StringUtils.isEmpty(bannerUrl) && !EventUtils.validateUrlS3(bannerUrl)) {
             throw new BadRequestException("FileUrls not valid");
+        }
+
+        if (startTime.before(new Date())){
+            throw new BadRequestException("StartTime not valid");
         }
     }
 }

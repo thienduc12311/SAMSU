@@ -29,6 +29,8 @@ public class GradeAllEntryResponse {
     }
 
     public void addScoreWithSubCriteriaId(Integer id, Short score) {
-        scoreWithSubCriteria.merge(id, score, (a, b) -> (short) (a + b));
+        if (score != null) {
+            scoreWithSubCriteria.merge(id, score, (a, b) -> (short) (a + b));
+        }
     }
 }

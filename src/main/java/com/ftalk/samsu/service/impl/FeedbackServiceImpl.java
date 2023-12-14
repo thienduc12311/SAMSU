@@ -24,6 +24,7 @@ import com.ftalk.samsu.service.FeedbackService;
 import com.ftalk.samsu.service.PostService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
+import com.ftalk.samsu.utils.event.EventProcessingConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -95,16 +96,20 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new BadRequestException("You already submit feedback");
         }
         User user = userRepository.getUser(currentUser);
-        Event event = eventRepository.getOne(eventId);
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+//        if (EventProcessingConstants.CHECK_OUT.getValue() != event.getProcessStatus()){
+//            throw new BadRequestException("Not in check-out time");
+//        }
+
 //        Date time = event.getStartTime();
 //        long now = time.getTime() + event.getDuration();
 //        if (now )
         List<FeedbackQuestion> feedbackQuestions = event.getFeedbackQuestions();
-        Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
-                Function.identity()));
         if (feedbackQuestions == null || feedbackQuestions.isEmpty()) {
             throw new BadRequestException("EventId don't have feedback form");
         }
+        Map<Integer, FeedbackQuestion> feedbackQuestionMap = feedbackQuestions.parallelStream().collect(Collectors.toMap(FeedbackQuestion::getId,
+                Function.identity()));
 
         if (feedbackQuestions.size() != feedbackAnswerRequests.size()) {
             throw new BadRequestException("Question number of event not match feedback answers");

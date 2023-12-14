@@ -1,5 +1,7 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.NotificationEvent;
+import com.ftalk.samsu.event.TaskAssignmentEvent;
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
@@ -30,7 +32,9 @@ import com.ftalk.samsu.utils.AppConstants;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
 import com.ftalk.samsu.utils.event.EventConstants;
+import com.ftalk.samsu.utils.event.EventProcessingConstants;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
+import com.ftalk.samsu.utils.notification.NotificationConstant;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -38,17 +42,21 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -93,9 +101,14 @@ public class EventServiceImpl implements EventService {
     @Autowired
     ParticipantRepository participantRepository;
 
+    @Autowired
+    ApplicationEventMulticaster eventPublisher;
+    @Autowired
+    ThreadPoolTaskScheduler taskScheduler;
+
     @Caching(evict = {
-            @CacheEvict(value = {"eventsCache"}, allEntries = true),
-            @CacheEvict(value = {"eventCache"}, allEntries = true)
+            @CacheEvict(value = {"eventCache"}, allEntries = true),
+            @CacheEvict(value = {"eventsCache"}, allEntries = true)
     })
     public void evictAllEntries() {
     }
@@ -112,6 +125,7 @@ public class EventServiceImpl implements EventService {
     @Cacheable(value = "eventsCache", key = "#page + '_' + #size")
     public PagedResponse<EventAllResponse> getAllAdminEvents(int page, int size) {
         AppUtils.validatePageNumberAndSize(page, size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findAll(pageable);
         if (events.getNumberOfElements() == 0) {
@@ -198,7 +212,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Cacheable(value = "eventCache", key = "#id")
+//    @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
         return new EventResponse(getEvent(id, currentUser));
     }
@@ -232,9 +246,29 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public ApiResponse updateProcessing(Short status, Integer id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        User user = userRepository.getUser(currentUser);
+        boolean isEventLeader = event.getEventLeaderUser() != null && Objects.equals(currentUser.getId(), event.getEventLeaderUser().getId());
+        if (user == null) throw new BadRequestException("Your not found!!");
+        if (isEventLeader || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            event.setProcessStatus(status);
+            eventRepository.save(event);
+            return new ApiResponse(Boolean.TRUE, "Update success");
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update event status");
+        throw new UnauthorizedException(apiResponse);
+    }
+
+    @Override
     public ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser) {
         boolean havePermission = taskService.checkPermissionCheckIn(eventId, currentUser.getId());
         User user = userRepository.getUserByRollnumber(rollnumber);
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        if (EventProcessingConstants.CHECK_IN.getValue() != event.getProcessStatus()){
+            throw new BadRequestException("Not in check-in time");
+        }
         if (havePermission
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
@@ -261,8 +295,8 @@ public class EventServiceImpl implements EventService {
     }
 
 
+//    @CachePut(value = {"eventCache"}, key = "#id")
     @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
-    @CachePut(value = {"eventCache"}, key = "#id")
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
         User creator = userRepository.getUser(currentUser);
@@ -273,6 +307,7 @@ public class EventServiceImpl implements EventService {
         EventProposal eventProposal = eventProposalRepository.findById(eventCreateRequest.getEventProposalId()).orElseThrow(() -> new BadRequestException("EventProposal not found!!"));
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         List<Department> departments = eventCreateRequest.getDepartmentIds() != null ? departmentRepository.findAllById(eventCreateRequest.getDepartmentIds()) : null;
+        boolean isPublicStatus = (eventCreateRequest.getStatus() != null) && (eventCreateRequest.getStatus().equals(EventConstants.PUBLIC.getValue())) && (event.getStatus() != EventConstants.PUBLIC.getValue());
         event.setStatus(eventCreateRequest.getStatus());
         event.setAttendGradeSubCriteria(gradeSubCriteria);
         event.setDuration(eventCreateRequest.getDuration());
@@ -287,6 +322,8 @@ public class EventServiceImpl implements EventService {
         event.setStartTime(eventCreateRequest.getStartTime());
         event.setParticipants(participants);
         event.setDepartments(departments);
+        if (eventCreateRequest.getProcessStatus() != null)
+            event.setProcessStatus(eventCreateRequest.getProcessStatus());
 //        feedbackQuestionRepository.deleteAllByEventId(event.getId());
 //        List<FeedbackQuestion> feedbackQuestions = getFeedbackQuestions(eventCreateRequest, event);
 //        feedbackQuestionRepository.saveAll(feedbackQuestions);
@@ -294,9 +331,17 @@ public class EventServiceImpl implements EventService {
 //        if (eventCreateRequest.getTaskRequests() != null) {
 //            event.setTasks(getTask(eventCreateRequest, event, creator, currentUser));
 //        }
-        return new EventResponse(eventRepository.save(event));
+        Event eventSaved = eventRepository.save(event);
+        if (isPublicStatus) {
+            pushEventNotification(eventSaved);
+        }
+        return new EventResponse(eventSaved);
     }
 
+
+    @CacheEvict(value = {"eventCache"}, key = "#eventId")
+    public void removeEventCache(Integer eventId){
+    }
 
     @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
     @Override
@@ -315,6 +360,7 @@ public class EventServiceImpl implements EventService {
         Semester semester = semesterRepository.findByName(eventCreateRequest.getSemester()).orElseThrow(() -> new BadRequestException("Semester not found!!"));
         Event event = new Event(eventCreateRequest.getStatus(), eventCreateRequest.getDuration(), eventCreateRequest.getTitle(), eventCreateRequest.getContent(), creator, eventCreateRequest.getAttendScore(), eventProposal, eventLeaderUser, semester, eventCreateRequest.getBannerUrl(), eventCreateRequest.getFileUrls(), eventCreateRequest.getStartTime());
         event.setParticipants(participants);
+        event.setProcessStatus(EventProcessingConstants.COMING.getValue());
         event.setDepartments(departments);
         event.setAttendGradeSubCriteria(gradeSubCriteria);
         Event eventSaved = eventRepository.save(event);
@@ -324,6 +370,8 @@ public class EventServiceImpl implements EventService {
         if (eventCreateRequest.getTaskRequests() != null) {
             eventSaved.setTasks(getTask(eventCreateRequest, eventSaved, creator, currentUser));
         }
+        if (eventSaved.getStatus().equals(EventConstants.PUBLIC.getValue()))
+            pushEventNotification(eventSaved, eventCreateRequest);
         return eventSaved;
     }
 
@@ -346,6 +394,7 @@ public class EventServiceImpl implements EventService {
             task.setGradeSubCriteria(gradeSubCriteria);
             task.setCreatorUserId(creator);
             Task taskSaved = taskRepository.save(task);
+
             Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
             for (AssigneeRequest assigneeRequest : taskRequest.getAssignees()) {
                 Assignee assignee = new Assignee(new AssigneeId(taskSaved.getId(), assigneeUser.get(assigneeRequest.getRollnumber()).getId()), assigneeRequest.getStatus());
@@ -355,5 +404,60 @@ public class EventServiceImpl implements EventService {
         }
         return tasks;
     }
+
+    private void pushEventNotification(Event event) {
+        List<Task> tasks = event.getTasks();
+        if (tasks != null) {
+            tasks.forEach(task -> {
+                Set<Integer> assigneeIds = new HashSet<>();
+                if (task.getAssignees() == null) return;
+                task.getAssignees().forEach(assignee -> {
+                    assigneeIds.add(assignee.getId().getUsersId());
+                });
+                taskScheduler.schedule(() -> {
+                    eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(task.getTitle(), event.getTitle(), task.getDeadline())));
+                }, new Date(System.currentTimeMillis() + 20 * 1000));
+            });
+        }
+
+        pushEvent(event);
+    }
+
+    private void pushEvent(Event event) {
+        long startDateTime = event.getStartTime().getTime() - 7 * 3600 * 1000;
+        eventPublisher.multicastEvent(new NotificationEvent(this, null, NotificationConstant.NOTIFICATION_NEW_EVENT_TITLE, NotificationConstant.genEventNotificationContent(event.getTitle())));
+
+        if (startDateTime - 15 * 60 * 1000 <= System.currentTimeMillis()) {
+            eventPublisher.multicastEvent(new NotificationEvent(this, event.getParticipants().stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle())));
+        } else {
+            taskScheduler.schedule(() -> {
+                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle())));
+            }, new Date(startDateTime - 15 * 60 * 1000));
+        }
+        taskScheduler.schedule(() -> {
+            List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+            eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(event.getTitle())));
+        }, new Date(startDateTime + (long) (event.getDuration() - 15) * 60 * 1000));
+    }
+
+    private void pushEventNotification(Event event, EventCreateRequest eventCreateRequest) {
+        for (TaskRequest taskRequest : eventCreateRequest.getTaskRequests()) {
+            Map<String, User> assigneeUser = userService.getMapUserByRollnumber(taskRequest.getAssigneeRollnumber());
+            if (assigneeUser != null) {
+                Set<Integer> assigneeIds = new HashSet<>();
+                assigneeUser.forEach((rollnumber, user) -> {
+                    assigneeIds.add(user.getId());
+                });
+                taskScheduler.schedule(() -> {
+                    eventPublisher.multicastEvent(new NotificationEvent(this, assigneeIds, NotificationConstant.NOTIFICATION_TASK_TITLE, NotificationConstant.genTaskAssignmentNotificationContent(taskRequest.getTitle(), event.getTitle(), taskRequest.getDeadline())));
+                }, new Date(System.currentTimeMillis() + 20 * 1000));
+            }
+        }
+        pushEvent(event);
+    }
+
+
+
 
 }
