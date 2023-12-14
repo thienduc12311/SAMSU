@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 
 @Service
@@ -42,9 +44,18 @@ public class MailSenderServiceImpl implements MailSenderService {
         }
         String subject = mailEvent.getSubject();
         String body = mailEvent.getBody();
-        for (String email : to) {
-            sendEmail(email, subject, body);
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        try {
+            helper.setTo(to.toArray(new String[to.size()]));
+            helper.setSubject(subject);
+            helper.setText(body, true);  // true indicates that it is HTML
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            System.out.println(e);
         }
+        javaMailSender.send(message);
     }
 }
 
