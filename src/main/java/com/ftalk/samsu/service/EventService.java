@@ -33,6 +33,8 @@ public interface EventService {
 	Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser);
 	ApiResponse updateProcessing(Short status, Integer id, UserPrincipal currentUser);
 
+	String getProcessStatus(Integer id);
+
 	EventResponse getEventResponse(Integer id, UserPrincipal currentUser);
 	List<ParticipantResponse> getAllEventParticipants(Integer eventId);
 

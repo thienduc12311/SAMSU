@@ -125,6 +125,13 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping("/{eventId}/processStatus")
+    public ResponseEntity<String> getProcess(
+            @PathVariable(value = "eventId") Integer eventId) {
+        String response = eventService.getProcessStatus(eventId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{eventProposalId}")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {

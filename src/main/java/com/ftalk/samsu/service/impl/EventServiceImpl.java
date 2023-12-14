@@ -262,11 +262,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public String getProcessStatus(Integer id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        return Objects.requireNonNull(EventProcessingConstants.findByValue(event.getProcessStatus())).name();
+    }
+
+    @Override
     public ApiResponse checkIn(Integer eventId, String rollnumber, UserPrincipal currentUser) {
         boolean havePermission = taskService.checkPermissionCheckIn(eventId, currentUser.getId());
         User user = userRepository.getUserByRollnumber(rollnumber);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
-        if (EventProcessingConstants.CHECK_IN.getValue() != event.getProcessStatus()){
+        if (EventProcessingConstants.CHECK_IN.getValue() != event.getProcessStatus()) {
             throw new BadRequestException("Not in check-in time");
         }
         if (havePermission
@@ -295,7 +301,7 @@ public class EventServiceImpl implements EventService {
     }
 
 
-//    @CachePut(value = {"eventCache"}, key = "#id")
+    //    @CachePut(value = {"eventCache"}, key = "#id")
     @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
     @Override
     public EventResponse updateEvent(Integer id, EventCreateRequest eventCreateRequest, UserPrincipal currentUser) {
@@ -340,7 +346,7 @@ public class EventServiceImpl implements EventService {
 
 
     @CacheEvict(value = {"eventCache"}, key = "#eventId")
-    public void removeEventCache(Integer eventId){
+    public void removeEventCache(Integer eventId) {
     }
 
     @CacheEvict(value = {"eventsCache", "eventsManagerCache"}, allEntries = true)
@@ -456,8 +462,6 @@ public class EventServiceImpl implements EventService {
         }
         pushEvent(event);
     }
-
-
 
 
 }
