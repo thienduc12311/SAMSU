@@ -15,7 +15,7 @@ import java.util.Set;
 public interface AssigneeService {
     ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal);
 
-    ApiResponse updateAssigneeStatus(Integer taskId, Integer userId, Short status, UserPrincipal userPrincipal);
+    ApiResponse updateAssigneeStatus(Integer taskId, String userId, Short status, UserPrincipal userPrincipal);
 
     PagedResponse<AssigneeResponse> getAllMyTasks(int page, int size, UserPrincipal userPrincipal);
 

@@ -124,9 +124,10 @@ public class AssigneeServiceImpl implements AssigneeService {
 
     @Transactional
     @Override
-    public ApiResponse updateAssigneeStatus(Integer taskId, Integer userId, Short status, UserPrincipal currentUser) {
+    public ApiResponse updateAssigneeStatus(Integer taskId, String rollnumber, Short status, UserPrincipal currentUser) {
         if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString()))) {
-            Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, userId)).orElseThrow(
+            User user = userRepository.getUserByRollnumber(rollnumber);
+            Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, user.getId())).orElseThrow(
                     () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
             );
             assignee.setStatus(status);

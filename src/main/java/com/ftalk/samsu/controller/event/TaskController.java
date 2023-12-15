@@ -39,12 +39,12 @@ public class TaskController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/{taskId}/users/{userId}/assignee/{status}")
+    @PutMapping("/{taskId}/users/{rollnumber}/assignee/{status}")
     public ResponseEntity<ApiResponse> updateAssignee(@PathVariable(value = "taskId") Integer taskId,
-                                                      @PathVariable(value = "userId") Integer userId,
+                                                      @PathVariable(value = "userId") String rollnumber,
                                                       @PathVariable(value = "status") Short status,
                                                       @CurrentUser UserPrincipal currentUser) {
-        ApiResponse apiResponse = assigneeService.updateAssigneeStatus(taskId, userId, status, currentUser);
+        ApiResponse apiResponse = assigneeService.updateAssigneeStatus(taskId, rollnumber, status, currentUser);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
