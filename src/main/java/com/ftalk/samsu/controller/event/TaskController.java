@@ -39,6 +39,16 @@ public class TaskController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
+    @PutMapping("/{taskId}/users/{userId}/assignee/{status}")
+    public ResponseEntity<ApiResponse> updateAssignee(@PathVariable(value = "taskId") Integer taskId,
+                                                      @PathVariable(value = "userId") Integer userId,
+                                                      @PathVariable(value = "status") Short status,
+                                                      @CurrentUser UserPrincipal currentUser) {
+        ApiResponse apiResponse = assigneeService.updateAssigneeStatus(taskId, userId, status, currentUser);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<TaskResponse> postTask(

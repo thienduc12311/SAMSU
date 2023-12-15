@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Set;
 
 public interface AssigneeService {
-	ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal);
+    ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal);
 
-	PagedResponse<AssigneeResponse> getAllMyTasks(int page, int size, UserPrincipal userPrincipal);
+    ApiResponse updateAssigneeStatus(Integer taskId, Integer userId, Short status, UserPrincipal userPrincipal);
 
-	ApiResponse deleteAssigneeTaskWithList(Integer taskId, Set<String> rollnumbers);
+    PagedResponse<AssigneeResponse> getAllMyTasks(int page, int size, UserPrincipal userPrincipal);
 
-	ApiResponse deleteAssigneeTask(Integer taskId, String rollnumbers);
+    ApiResponse deleteAssigneeTaskWithList(Integer taskId, Set<String> rollnumbers);
 
-	ApiResponse addAssigneeTaskWithList(Integer taskId, List<AssigneeRequest> assigneeRequestList);
+    ApiResponse deleteAssigneeTask(Integer taskId, String rollnumbers);
+
+    ApiResponse addAssigneeTaskWithList(Integer taskId, List<AssigneeRequest> assigneeRequestList);
 }

@@ -103,6 +103,7 @@ public class AssigneeServiceImpl implements AssigneeService {
 
 
     @Transactional
+    @Override
     public ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal currentUser) {
         Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, currentUser.getId())).orElseThrow(
                 () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
@@ -120,6 +121,21 @@ public class AssigneeServiceImpl implements AssigneeService {
         }
         throw new UnauthorizedException("You don't have permission to update this");
     }
+
+    @Transactional
+    @Override
+    public ApiResponse updateAssigneeStatus(Integer taskId, Integer userId, Short status, UserPrincipal currentUser) {
+        if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString()))) {
+            Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, userId)).orElseThrow(
+                    () -> new ResourceNotFoundException("Assignee", "taskId", taskId)
+            );
+            assignee.setStatus(status);
+            assigneeRepository.save(assignee);
+            return new ApiResponse(Boolean.TRUE, "You successfully updated assignee");
+        }
+        throw new UnauthorizedException("You don't have permission to update this");
+    }
+
 
     @Override
     public PagedResponse<AssigneeResponse> getAllMyTasks(int page, int size, UserPrincipal userPrincipal) {
