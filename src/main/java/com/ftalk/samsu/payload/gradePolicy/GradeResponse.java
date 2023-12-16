@@ -25,7 +25,7 @@ public class GradeResponse {
 
     public GradeResponse(Event event, Date time){
         this.score = event.getAttendScore() != null ? event.getAttendScore() : 0;
-        this.type = (short) 1;
+        this.type = (short) 0;
         this.title = event.getTitle();
         this.id = event.getId();
         this.time = time;
@@ -34,7 +34,7 @@ public class GradeResponse {
 
     public GradeResponse(Task task, Date time){
         this.score = task.getScore();
-        this.type = (short) 2;
+        this.type = (short) 1;
         this.title = task.getTitle();
         this.id = task.getId();
         this.time = time;
