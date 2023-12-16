@@ -233,7 +233,10 @@ public class EventServiceImpl implements EventService {
     public ApiResponse register(boolean isAdd, Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
         User user = userRepository.getUser(currentUser);
-        if (user == null) throw new BadRequestException("Your not found!!");
+        if (user == null) throw new BadRequestException("You not found!!");
+        if (event.getProcessStatus() == EventProcessingConstants.CANCEL.getValue()){
+            throw new BadRequestException("Event already canceled!!");
+        }
         if (isAdd) {
             if (event.getParticipants() == null) event.setParticipants(new HashSet<>());
             event.getParticipants().add(user);

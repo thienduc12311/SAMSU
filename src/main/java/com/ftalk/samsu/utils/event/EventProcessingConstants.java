@@ -12,7 +12,8 @@ public enum EventProcessingConstants {
     CHECK_OUT((short) 3),
     COMPLETE((short) 4),
     REVIEWED((short) 5),
-    FINISH((short) 6);
+    FINISH((short) 6),
+    CANCEL((short) 7);
 
     private short value;
 
