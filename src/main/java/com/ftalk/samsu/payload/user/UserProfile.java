@@ -19,4 +19,6 @@ public class UserProfile {
 	private String department;
 	private Short score;
 	private Integer attendedEvent;
+
+	private String avatar;
 }
