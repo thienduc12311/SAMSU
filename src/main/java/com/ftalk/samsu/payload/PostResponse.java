@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -30,6 +31,7 @@ public class PostResponse {
 	private String file_urls ;
 	private Short status ;
 
+	private Date createdAt;
 
 	public PostResponse(Post post) {
 		this.id = post.getId();
@@ -41,5 +43,6 @@ public class PostResponse {
 		this.image_urls = post.getImage_urls();
 		this.file_urls = post.getFile_urls();
 		this.status = post.getStatus();
+		this.createdAt = post.getCreatedAt();
 	}
 }
