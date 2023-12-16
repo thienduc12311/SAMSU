@@ -260,9 +260,9 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     @Override
     @Transactional
     public GradeTicketResponse addGradeTicket(GradeTicketCreateRequest gradeTicketRequest, UserPrincipal currentUser) {
-        if (AppUtils.checkEmailStaffFPT(gradeTicketRequest.getGuarantorEmail())) {
-            throw new BadRequestException("Your guarantor email is invalid!");
-        }
+//        if (AppUtils.checkEmailStaffFPT(gradeTicketRequest.getGuarantorEmail())) {
+//            throw new BadRequestException("Your guarantor email is invalid!");
+//        }
         if (gradeTicketRequest.getGuarantorEmail() == null && gradeTicketRequest.getEventId() == null){
             throw new BadRequestException("Your ticket is not valid!");
         }
