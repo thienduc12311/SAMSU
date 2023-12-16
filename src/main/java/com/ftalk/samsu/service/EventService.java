@@ -31,6 +31,10 @@ public interface EventService {
 
 	Boolean isFeedback(Integer eventId, UserPrincipal currentUser);
 	Boolean isCheckedIn(Integer eventId, UserPrincipal currentUser);
+
+	Boolean checkInTime(Integer eventId, UserPrincipal currentUser);
+
+	Boolean checkOutTime(Integer eventId, UserPrincipal currentUser);
 	ApiResponse updateProcessing(Short status, Integer id, UserPrincipal currentUser);
 
 	String getProcessStatus(Integer id);

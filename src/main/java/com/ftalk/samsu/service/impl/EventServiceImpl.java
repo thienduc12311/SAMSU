@@ -214,6 +214,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Boolean checkInTime(Integer eventId, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        return event.getProcessStatus() == EventProcessingConstants.CHECK_IN.getValue();
+    }
+
+    @Override
+    public Boolean checkOutTime(Integer eventId, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new BadRequestException("EventId not found!!"));
+        return event.getProcessStatus() == EventProcessingConstants.CHECK_OUT.getValue();
+    }
+
+    @Override
 //    @Cacheable(value = "eventCache", key = "#id")
     public EventResponse getEventResponse(Integer id, UserPrincipal currentUser) {
         return new EventResponse(getEvent(id, currentUser));

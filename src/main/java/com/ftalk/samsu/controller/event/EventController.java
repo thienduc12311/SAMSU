@@ -73,6 +73,20 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/{eventId}/checkInTime")
+    public ResponseEntity<Boolean> checkInTime(@PathVariable(value = "eventId") Integer eventId,
+                                                   @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.checkInTime(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{eventId}/checkOutTime")
+    public ResponseEntity<Boolean> checkOutTime(@PathVariable(value = "eventId") Integer eventId,
+                                                    @CurrentUser UserPrincipal currentUser) {
+        Boolean response = eventService.checkOutTime(eventId, currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PutMapping("/{eventId}/processStatus/{status}")
     public ResponseEntity<ApiResponse> updateProcessStatus(@PathVariable(value = "eventId") Integer eventId,
                                                            @PathVariable(value = "status") Short status,
