@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     public UserProfile getCurrentUser(UserPrincipal currentUser) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User not found with jwt token: %s", currentUser.getEmail())));
-        return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()));
+        return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(), UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(), user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()), user.getAvatar());
     }
 
     @Override
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.getUserByRollnumber(rollnumber);
             return new UserProfile(user.getUsername(), user.getRollnumber(), user.getName(),
                     UserRole.getRole(user.getRole()), UserStatus.getStatus(user.getStatus()), user.getDob(),
-                    user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()));
+                    user.getDepartment() != null ? user.getDepartment().getName() : null, user.getScore(), getAttendedEvent(user.getId()), user.getAvatar());
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to get profile of: " + rollnumber);
         throw new UnauthorizedException(apiResponse);
