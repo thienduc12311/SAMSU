@@ -147,6 +147,7 @@ public class EventController {
     }
 
     @GetMapping("/{eventProposalId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EventResponse> getEventProposal(@PathVariable(value = "eventProposalId") Integer eventProposalId,
                                                           @CurrentUser UserPrincipal currentUser) {
 //        eventService.evictAllEntries();

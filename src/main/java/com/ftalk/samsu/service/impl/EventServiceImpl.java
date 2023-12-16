@@ -189,14 +189,15 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event getEvent(Integer id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new BadRequestException("EventId not found!!"));
-        if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
-            return event;
-        }
-        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
-                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
-            return event;
-        }
-        throw new UnauthorizedException("You don't have permission");
+        // if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+        //     return event;
+        // }
+        // if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+        //         || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+        //     return event;
+        // }
+        return event;
+//        throw new UnauthorizedException("You don't have permission");
     }
 
     @Override
