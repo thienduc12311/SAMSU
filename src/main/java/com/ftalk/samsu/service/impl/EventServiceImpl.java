@@ -46,10 +46,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.ApplicationEventMulticaster;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -161,7 +158,12 @@ public class EventServiceImpl implements EventService {
         if (user == null) throw new BadRequestException("User not found!!");
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findByParticipantsRollnumber(rollNumber, pageable);
-        return getEventPagedResponse(events);
+        List<Event> filteredEvents = events.getContent()
+                .stream()
+                .filter(event -> event.getStatus() != EventConstants.NON_PUBLIC.getValue())
+                .collect(Collectors.toList());
+        Page<Event> filteredPage = new PageImpl<>(filteredEvents, pageable, events.getTotalElements());
+        return getEventPagedResponse(filteredPage);
     }
 
     @Override
