@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,15 @@ public interface EventProposalRepository extends JpaRepository<EventProposal, In
     Page<EventProposal> findAllByCreatorUserId(User id, Pageable pageable);
 
     Optional<EventProposal> findById(Integer eventProposalId);
+    @Query(value = "SELECT * FROM event_proposals\n" +
+            "WHERE id NOT IN (\n" +
+            "SELECT DISTINCT event_proposal_id from events\n" +
+            ") AND creator_users_id = ?1\n", nativeQuery = true)
+    List<EventProposal> findAvailableEventProposalsOfUser(Integer userId);
+
+    @Query(value = "SELECT * FROM event_proposals\n" +
+            "WHERE id NOT IN (\n" +
+            "SELECT DISTINCT event_proposal_id from events\n" +
+            ")\n" , nativeQuery = true)
+    List<EventProposal> findAllAvailableEventProposals();
 }

@@ -11,13 +11,19 @@ import com.ftalk.samsu.payload.event.EventProposalResponse;
 import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.security.UserPrincipal;
 
+import java.util.List;
+
 public interface EventProposalService {
 
 	PagedResponse<EventProposalResponse> getAllEventProposals(int page, int size);
 
 	PagedResponse<EventProposalResponse> getAllMyEventProposals(int page, int size, UserPrincipal currentUser);
 
-	PagedResponse<EventProposalResponse> getEventProposalsByCreatedBy(String rollnumber, int page, int size);
+	List<EventProposalResponse> getMyAvailableEventProposals(UserPrincipal currentUser);
+
+	List<EventProposalResponse> getAllAvailableEventProposals();
+
+    PagedResponse<EventProposalResponse> getEventProposalsByCreatedBy(String rollnumber, int page, int size);
 
 	EventProposal updateEventProposal(Integer id, EventProposalUpdateRequest eventProposalUpdateRequest, UserPrincipal currentUser);
 

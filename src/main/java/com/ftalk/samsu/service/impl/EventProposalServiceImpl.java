@@ -4,15 +4,11 @@ import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.SamsuApiException;
 import com.ftalk.samsu.exception.UnauthorizedException;
-import com.ftalk.samsu.model.Post;
-import com.ftalk.samsu.model.Tag;
 import com.ftalk.samsu.model.event.EventProposal;
 import com.ftalk.samsu.model.role.RoleName;
-import com.ftalk.samsu.model.semester.Semester;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.PostResponse;
 import com.ftalk.samsu.payload.event.EventProposalEvaluateRequest;
 import com.ftalk.samsu.payload.event.EventProposalRequest;
 import com.ftalk.samsu.payload.event.EventProposalResponse;
@@ -20,14 +16,12 @@ import com.ftalk.samsu.payload.event.EventProposalUpdateRequest;
 import com.ftalk.samsu.repository.EventProposalRepository;
 import com.ftalk.samsu.repository.SemesterRepository;
 import com.ftalk.samsu.repository.UserRepository;
-import com.ftalk.samsu.security.JwtAuthenticationEntryPoint;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.EventProposalService;
 import com.ftalk.samsu.service.MailSenderService;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.event.EventProposalConstants;
 import com.ftalk.samsu.utils.event.EventUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +34,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -88,6 +81,24 @@ public class EventProposalServiceImpl implements EventProposalService {
         User user = userRepository.getUser(currentUser);
 
         return getEventProposalResponsePagedResponse(pageable, user);
+    }
+
+    @Override
+    public List<EventProposalResponse> getMyAvailableEventProposals(UserPrincipal currentUser) {
+
+        User user = userRepository.getUser(currentUser);
+
+        List<EventProposal> eventProposals = eventProposalRepository.findAvailableEventProposalsOfUser(user.getId());
+
+        return EventUtils.listToList(eventProposals);
+    }
+
+    @Override
+    public List<EventProposalResponse> getAllAvailableEventProposals() {
+
+        List<EventProposal> eventProposals = eventProposalRepository.findAllAvailableEventProposals();
+
+        return EventUtils.listToList(eventProposals);
     }
 
     private PagedResponse<EventProposalResponse> getEventProposalResponsePagedResponse(Pageable pageable, User user) {

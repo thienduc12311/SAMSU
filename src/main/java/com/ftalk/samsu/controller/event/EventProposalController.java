@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/event/proposals")
@@ -56,6 +57,23 @@ public class EventProposalController {
             @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
             @CurrentUser UserPrincipal currentUser) {
         PagedResponse<EventProposalResponse> response = eventProposalService.getEventProposalsByCreatedBy(rollnumber, page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/me/available")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<List<EventProposalResponse>> getMyAvailableEventProposals(
+            @CurrentUser UserPrincipal currentUser) {
+        List<EventProposalResponse> response = eventProposalService.getMyAvailableEventProposals(currentUser);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/available")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EventProposalResponse>> getAllAvailableEventProposals(
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        List<EventProposalResponse> response = eventProposalService.getAllAvailableEventProposals();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
