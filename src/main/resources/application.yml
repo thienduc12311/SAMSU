@@ -7,7 +7,7 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: samsu.application@fpt.edu.vn
+    username: samsu.application@gmail.com
     password: 'okrf ykmp mrjn pihh'
     properties:
       mail:
