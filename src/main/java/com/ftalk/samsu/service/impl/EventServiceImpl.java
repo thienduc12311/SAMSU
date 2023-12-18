@@ -145,12 +145,12 @@ public class EventServiceImpl implements EventService {
         if (user == null) throw new BadRequestException("User not found!!");
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, CREATED_AT);
         Page<Event> events = eventRepository.findByParticipantsRollnumber(rollNumber, pageable);
-        List<Event> filteredEvents = events.getContent()
-                .stream()
-                .filter(event -> event.getStatus() != EventConstants.NON_PUBLIC.getValue())
-                .collect(Collectors.toList());
-        Page<Event> filteredPage = new PageImpl<>(filteredEvents, pageable, events.getTotalElements());
-        return getEventPagedResponse(filteredPage);
+//        List<Event> filteredEvents = events.getContent()
+//                .stream()
+//                .filter(event -> event.getStatus() != EventConstants.NON_PUBLIC.getValue())
+//                .collect(Collectors.toList());
+//        Page<Event> filteredPage = new PageImpl<>(filteredEvents, pageable, events.getTotalElements());
+        return getEventPagedResponse(events);
     }
 
     @Override
