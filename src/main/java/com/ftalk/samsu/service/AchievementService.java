@@ -20,4 +20,6 @@ public interface AchievementService {
     AchievementTemplateResponse getAchievementTemplateResponse(Integer id, UserPrincipal currentUser);
     AchievementTemplateResponse createAchievementTemplateResponse(AchievementTemplateRequest achievementRequest, UserPrincipal currentUser);
     AchievementTemplateResponse updateAchievementTemplateResponse(Integer id,AchievementTemplateRequest achievementRequest, UserPrincipal currentUser);
+
+    PagedResponse<AchievementResponse> getAllAchievementResponseBySemester(String semester, Integer page, Integer size);
 }

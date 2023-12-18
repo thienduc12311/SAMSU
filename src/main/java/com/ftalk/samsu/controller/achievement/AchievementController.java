@@ -62,6 +62,16 @@ public class AchievementController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("semester/{semester}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<PagedResponse<AchievementResponse>> getAllAchievementBySemester(
+            @PathVariable(name = "semester") String semester,
+            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        PagedResponse<AchievementResponse> response = achievementService.getAllAchievementResponseBySemester(semester, page, size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
     @PostMapping
     public ResponseEntity<AchievementResponse> create(@Valid @RequestBody AchievementRequest achievementRequest,

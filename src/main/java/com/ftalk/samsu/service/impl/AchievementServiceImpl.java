@@ -144,6 +144,24 @@ public class AchievementServiceImpl implements AchievementService {
         return new AchievementTemplateResponse(achievementTemplateRepository.save(achievementTemplate));
     }
 
+    @Override
+    public PagedResponse<AchievementResponse> getAllAchievementResponseBySemester(String semester, Integer page, Integer size) {
+        AppUtils.validatePageNumberAndSize(page, size);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
+
+        Page<Achievement> achievements = achievementRepository.findAchievementBySemesterName(semester, pageable);
+
+        List<Achievement> content = achievements.getNumberOfElements() == 0 ? Collections.emptyList() : achievements.getContent();
+
+        if (achievements.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), achievements.getNumber(), achievements.getSize(),
+                    achievements.getTotalElements(), achievements.getTotalPages(), achievements.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(content, AchievementResponse::new), achievements.getNumber(),
+                achievements.getSize(), achievements.getTotalElements(), achievements.getTotalPages(), achievements.isLast());
+    }
+
 
     @Transactional
     @Override

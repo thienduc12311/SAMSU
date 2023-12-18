@@ -12,4 +12,5 @@ import java.util.List;
 @Repository
 public interface AchievementRepository extends JpaRepository<Achievement, Integer> {
     List<Achievement> findAllByOwnerIdAndSemester(Integer id, String semester);
+    Page<Achievement> findAchievementBySemesterName(String semester, Pageable pageable);
 }

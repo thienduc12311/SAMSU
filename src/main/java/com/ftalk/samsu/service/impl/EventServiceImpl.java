@@ -460,13 +460,17 @@ public class EventServiceImpl implements EventService {
             eventPublisher.multicastEvent(new NotificationEvent(this, event.getParticipants().stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle()), ""));
         } else {
             taskScheduler.schedule(() -> {
-                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
-                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle()), ""));
+                if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+                    List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+                    eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle()), ""));
+                }
             }, new Date(startDateTime - 15 * 60 * 1000));
         }
         taskScheduler.schedule(() -> {
-            List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
-            eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(event.getTitle()), ""));
+            if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+                List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
+                eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(event.getTitle()), ""));
+            }
         }, new Date(startDateTime + (long) (event.getDuration() - 15) * 60 * 1000));
     }
 

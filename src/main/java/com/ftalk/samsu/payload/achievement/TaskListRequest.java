@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskListRequest {
-    private List<UserProfileReduce> assignee;
+    private List<UserProfileReduce> assignees;
     private TaskInAchievement task;
 }
