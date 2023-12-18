@@ -70,9 +70,7 @@ public class EventProposalController {
 
     @GetMapping("/available")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<EventProposalResponse>> getAllAvailableEventProposals(
-            @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
+    public ResponseEntity<List<EventProposalResponse>> getAllAvailableEventProposals() {
         List<EventProposalResponse> response = eventProposalService.getAllAvailableEventProposals();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

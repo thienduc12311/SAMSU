@@ -45,13 +45,14 @@ public class Achievement extends DateAudit implements Serializable {
 
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "semester")
+    @JoinColumn(name = "semesters_name")
     private Semester semester;
 
     @ManyToOne
     @JoinColumn(name = "onwer_users_id")
     private User owner;
 
+    @ManyToOne
     @JoinColumn(name = "creator_users_id")
     private User creator;
 
