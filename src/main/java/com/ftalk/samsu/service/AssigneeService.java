@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 public interface AssigneeService {
+    AssigneeResponse findTaskById(Integer taskId, UserPrincipal userPrincipal);
+
     ApiResponse updateAssigneeStatus(Integer taskId, Short status, UserPrincipal userPrincipal);
 
     ApiResponse updateAssigneeStatus(Integer taskId, String userId, Short status, UserPrincipal userPrincipal);

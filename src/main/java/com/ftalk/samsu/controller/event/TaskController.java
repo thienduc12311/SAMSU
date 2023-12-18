@@ -66,7 +66,13 @@ public class TaskController {
         Task task = taskService.updateTask(taskId, taskRequest, currentUser);
         return new ResponseEntity<>(new TaskResponse(task), HttpStatus.OK);
     }
-
+    @GetMapping("/{taskId}")
+    public ResponseEntity<TaskResponse> putTask(
+            @PathVariable(value = "taskId") Integer taskId,
+            @CurrentUser UserPrincipal currentUser) {
+        AssigneeResponse apiResponse = assigneeService.findTaskById(taskId, currentUser);
+        return new ResponseEntity(apiResponse, HttpStatus.OK);
+    }
     @PutMapping("/{taskId}/status/{status}")
     public ResponseEntity<Boolean> putTask(
             @PathVariable(value = "taskId") Integer taskId,

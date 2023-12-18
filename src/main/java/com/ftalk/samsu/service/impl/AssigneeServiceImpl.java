@@ -1,11 +1,10 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
-import com.ftalk.samsu.model.Post;
 import com.ftalk.samsu.model.event.Assignee;
 import com.ftalk.samsu.model.event.AssigneeId;
-import com.ftalk.samsu.model.event.Task;
 import com.ftalk.samsu.model.role.RoleName;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
@@ -100,7 +99,13 @@ public class AssigneeServiceImpl implements AssigneeService {
         assigneeRepository.deleteById(new AssigneeId(taskId, user.getId()));
         return new ApiResponse(Boolean.TRUE, "Delete Assignee of task success");
     }
-
+    @Override
+    public AssigneeResponse findTaskById(Integer taskId, UserPrincipal currentUser) {
+        Assignee assignee = assigneeRepository.findById(new AssigneeId(taskId, currentUser.getId())).orElseThrow(
+                () ->  new BadRequestException("EventId not found!!")
+        );
+        return new AssigneeResponse(assignee);
+    }
 
     @Transactional
     @Override
