@@ -1,14 +1,12 @@
 package com.ftalk.samsu.service.impl;
 
+import com.ftalk.samsu.event.AssigneeCertificateCreateEvent;
+import com.ftalk.samsu.event.ParticipantCertificateCreateEvent;
 import com.ftalk.samsu.event.NotificationEvent;
-import com.ftalk.samsu.event.TaskAssignmentEvent;
 import com.ftalk.samsu.exception.BadRequestException;
 import com.ftalk.samsu.exception.ResourceNotFoundException;
 import com.ftalk.samsu.exception.UnauthorizedException;
-import com.ftalk.samsu.model.Album;
-import com.ftalk.samsu.model.Photo;
 import com.ftalk.samsu.model.Post;
-import com.ftalk.samsu.model.Tag;
 import com.ftalk.samsu.model.event.*;
 import com.ftalk.samsu.model.feedback.FeedbackQuestion;
 import com.ftalk.samsu.model.gradePolicy.GradeSubCriteria;
@@ -20,40 +18,29 @@ import com.ftalk.samsu.model.user.Department;
 import com.ftalk.samsu.model.user.User;
 import com.ftalk.samsu.payload.ApiResponse;
 import com.ftalk.samsu.payload.PagedResponse;
-import com.ftalk.samsu.payload.PhotoRequest;
-import com.ftalk.samsu.payload.PhotoResponse;
+import com.ftalk.samsu.payload.achievement.TaskInAchievement;
+import com.ftalk.samsu.payload.achievement.TaskListRequest;
 import com.ftalk.samsu.payload.event.*;
 import com.ftalk.samsu.payload.feedback.FeedbackQuestionRequest;
 import com.ftalk.samsu.payload.user.UserProfileReduce;
 import com.ftalk.samsu.repository.*;
 import com.ftalk.samsu.security.UserPrincipal;
 import com.ftalk.samsu.service.*;
-import com.ftalk.samsu.utils.AppConstants;
 import com.ftalk.samsu.utils.AppUtils;
 import com.ftalk.samsu.utils.ListConverter;
-import com.ftalk.samsu.utils.event.EventConstants;
-import com.ftalk.samsu.utils.event.EventProcessingConstants;
-import com.ftalk.samsu.utils.event.EventProposalConstants;
+import com.ftalk.samsu.utils.event.*;
 import com.ftalk.samsu.utils.notification.NotificationConstant;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -273,6 +260,24 @@ public class EventServiceImpl implements EventService {
                 || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
             event.setProcessStatus(status);
             eventRepository.save(event);
+            if (status == EventProcessingConstants.FINISH.getValue()) {
+                Set<User> participants = event.getParticipants();
+                List<UserProfileReduce> userProfileReduces = participants != null ? event.getParticipants().stream().filter(participant -> event.getParticipantRaws().stream().anyMatch(participantRaw -> participantRaw.getParticipantId().getUsersId().equals(participant.getId()) && participantRaw.getCheckin() != null && participantRaw.getCheckout() != null)).map(UserProfileReduce::new).collect(Collectors.toList()) : new ArrayList<>();
+                eventPublisher.multicastEvent(new ParticipantCertificateCreateEvent(this, event.getTitle(), event.getSemester().getName(), event.getStartTime(), userProfileReduces, currentUser));
+                //eventPublisher.multicastEvent(new AssigneeCertificateCreateEvent());
+                try {
+                    List<TaskListRequest> taskListRequests = new ArrayList<>();
+                    event.getTasks().stream().filter(task -> task.getStatus().equals(TaskConstants.REVIEWED.getValue())).forEach(task -> {
+                        List<UserProfileReduce> assignees = new ArrayList<>();
+                        task.getAssignees().stream().filter(assignee -> assignee.getStatus().equals(AssigneeConstants.APPROVED.getValue())).map(assignee -> new UserProfileReduce(assignee.getAssignee())).forEach(assignees::add);
+                        taskListRequests.add(new TaskListRequest(assignees, new TaskInAchievement(task.getTitle())));
+                    });
+                    eventPublisher.multicastEvent(new AssigneeCertificateCreateEvent(this, event.getTitle(), event.getSemester().getName(), event.getStartTime(), taskListRequests, currentUser));
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+
+            }
             return new ApiResponse(Boolean.TRUE, "Update success");
         }
         ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update event status");
