@@ -460,14 +460,14 @@ public class EventServiceImpl implements EventService {
             eventPublisher.multicastEvent(new NotificationEvent(this, event.getParticipants().stream().map(User::getId).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle()), ""));
         } else {
             taskScheduler.schedule(() -> {
-                if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+                if (!event.getProcessStatus().equals(EventProcessingConstants.CANCEL.getValue())) {
                     List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
                     eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckinContent(event.getTitle()), ""));
                 }
             }, new Date(startDateTime - 15 * 60 * 1000));
         }
         taskScheduler.schedule(() -> {
-            if (event.getStatus().equals(EventConstants.PUBLIC.getValue())) {
+            if (!event.getProcessStatus().equals(EventProcessingConstants.CANCEL.getValue())) {
                 List<Participant> newParticipant = participantRepository.findByParticipantId_EventsId(event.getId());
                 eventPublisher.multicastEvent(new NotificationEvent(this, newParticipant.stream().map(participant -> participant.getParticipantId().getUsersId()).collect(Collectors.toSet()), NotificationConstant.NOTIFICATION_EVENT_TITLE, NotificationConstant.genEventNotificationCheckoutContent(event.getTitle()), ""));
             }
