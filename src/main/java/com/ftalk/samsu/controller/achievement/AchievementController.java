@@ -62,7 +62,7 @@ public class AchievementController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("semester/{semester}")
+    @GetMapping("/semester/{semester}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<PagedResponse<AchievementResponse>> getAllAchievementBySemester(
             @PathVariable(name = "semester") String semester,
@@ -72,7 +72,7 @@ public class AchievementController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("semester/{semester}/me")
+    @GetMapping("/semester/{semester}/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PagedResponse<AchievementResponse>> getAllAchievementBySemester(
             @PathVariable(name = "semester") String semester,
