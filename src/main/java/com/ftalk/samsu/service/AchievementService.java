@@ -22,4 +22,6 @@ public interface AchievementService {
     AchievementTemplateResponse updateAchievementTemplateResponse(Integer id,AchievementTemplateRequest achievementRequest, UserPrincipal currentUser);
 
     PagedResponse<AchievementResponse> getAllAchievementResponseBySemester(String semester, Integer page, Integer size);
+
+    PagedResponse<AchievementResponse> getAllAchievementResponseBySemesterAndUser(String semester, UserPrincipal currentUser, Integer page, Integer size);
 }

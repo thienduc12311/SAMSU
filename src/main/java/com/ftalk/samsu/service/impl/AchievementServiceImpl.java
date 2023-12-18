@@ -162,6 +162,25 @@ public class AchievementServiceImpl implements AchievementService {
                 achievements.getSize(), achievements.getTotalElements(), achievements.getTotalPages(), achievements.isLast());
     }
 
+    @Override
+    public PagedResponse<AchievementResponse> getAllAchievementResponseBySemesterAndUser(String semester, UserPrincipal currentUser, Integer page, Integer size) {
+        AppUtils.validatePageNumberAndSize(page, size);
+
+        User user = userRepository.getUser(currentUser);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
+
+        Page<Achievement> achievements = achievementRepository.findAchievementBySemesterNameAndOwner(semester, user, pageable);
+
+        List<Achievement> content = achievements.getNumberOfElements() == 0 ? Collections.emptyList() : achievements.getContent();
+
+        if (achievements.getNumberOfElements() == 0) {
+            return new PagedResponse<>(Collections.emptyList(), achievements.getNumber(), achievements.getSize(),
+                    achievements.getTotalElements(), achievements.getTotalPages(), achievements.isLast());
+        }
+        return new PagedResponse<>(ListConverter.listToList(content, AchievementResponse::new), achievements.getNumber(),
+                achievements.getSize(), achievements.getTotalElements(), achievements.getTotalPages(), achievements.isLast());
+    }
+
 
     @Transactional
     @Override

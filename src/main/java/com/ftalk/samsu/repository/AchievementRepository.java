@@ -2,6 +2,7 @@ package com.ftalk.samsu.repository;
 
 import com.ftalk.samsu.model.achievement.Achievement;
 import com.ftalk.samsu.model.gradePolicy.GradeTicket;
+import com.ftalk.samsu.model.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,5 @@ import java.util.List;
 public interface AchievementRepository extends JpaRepository<Achievement, Integer> {
     List<Achievement> findAllByOwnerIdAndSemester(Integer id, String semester);
     Page<Achievement> findAchievementBySemesterName(String semester, Pageable pageable);
+    Page<Achievement> findAchievementBySemesterNameAndOwner(String semester, User owner, Pageable pageable);
 }
