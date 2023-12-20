@@ -30,10 +30,7 @@ import lombok.extern.log4j.Log4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -42,6 +39,8 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class GradeTicketServiceImpl implements GradeTicketService {
@@ -62,16 +61,26 @@ public class GradeTicketServiceImpl implements GradeTicketService {
     private GradeSubCriteriaRepository gradeSubCriteriaRepository;
 
     @Override
-    public PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size) {
+    public PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size, UserPrincipal currentUser) {
         AppUtils.validatePageNumberAndSize(page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
 
         Page<GradeTicket> gradeTickets = gradeTicketRepository.findAll(pageable);
+        if (currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))
+                || currentUser.getAuthorities().contains(new SimpleGrantedAuthority(RoleName.ROLE_MANAGER.toString()))) {
+            return getGradeTicketResponse(gradeTickets);
 
+        }
         List<GradeTicket> content = gradeTickets.getNumberOfElements() == 0 ? Collections.emptyList() : gradeTickets.getContent();
+        List<GradeTicket> filteredEvents = content
+                .stream()
+                .filter(gradeTicket -> Objects.equals(gradeTicket.getCreatorUser().getId(), currentUser.getId()))
+                .collect(Collectors.toList());
+        Page<GradeTicket> filteredPage = new PageImpl<>(filteredEvents, pageable, filteredEvents.size());
+        return getGradeTicketResponse(filteredPage);
 
-        return getGradeTicketResponse(gradeTickets);
+
     }
 
     @Override
@@ -230,7 +239,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
             gradeTicket.setContent(gradeTicketRequest.getContent());
         if (gradeTicketRequest.getEvidenceUrls() != null)
             gradeTicket.setEvidenceUrls(gradeTicketRequest.getEvidenceUrls());
-        if (gradeTicketRequest.getSemesterName() != null){
+        if (gradeTicketRequest.getSemesterName() != null) {
             Semester semester = semesterRepository.findById(gradeTicketRequest.getSemesterName()).orElseThrow(() -> new ResourceNotFoundException("Semester", "name", gradeTicketRequest.getSemesterName()));
             gradeTicket.setSemester(semester);
         }
@@ -263,7 +272,7 @@ public class GradeTicketServiceImpl implements GradeTicketService {
 //        if (AppUtils.checkEmailStaffFPT(gradeTicketRequest.getGuarantorEmail())) {
 //            throw new BadRequestException("Your guarantor email is invalid!");
 //        }
-        if (gradeTicketRequest.getGuarantorEmail() == null && gradeTicketRequest.getEventId() == null){
+        if (gradeTicketRequest.getGuarantorEmail() == null && gradeTicketRequest.getEventId() == null) {
             throw new BadRequestException("Your ticket is not valid!");
         }
         User creator = userRepository.getUser(currentUser);

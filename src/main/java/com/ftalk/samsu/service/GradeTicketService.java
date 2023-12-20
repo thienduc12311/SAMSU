@@ -11,7 +11,7 @@ import com.ftalk.samsu.security.UserPrincipal;
 import java.util.List;
 
 public interface GradeTicketService {
-    PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size);
+    PagedResponse<GradeTicketResponse> getAllGradeTickets(int page, int size,UserPrincipal currentUser);
 
     PagedResponse<GradeTicketResponse> getGradeTicketsByGradeSubCriteriaId(int page, int size, Integer gradeSubCriteriaId);
 

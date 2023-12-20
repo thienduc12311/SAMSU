@@ -26,8 +26,9 @@ public class GradeTicketController {
     @GetMapping
     public ResponseEntity<PagedResponse<GradeTicketResponse>> getAll(
             @RequestParam(value = "page", required = false, defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) Integer page,
-            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size) {
-        PagedResponse<GradeTicketResponse> response = gradeTicketService.getAllGradeTickets(page, size);
+            @RequestParam(value = "size", required = false, defaultValue = AppConstants.DEFAULT_PAGE_SIZE) Integer size,
+            @CurrentUser UserPrincipal currentUser) {
+        PagedResponse<GradeTicketResponse> response = gradeTicketService.getAllGradeTickets(page, size,currentUser);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
