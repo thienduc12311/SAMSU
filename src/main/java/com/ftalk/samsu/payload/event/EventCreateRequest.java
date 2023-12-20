@@ -76,8 +76,8 @@ public class EventCreateRequest {
             throw new BadRequestException("FileUrls not valid");
         }
 
-        if (startTime.before(new Date())){
-            throw new BadRequestException("StartTime not valid");
-        }
+//        if (startTime.before(new Date())){
+//            throw new BadRequestException("StartTime not valid");
+//        }
     }
 }
