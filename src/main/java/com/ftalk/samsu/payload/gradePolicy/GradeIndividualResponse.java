@@ -49,7 +49,7 @@ public class GradeIndividualResponse {
         mapScore.entrySet().forEach(integerShortEntry -> {
             score.addAndGet(integerShortEntry.getValue());
         });
-        this.score = score.get();
+        this.score = Math.min(score.get(), 100);
     }
 
     private Short min(Short a, Short b) {
